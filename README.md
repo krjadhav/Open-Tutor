@@ -1,3 +1,3 @@
-if AI can solve olympiad level problems, could it act as an effective tutor?
+if AI can solve olympiad level problems, could it tutor me to do the same?
 
-attempting to build this and find out.
+building this to find out.
