@@ -1,0 +1,16 @@
+- If goal is to maximize depth within a talent domain, then the optimal rational strategy is a greedy appraoch that involves:
+  - augment knowledge base with all the examples and problem solving experiences in the intended direction as quickly as possible
+  - upon reaching edge of human knowledge, switch to creative production
+- Instruction is individualized to student. Learning tasks are chosen based on what level the student is currently at. Keep learning skills until you meet the same threshold of performance.
+- Progress is measured by demonstrated competence not by where or how the student learned to do it. So completed courses or certificates don't count.
+- Student learns more when they are actively performing learning exercises as opposed to passively consuming lectures or content
+- Effective learning feels like a workout with a trainer and should center around individualized training activities chosen to improve specific aspect of one's performance through repetition and refinement.
+- Demonstrate proficiency on pre-requisite topic before moving on to more advanced topics.
+- We can only process small amount of information at once so important to break down skills and concepts into tiny steps.
+- Practice low-level skills enough that it becomes second nature.
+- New knowledge should build on top of pre-requisite knowledge.
+- Learn conceptually similar problems but mix these problems rather than pattern matching to one concept continuously.
+- Reviews should be spaced out instead of cramming everything in one session.
+- Avoid perfecting the same skill constantly. Mix it with other problems learned in the past weeks and rotate what shows up in each set.
+- Avoid referencing learning material unless absolutely stuck. Frequently test to as part of the learning process.
+- Gamify learning with points and leaderboards but ensure it's aligned with goals of the course and not resistant to hacking.
