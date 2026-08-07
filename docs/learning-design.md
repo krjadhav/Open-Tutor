@@ -602,3 +602,76 @@ correct each time; only the routing wanders. A sharper `blame_hint` on `der.prod
 Note the pattern in both c08 and c09: **the model's explanation is reliably right even when its
 node choice is wrong.** The teaching output is more trustworthy than the routing. Where the two
 disagree, show the student the message and treat the graph update as the lower-confidence half.
+
+---
+
+## 17. The item bank: textbook conversion, built
+
+Built 2026-08-07. `pipeline/` produces `data/items/items.json`: **376 CAS-checkable items across
+all 36 nodes**, none empty, none thin.
+
+| source | items | licence |
+|---|---|---|
+| `openstax` | 244 | CC BY-NC-SA, hackathon only |
+| `generated` | 132 | ours, ships in a paid product |
+
+This is the half of "textbook conversion" the product actually consumes. Graph extraction stays a
+pitch slide (§11); item extraction was never optional, because nothing downstream runs without
+items bound to nodes.
+
+### Scraping OpenStax (`fetch_openstax.py`, `mathml.py`)
+
+13 sections, 660 exercises, 282 usable. Four things were load-bearing:
+
+- **MathML needs a real converter.** OpenStax ships Presentation MathML with no TeX annotation.
+  Naive tag-stripping turns `x^3 - 7x^2` into `x 3 - 7 x 2` and collapses fractions entirely,
+  which is precisely the structure a calculus exercise consists of.
+- **The encoding is undeclared.** OpenStax serves UTF-8 without saying so, `requests` falls back
+  to ISO-8859-1, and every prime, minus and partial-derivative sign becomes mojibake.
+- **Answer keys must be cross-checked.** Matching an answer by element id is not enough: **7
+  answers had an exercise number disagreeing with their question's.** A silently wrong answer
+  would poison the CAS grader, which is the component everything else trusts.
+- **Stems are often bare.** OpenStax puts "find the derivative" in a shared group header, so a
+  scraped stem is frequently just `$h(x)=x^{3}f(x)$` with no task. The group instruction has to be
+  reattached or the item is unusable in front of a student.
+
+### Tagging (`tag_items.py`)
+
+281/282 tagged in 163s, zero low-confidence, using the enum-constrained forced tool call from §16.
+Coverage on the calculus core is strong: chain rule 31, partial derivatives 28, multivariable
+chain rule 22, derivative definition 19, critical points 17.
+
+### The gap that mattered
+
+**15 nodes had zero items, and they were exactly the nodes blame propagation routes errors to.**
+A calculus textbook assumes sign distribution, fraction arithmetic, exponent rules and the unit
+circle rather than drilling them, and no textbook contains the AI layer at all. Left unfixed, the
+loop dead-ends at its most important step: the student is told what is blocking them and then
+handed nothing to practise. The demo's climax, a sign-distribution drill appearing in tomorrow's
+set, had no drill to serve.
+
+### Generating the rest (`generate_drills.py`, `drill_tasks.py`)
+
+132 drills for those 18 nodes, in 38s. **The model never writes an answer.** It emits a spec (task
+plus sympy-syntax parameters); sympy computes the answer and the stem is rendered from the same
+spec. A wrong answer is therefore impossible by construction rather than validated after the fact,
+and question and answer cannot drift apart, which is the usual failure when an LLM writes both.
+
+12 drills were rejected by the CAS for being no-ops ("expand `x+1`") or degenerate. All 132
+survivors reload and verify through the production grader.
+
+Two bugs worth remembering, both silent:
+
+- **`implicit_multiplication_application` includes `split_symbols`**, which shreds multi-character
+  names: `w1` becomes `w*1` and `w2` becomes `2*w`. Every backprop drill was differentiating with
+  respect to a variable that no longer existed, and every answer came out `0`, plausibly. Use
+  plain `implicit_multiplication`.
+- **sympy answers do not round-trip through `str()`.** A solution set prints as `{2, 3}` and a
+  gradient as `Matrix([[...]])`, neither of which parses back, so stored answers were unloadable
+  at grading time. Answers now carry an `answer_kind` and are serialised deliberately.
+
+### The grader
+
+`drill_tasks.check_student_answer` is the production correctness check, and it is deliberately
+generous about form: `x - 5 + x + 2` is accepted for `2x - 3`. Per §16, marking a correct student
+wrong is the most damaging error the system can make.
