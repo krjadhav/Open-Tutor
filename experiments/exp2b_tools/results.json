@@ -1,0 +1,1081 @@
+{
+  "passes": [
+    {
+      "name": "A",
+      "seed": 42
+    },
+    {
+      "name": "B",
+      "seed": 42
+    },
+    {
+      "name": "C",
+      "seed": 1234
+    }
+  ],
+  "results": [
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c01-sign-distribution",
+      "scored": {
+        "case_id": "c01-sign-distribution",
+        "blame_type": "prereq",
+        "true_node": "alg.sign-distribution",
+        "item_node": "der.quotient-rule",
+        "predicted": "alg.sign-distribution",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You applied the quotient rule correctly, but when simplifying the numerator you distributed the minus sign incorrectly. The term -(2x+1) should become -2x - 1, not -2x + 1, leading to the wrong final numerator.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 4.776392936706543,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "2x - 6 - 2x + 1",
+        "blamed_node": "alg.sign-distribution",
+        "misconception_tag": null,
+        "student_message": "You applied the quotient rule correctly, but when simplifying the numerator you distributed the minus sign incorrectly. The term -(2x+1) should become -2x - 1, not -2x + 1, leading to the wrong final numerator.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c02-missing-inner-derivative",
+      "scored": {
+        "case_id": "c02-missing-inner-derivative",
+        "blame_type": "topic",
+        "true_node": "der.chain-rule",
+        "item_node": "der.chain-rule",
+        "predicted": "der.chain-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly recognized that the derivative of sin(u) is cos(u), but you forgot to multiply by the derivative of the inner function 3x. Remember to apply the chain rule and include the factor 3.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.827683925628662,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = cos(3x)",
+        "blamed_node": "der.chain-rule",
+        "student_message": "You correctly recognized that the derivative of sin(u) is cos(u), but you forgot to multiply by the derivative of the inner function 3x. Remember to apply the chain rule and include the factor 3.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c03-product-of-derivatives",
+      "scored": {
+        "case_id": "c03-product-of-derivatives",
+        "blame_type": "topic",
+        "true_node": "der.product-rule",
+        "item_node": "der.product-rule",
+        "predicted": "der.product-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated x^2 to 2x and sin x to cos x, but the product rule requires adding the two terms 2x\u00b7sin x + x^2\u00b7cos x, not just multiplying the derivatives.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 3.0220839977264404,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = (d/dx x^2)(d/dx sin x)",
+        "blamed_node": "der.product-rule",
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated x^2 to 2x and sin x to cos x, but the product rule requires adding the two terms 2x\u00b7sin x + x^2\u00b7cos x, not just multiplying the derivatives.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c04-negative-exponent",
+      "scored": {
+        "case_id": "c04-negative-exponent",
+        "blame_type": "prereq",
+        "true_node": "alg.exponent-rules",
+        "item_node": "der.power-rule",
+        "predicted": "alg.exponent-rules",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly applied the power rule to get -3\u202fx^{(-3-1)}, but you made an arithmetic mistake when simplifying the exponent; -3\u202f-\u202f1 equals -4, not -2.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 4.430322885513306,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "= -3 x^(-2)",
+        "blamed_node": "alg.exponent-rules",
+        "misconception_tag": null,
+        "student_message": "You correctly applied the power rule to get -3\u202fx^{(-3-1)}, but you made an arithmetic mistake when simplifying the exponent; -3\u202f-\u202f1 equals -4, not -2.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c05-unit-circle-value",
+      "scored": {
+        "case_id": "c05-unit-circle-value",
+        "blame_type": "prereq",
+        "true_node": "trig.unit-circle",
+        "item_node": "der.trig-derivatives",
+        "predicted": "trig.unit-circle",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly found the derivative of sin(x) as cos(x), but you mis\u2011evaluated cos(\u03c0/3). The exact value is 1/2, not \u221a3/2.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.9760680198669434,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "cos(pi/3) = sqrt(3)/2",
+        "blamed_node": "trig.unit-circle",
+        "misconception_tag": null,
+        "student_message": "You correctly found the derivative of sin(x) as cos(x), but you mis\u2011evaluated cos(\u03c0/3). The exact value is 1/2, not \u221a3/2.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c06-indeterminate-dne",
+      "scored": {
+        "case_id": "c06-indeterminate-dne",
+        "blame_type": "topic",
+        "true_node": "lim.indeterminate-factoring",
+        "item_node": "lim.indeterminate-factoring",
+        "predicted": "lim.indeterminate-factoring",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly spotted the 0/0 indeterminate form, but you need to factor the numerator and cancel the (x\u20112) term to evaluate the limit.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.525279998779297,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "undefined, so the limit does not exist",
+        "blamed_node": "lim.indeterminate-factoring",
+        "student_message": "You correctly spotted the 0/0 indeterminate form, but you need to factor the numerator and cancel the (x\u20112) term to evaluate the limit.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c07-quotient-order",
+      "scored": {
+        "case_id": "c07-quotient-order",
+        "blame_type": "topic",
+        "true_node": "der.quotient-rule",
+        "item_node": "der.quotient-rule",
+        "predicted": "der.quotient-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You set up the quotient rule correctly, but you swapped the derivatives of the numerator and denominator. The derivative of x^2 is 2x and the derivative of x+1 is 1, so the numerator should be 2x(x+1) - x^2.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 4.199728012084961,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = [ x^2 * 1 - (x+1) * 2x ] / (x+1)^2",
+        "blamed_node": "der.quotient-rule",
+        "misconception_tag": null,
+        "student_message": "You set up the quotient rule correctly, but you swapped the derivatives of the numerator and denominator. The derivative of x^2 is 2x and the derivative of x+1 is 1, so the numerator should be 2x(x+1) - x^2.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c08-partial-not-held-constant",
+      "scored": {
+        "case_id": "c08-partial-not-held-constant",
+        "blame_type": "topic",
+        "true_node": "mv.partial-derivative",
+        "item_node": "mv.partial-derivative",
+        "predicted": "der.product-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated the x^2 term, but in a partial derivative with respect to x the variable y is treated as a constant, so you should not differentiate y^3. The extra term x^2\u00b73y^2 should not appear.",
+        "model_says_correct": false,
+        "verdict": "WRONG_NODE"
+      },
+      "error": null,
+      "latency": 4.080026865005493,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "df/dx = 2x y^3 + x^2 * 3y^2",
+        "blamed_node": "der.product-rule",
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated the x^2 term, but in a partial derivative with respect to x the variable y is treated as a constant, so you should not differentiate y^3. The extra term x^2\u00b73y^2 should not appear.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c09-ascent-not-descent",
+      "scored": {
+        "case_id": "c09-ascent-not-descent",
+        "blame_type": "topic",
+        "true_node": "ai.gradient-descent-step",
+        "item_node": "ai.gradient-descent-step",
+        "predicted": "ai.gradient-descent-step",
+        "confidence": 0.98,
+        "misconception_tag": null,
+        "student_message": "You correctly found the gradient (2w = 6). The mistake is in the update step: gradient descent subtracts the learning\u2011rate\u2011scaled gradient, not adds it.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.309572696685791,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "w_new = w + alpha * dL/dw",
+        "blamed_node": "ai.gradient-descent-step",
+        "misconception_tag": null,
+        "student_message": "You correctly found the gradient (2w = 6). The mistake is in the update step: gradient descent subtracts the learning\u2011rate\u2011scaled gradient, not adds it.",
+        "confidence": 0.98
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c10-fraction-subtraction",
+      "scored": {
+        "case_id": "c10-fraction-subtraction",
+        "blame_type": "prereq",
+        "true_node": "alg.fraction-arithmetic",
+        "item_node": "der.definition",
+        "predicted": "alg.fraction-arithmetic",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly set up the limit definition of the derivative, but you combined the two fractions incorrectly. You need a common denominator to subtract 1/(x+h) and 1/x.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 3.6606338024139404,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "lim(h->0) [ 1/(x + h - x) ] / h",
+        "blamed_node": "alg.fraction-arithmetic",
+        "misconception_tag": null,
+        "student_message": "You correctly set up the limit definition of the derivative, but you combined the two fractions incorrectly. You need a common denominator to subtract 1/(x+h) and 1/x.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c11-control-correct",
+      "scored": {
+        "case_id": "c11-control-correct",
+        "blame_type": "control",
+        "true_node": null,
+        "item_node": "der.chain-rule",
+        "predicted": null,
+        "confidence": 0.99,
+        "misconception_tag": null,
+        "student_message": "Your differentiation is correct; you applied the chain rule properly.",
+        "model_says_correct": true,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 1.9994888305664062,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": true,
+        "blamed_node": null,
+        "student_message": "Your differentiation is correct; you applied the chain rule properly.",
+        "confidence": 0.99
+      }
+    },
+    {
+      "pass": "A",
+      "seed": 42,
+      "case_id": "c12-control-unsimplified",
+      "scored": {
+        "case_id": "c12-control-unsimplified",
+        "blame_type": "control",
+        "true_node": null,
+        "item_node": "der.product-rule",
+        "predicted": null,
+        "confidence": 0.99,
+        "misconception_tag": null,
+        "student_message": "You applied the product rule correctly. Just combine the like terms (x + x and -5 + 2) to get the simplified derivative 2x - 3.",
+        "model_says_correct": true,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.8469247817993164,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": true,
+        "blamed_node": null,
+        "student_message": "You applied the product rule correctly. Just combine the like terms (x + x and -5 + 2) to get the simplified derivative 2x - 3.",
+        "confidence": 0.99
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c01-sign-distribution",
+      "scored": {
+        "case_id": "c01-sign-distribution",
+        "blame_type": "prereq",
+        "true_node": "alg.sign-distribution",
+        "item_node": "der.quotient-rule",
+        "predicted": "alg.fraction-arithmetic",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You applied the quotient rule correctly, but when simplifying the numerator you combined -6 and +1 incorrectly; the correct sum is -7, giving -7/(x-3)^2.",
+        "model_says_correct": false,
+        "verdict": "WRONG_NODE"
+      },
+      "error": null,
+      "latency": 7.850977182388306,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "= [ 2x - 6 - 2x + 1 ] / (x-3)^2",
+        "blamed_node": "alg.fraction-arithmetic",
+        "misconception_tag": null,
+        "student_message": "You applied the quotient rule correctly, but when simplifying the numerator you combined -6 and +1 incorrectly; the correct sum is -7, giving -7/(x-3)^2.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c02-missing-inner-derivative",
+      "scored": {
+        "case_id": "c02-missing-inner-derivative",
+        "blame_type": "topic",
+        "true_node": "der.chain-rule",
+        "item_node": "der.chain-rule",
+        "predicted": "der.chain-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated sin to cos, but you missed the factor from the inner function 3x.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 1.8411178588867188,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = cos(3x)",
+        "blamed_node": "der.chain-rule",
+        "student_message": "You correctly differentiated sin to cos, but you missed the factor from the inner function 3x.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c03-product-of-derivatives",
+      "scored": {
+        "case_id": "c03-product-of-derivatives",
+        "blame_type": "topic",
+        "true_node": "der.product-rule",
+        "item_node": "der.product-rule",
+        "predicted": "der.product-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly found the derivatives of each factor, but the product rule says to add the two terms, not multiply the derivatives together.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.0049221515655518,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = (d/dx x^2)(d/dx sin x)",
+        "blamed_node": "der.product-rule",
+        "student_message": "You correctly found the derivatives of each factor, but the product rule says to add the two terms, not multiply the derivatives together.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c04-negative-exponent",
+      "scored": {
+        "case_id": "c04-negative-exponent",
+        "blame_type": "prereq",
+        "true_node": "alg.exponent-rules",
+        "item_node": "der.power-rule",
+        "predicted": "alg.exponent-rules",
+        "confidence": 0.9,
+        "misconception_tag": null,
+        "student_message": "You applied the power rule correctly, but you made an arithmetic mistake when subtracting 1 from the exponent. -3 minus 1 is -4, not -2.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 3.732192039489746,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "-3 x^(-2)",
+        "blamed_node": "alg.exponent-rules",
+        "misconception_tag": null,
+        "student_message": "You applied the power rule correctly, but you made an arithmetic mistake when subtracting 1 from the exponent. -3 minus 1 is -4, not -2.",
+        "confidence": 0.9
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c05-unit-circle-value",
+      "scored": {
+        "case_id": "c05-unit-circle-value",
+        "blame_type": "prereq",
+        "true_node": "trig.unit-circle",
+        "item_node": "der.trig-derivatives",
+        "predicted": "trig.unit-circle",
+        "confidence": 0.95,
+        "misconception_tag": "confused sine and cosine values",
+        "student_message": "You correctly differentiated sin(x) to cos(x), but you used the wrong value for cos(pi/3). The cosine of pi/3 is 1/2, not sqrt(3)/2.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 6.428252935409546,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "cos(pi/3) = sqrt(3)/2",
+        "blamed_node": "trig.unit-circle",
+        "misconception_tag": "confused sine and cosine values",
+        "student_message": "You correctly differentiated sin(x) to cos(x), but you used the wrong value for cos(pi/3). The cosine of pi/3 is 1/2, not sqrt(3)/2.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c06-indeterminate-dne",
+      "scored": {
+        "case_id": "c06-indeterminate-dne",
+        "blame_type": "topic",
+        "true_node": "lim.indeterminate-factoring",
+        "item_node": "lim.indeterminate-factoring",
+        "predicted": "lim.indeterminate-factoring",
+        "confidence": 0.95,
+        "misconception_tag": "indeterminate form",
+        "student_message": "You correctly spotted the 0/0 indeterminate form, but you need to factor the numerator (x^2\u20114 = (x\u20112)(x+2)) and cancel the (x\u20112) term before evaluating the limit.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 3.498682975769043,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "undefined, so the limit does not exist",
+        "blamed_node": "lim.indeterminate-factoring",
+        "misconception_tag": "indeterminate form",
+        "student_message": "You correctly spotted the 0/0 indeterminate form, but you need to factor the numerator (x^2\u20114 = (x\u20112)(x+2)) and cancel the (x\u20112) term before evaluating the limit.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c07-quotient-order",
+      "scored": {
+        "case_id": "c07-quotient-order",
+        "blame_type": "topic",
+        "true_node": "der.quotient-rule",
+        "item_node": "der.quotient-rule",
+        "predicted": "der.quotient-rule",
+        "confidence": 0.9,
+        "misconception_tag": null,
+        "student_message": "You correctly identified the derivatives of the numerator and denominator, but you swapped the terms in the quotient rule. The numerator should be (2x)(x+1) - x^2\u00b71, not the other way around.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 4.765380859375,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = [ x^2 * 1 - (x+1) * 2x ] / (x+1)^2",
+        "blamed_node": "der.quotient-rule",
+        "misconception_tag": null,
+        "student_message": "You correctly identified the derivatives of the numerator and denominator, but you swapped the terms in the quotient rule. The numerator should be (2x)(x+1) - x^2\u00b71, not the other way around.",
+        "confidence": 0.9
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c08-partial-not-held-constant",
+      "scored": {
+        "case_id": "c08-partial-not-held-constant",
+        "blame_type": "topic",
+        "true_node": "mv.partial-derivative",
+        "item_node": "mv.partial-derivative",
+        "predicted": "der.product-rule",
+        "confidence": 0.95,
+        "misconception_tag": "misapplied product rule in partial derivative",
+        "student_message": "You correctly differentiated the x^2 factor, but you also differentiated the y^3 factor as if y depended on x. In a partial derivative with respect to x, y is treated as a constant, so the second term should not appear.",
+        "model_says_correct": false,
+        "verdict": "WRONG_NODE"
+      },
+      "error": null,
+      "latency": 4.491227865219116,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "df/dx = 2x y^3 + x^2 * 3y^2",
+        "blamed_node": "der.product-rule",
+        "misconception_tag": "misapplied product rule in partial derivative",
+        "student_message": "You correctly differentiated the x^2 factor, but you also differentiated the y^3 factor as if y depended on x. In a partial derivative with respect to x, y is treated as a constant, so the second term should not appear.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c09-ascent-not-descent",
+      "scored": {
+        "case_id": "c09-ascent-not-descent",
+        "blame_type": "topic",
+        "true_node": "ai.gradient-descent-step",
+        "item_node": "ai.gradient-descent-step",
+        "predicted": "ai.gradient-descent-step",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly computed the gradient (dL/dw = 6), but gradient descent requires subtracting the learning\u2011rate times the gradient, not adding it. The update should be w_new = w - alpha * dL/dw.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 3.1456148624420166,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "w_new = w + alpha * dL/dw",
+        "blamed_node": "ai.gradient-descent-step",
+        "misconception_tag": null,
+        "student_message": "You correctly computed the gradient (dL/dw = 6), but gradient descent requires subtracting the learning\u2011rate times the gradient, not adding it. The update should be w_new = w - alpha * dL/dw.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c10-fraction-subtraction",
+      "scored": {
+        "case_id": "c10-fraction-subtraction",
+        "blame_type": "prereq",
+        "true_node": "alg.fraction-arithmetic",
+        "item_node": "der.definition",
+        "predicted": "alg.fraction-arithmetic",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You set up the limit definition correctly, but you made an algebraic error when subtracting the fractions. You combined 1/(x+h) - 1/x as 1/(x+h - x), which is not valid; you need a common denominator to combine them.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.894207000732422,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "lim(h->0) [ 1/(x+h) - 1/x ] / h  \u2192  lim(h->0) [ 1/(x + h - x) ] / h",
+        "blamed_node": "alg.fraction-arithmetic",
+        "misconception_tag": null,
+        "student_message": "You set up the limit definition correctly, but you made an algebraic error when subtracting the fractions. You combined 1/(x+h) - 1/x as 1/(x+h - x), which is not valid; you need a common denominator to combine them.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c11-control-correct",
+      "scored": {
+        "case_id": "c11-control-correct",
+        "blame_type": "control",
+        "true_node": null,
+        "item_node": "der.chain-rule",
+        "predicted": null,
+        "confidence": 0.99,
+        "misconception_tag": null,
+        "student_message": "Your differentiation is correct. You applied the chain rule properly and simplified the result accurately.",
+        "model_says_correct": true,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 1.2688958644866943,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": true,
+        "blamed_node": null,
+        "student_message": "Your differentiation is correct. You applied the chain rule properly and simplified the result accurately.",
+        "confidence": 0.99
+      }
+    },
+    {
+      "pass": "B",
+      "seed": 42,
+      "case_id": "c12-control-unsimplified",
+      "scored": {
+        "case_id": "c12-control-unsimplified",
+        "blame_type": "control",
+        "true_node": null,
+        "item_node": "der.product-rule",
+        "predicted": null,
+        "confidence": 0.99,
+        "misconception_tag": null,
+        "student_message": "Your differentiation is correct; you applied the product rule properly and simplified to 2x - 3.",
+        "model_says_correct": true,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.7104687690734863,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": true,
+        "blamed_node": null,
+        "student_message": "Your differentiation is correct; you applied the product rule properly and simplified to 2x - 3.",
+        "confidence": 0.99
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c01-sign-distribution",
+      "scored": {
+        "case_id": "c01-sign-distribution",
+        "blame_type": "prereq",
+        "true_node": "alg.sign-distribution",
+        "item_node": "der.quotient-rule",
+        "predicted": "alg.sign-distribution",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You applied the quotient rule correctly, but when distributing the negative sign over (2x+1) you wrote -2x + 1 instead of -2x - 1. Fixing that sign gives the correct numerator -7.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 3.585615873336792,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "[ 2x - 6 - 2x + 1 ] / (x-3)^2",
+        "blamed_node": "alg.sign-distribution",
+        "misconception_tag": null,
+        "student_message": "You applied the quotient rule correctly, but when distributing the negative sign over (2x+1) you wrote -2x + 1 instead of -2x - 1. Fixing that sign gives the correct numerator -7.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c02-missing-inner-derivative",
+      "scored": {
+        "case_id": "c02-missing-inner-derivative",
+        "blame_type": "topic",
+        "true_node": "der.chain-rule",
+        "item_node": "der.chain-rule",
+        "predicted": "der.chain-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly identified the derivative of sin as cos, but you missed the factor from the inner function 3x. Remember to multiply by the derivative of the inner function when using the chain rule.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.5192689895629883,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = cos(3x)",
+        "blamed_node": "der.chain-rule",
+        "misconception_tag": null,
+        "student_message": "You correctly identified the derivative of sin as cos, but you missed the factor from the inner function 3x. Remember to multiply by the derivative of the inner function when using the chain rule.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c03-product-of-derivatives",
+      "scored": {
+        "case_id": "c03-product-of-derivatives",
+        "blame_type": "topic",
+        "true_node": "der.product-rule",
+        "item_node": "der.product-rule",
+        "predicted": "der.product-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly found the derivatives of each factor, but the product rule requires adding the two terms (u'v + uv'), not multiplying the derivatives together.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 1.653960943222046,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = (d/dx x^2)(d/dx sin x)",
+        "blamed_node": "der.product-rule",
+        "misconception_tag": null,
+        "student_message": "You correctly found the derivatives of each factor, but the product rule requires adding the two terms (u'v + uv'), not multiplying the derivatives together.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c04-negative-exponent",
+      "scored": {
+        "case_id": "c04-negative-exponent",
+        "blame_type": "prereq",
+        "true_node": "alg.exponent-rules",
+        "item_node": "der.power-rule",
+        "predicted": "alg.exponent-rules",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You applied the power rule correctly, but made an arithmetic error when subtracting 1 from the exponent (\u20113\u20111 should be \u20114, not \u20112).",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 3.0447418689727783,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "-3 x^(-3-1)  ->  -3 x^(-2)",
+        "blamed_node": "alg.exponent-rules",
+        "misconception_tag": null,
+        "student_message": "You applied the power rule correctly, but made an arithmetic error when subtracting 1 from the exponent (\u20113\u20111 should be \u20114, not \u20112).",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c05-unit-circle-value",
+      "scored": {
+        "case_id": "c05-unit-circle-value",
+        "blame_type": "prereq",
+        "true_node": "trig.unit-circle",
+        "item_node": "der.trig-derivatives",
+        "predicted": "trig.unit-circle",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated sin(x) to get cos(x), but you used the wrong exact value for cos(pi/3). The correct value is 1/2, not sqrt(3)/2.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.643125057220459,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "at x = pi/3:  cos(pi/3) = sqrt(3)/2",
+        "blamed_node": "trig.unit-circle",
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated sin(x) to get cos(x), but you used the wrong exact value for cos(pi/3). The correct value is 1/2, not sqrt(3)/2.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c06-indeterminate-dne",
+      "scored": {
+        "case_id": "c06-indeterminate-dne",
+        "blame_type": "topic",
+        "true_node": "lim.indeterminate-factoring",
+        "item_node": "lim.indeterminate-factoring",
+        "predicted": "lim.indeterminate-factoring",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly found the indeterminate form 0/0, but you need to factor the numerator to cancel the (x-2) term and then evaluate the limit.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 1.9226338863372803,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "undefined, so the limit does not exist",
+        "blamed_node": "lim.indeterminate-factoring",
+        "student_message": "You correctly found the indeterminate form 0/0, but you need to factor the numerator to cancel the (x-2) term and then evaluate the limit.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c07-quotient-order",
+      "scored": {
+        "case_id": "c07-quotient-order",
+        "blame_type": "topic",
+        "true_node": "der.quotient-rule",
+        "item_node": "der.quotient-rule",
+        "predicted": "der.quotient-rule",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You used the quotient rule but swapped the two terms in the numerator. The correct form is u'\u00b7v\u00a0\u2013\u00a0u\u00b7v', not u\u00b7v'\u00a0\u2013\u00a0u'\u00b7v.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.378438949584961,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "f'(x) = [ x^2 * 1 - (x+1) * 2x ] / (x+1)^2",
+        "blamed_node": "der.quotient-rule",
+        "misconception_tag": null,
+        "student_message": "You used the quotient rule but swapped the two terms in the numerator. The correct form is u'\u00b7v\u00a0\u2013\u00a0u\u00b7v', not u\u00b7v'\u00a0\u2013\u00a0u'\u00b7v.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c08-partial-not-held-constant",
+      "scored": {
+        "case_id": "c08-partial-not-held-constant",
+        "blame_type": "topic",
+        "true_node": "mv.partial-derivative",
+        "item_node": "mv.partial-derivative",
+        "predicted": "mv.partial-derivative",
+        "confidence": 0.95,
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated the x^2 term, but you also differentiated y^3 as if y depended on x. In a partial derivative with respect to x, y is treated as a constant, so the extra term should not appear.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 4.532692909240723,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "df/dx = 2x y^3 + x^2 * 3y^2",
+        "blamed_node": "mv.partial-derivative",
+        "misconception_tag": null,
+        "student_message": "You correctly differentiated the x^2 term, but you also differentiated y^3 as if y depended on x. In a partial derivative with respect to x, y is treated as a constant, so the extra term should not appear.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c09-ascent-not-descent",
+      "scored": {
+        "case_id": "c09-ascent-not-descent",
+        "blame_type": "topic",
+        "true_node": "ai.gradient-descent-step",
+        "item_node": "ai.gradient-descent-step",
+        "predicted": "ai.gradient-descent-step",
+        "confidence": 0.96,
+        "misconception_tag": null,
+        "student_message": "You correctly computed the gradient (dL/dw = 6), but the gradient descent update should subtract the learning\u2011rate\u2011scaled gradient, not add it. The correct update is w_new = w - \u03b1\u00b7dL/dw.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 1.915755033493042,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "w_new = w + alpha * dL/dw",
+        "blamed_node": "ai.gradient-descent-step",
+        "misconception_tag": null,
+        "student_message": "You correctly computed the gradient (dL/dw = 6), but the gradient descent update should subtract the learning\u2011rate\u2011scaled gradient, not add it. The correct update is w_new = w - \u03b1\u00b7dL/dw.",
+        "confidence": 0.96
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c10-fraction-subtraction",
+      "scored": {
+        "case_id": "c10-fraction-subtraction",
+        "blame_type": "prereq",
+        "true_node": "alg.fraction-arithmetic",
+        "item_node": "der.definition",
+        "predicted": "alg.fraction-arithmetic",
+        "confidence": 0.95,
+        "misconception_tag": "incorrectly combined fractions",
+        "student_message": "You set up the limit definition correctly, but when you subtracted the fractions you combined them incorrectly. The numerator should simplify to -h/(x(x+h)), not 1/h.",
+        "model_says_correct": false,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 2.461606025695801,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": false,
+        "failed_step": "= lim(h->0) [ 1/(x + h - x) ] / h",
+        "blamed_node": "alg.fraction-arithmetic",
+        "misconception_tag": "incorrectly combined fractions",
+        "student_message": "You set up the limit definition correctly, but when you subtracted the fractions you combined them incorrectly. The numerator should simplify to -h/(x(x+h)), not 1/h.",
+        "confidence": 0.95
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c11-control-correct",
+      "scored": {
+        "case_id": "c11-control-correct",
+        "blame_type": "control",
+        "true_node": null,
+        "item_node": "der.chain-rule",
+        "predicted": null,
+        "confidence": 0.99,
+        "misconception_tag": null,
+        "student_message": "Your differentiation is correct; you applied the chain rule properly and simplified the result.",
+        "model_says_correct": true,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 1.8912692070007324,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": true,
+        "blamed_node": null,
+        "student_message": "Your differentiation is correct; you applied the chain rule properly and simplified the result.",
+        "confidence": 0.99
+      }
+    },
+    {
+      "pass": "C",
+      "seed": 1234,
+      "case_id": "c12-control-unsimplified",
+      "scored": {
+        "case_id": "c12-control-unsimplified",
+        "blame_type": "control",
+        "true_node": null,
+        "item_node": "der.product-rule",
+        "predicted": null,
+        "confidence": 0.99,
+        "misconception_tag": null,
+        "student_message": "Your differentiation is correct; you applied the product rule properly and simplified to 2x - 3.",
+        "model_says_correct": true,
+        "verdict": "OK"
+      },
+      "error": null,
+      "latency": 1.3352088928222656,
+      "meta": {
+        "finish_reason": "tool_calls"
+      },
+      "args": {
+        "correct": true,
+        "blamed_node": null,
+        "student_message": "Your differentiation is correct; you applied the product rule properly and simplified to 2x - 3.",
+        "confidence": 0.99
+      }
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "language": "en-IN",
+  "rows": [
+    {
+      "case_id": "c01-sign-distribution",
+      "ocr_seconds": 1.7,
+      "ocr_text": "f'(x) = [(2)(x-3) - (2x+1)] / (x-3)\u00b2\n= [2x - 6 - 2x + 1] / (x-3)\u00b2\n= -5 / (x-3)\u00b2",
+      "similarity": 0.905,
+      "token_recall": 0.953,
+      "minus_signs_truth": 8,
+      "minus_signs_ocr": 8,
+      "diagnosis": {
+        "case_id": "c01-sign-distribution",
+        "blame_type": "prereq",
+        "true_node": "alg.sign-distribution",
+        "item_node": "der.quotient-rule",
+        "predicted": "der.quotient-rule",
+        "confidence": 1.0,
+        "misconception_tag": "misapplied-quotient-rule",
+        "student_message": "You correctly identified the parts of the quotient rule (u, v, u', v'), but you didn't include the v' term when you set up the numerator. Remember the formula is (u'v - uv') / v\u00b2, not (u'v - u) / v\u00b2.",
+        "model_says_correct": false,
+        "verdict": "BLAMED_SURFACE_TOPIC",
+        "from": "ocr"
+      }
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "ocr_seconds": 1.7,
+      "ocr_text": "f'(x) = cos(3x)",
+      "similarity": 1.0,
+      "token_recall": 1.0,
+      "minus_signs_truth": 0,
+      "minus_signs_ocr": 0,
+      "diagnosis": {
+        "case_id": "c02-missing-inner-derivative",
+        "blame_type": "topic",
+        "true_node": "der.chain-rule",
+        "item_node": "der.chain-rule",
+        "predicted": "der.chain-rule",
+        "confidence": 1.0,
+        "misconception_tag": "forgot-inner-derivative",
+        "student_message": "You correctly found the derivative of the outer function and substituted the inner function back in, but you forgot to multiply by the derivative of the inner function (3x).",
+        "model_says_correct": false,
+        "verdict": "OK",
+        "from": "ocr"
+      }
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "ocr_seconds": 1.7,
+      "ocr_text": "f'(x) = (d/dx x\u00b2) (d/dx sin x)\n= 2 \u00b7cos x\n= 2x cos x",
+      "similarity": 0.942,
+      "token_recall": 0.967,
+      "minus_signs_truth": 0,
+      "minus_signs_ocr": 0,
+      "diagnosis": {
+        "case_id": "c03-product-of-derivatives",
+        "blame_type": "topic",
+        "true_node": "der.product-rule",
+        "item_node": "der.product-rule",
+        "predicted": "der.product-rule",
+        "confidence": 0.95,
+        "misconception_tag": "misapplied-product-rule",
+        "student_message": "You correctly found the derivatives of x\u00b2 and sin(x), but you forgot to add the second term from the product rule. The derivative of a product is (f'g + fg'), not (f'g').",
+        "model_says_correct": false,
+        "verdict": "OK",
+        "from": "ocr"
+      }
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "ocr_seconds": 1.7,
+      "ocr_text": "f'(x) = -3 x^-(-3-1)\n= -3 x^-(-2)",
+      "similarity": 0.969,
+      "token_recall": 1.0,
+      "minus_signs_truth": 5,
+      "minus_signs_ocr": 7,
+      "diagnosis": {
+        "case_id": "c04-negative-exponent",
+        "blame_type": "prereq",
+        "true_node": "alg.exponent-rules",
+        "item_node": "der.power-rule",
+        "predicted": null,
+        "verdict": "PARSE_FAIL",
+        "confidence": null,
+        "from": "ocr"
+      }
+    }
+  ]
+}

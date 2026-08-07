@@ -1,0 +1,214 @@
+{
+  "model": "sarvam-105b",
+  "repeats": 1,
+  "max_tokens": 8000,
+  "reasoning_effort": null,
+  "rows": [
+    {
+      "case_id": "c01-sign-distribution",
+      "blame_type": "prereq",
+      "true_node": "alg.sign-distribution",
+      "item_node": "der.quotient-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "blame_type": "topic",
+      "true_node": "der.chain-rule",
+      "item_node": "der.chain-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "blame_type": "topic",
+      "true_node": "der.product-rule",
+      "item_node": "der.product-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "blame_type": "prereq",
+      "true_node": "alg.exponent-rules",
+      "item_node": "der.power-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c05-unit-circle-value",
+      "blame_type": "prereq",
+      "true_node": "trig.unit-circle",
+      "item_node": "der.trig-derivatives",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c06-indeterminate-dne",
+      "blame_type": "topic",
+      "true_node": "lim.indeterminate-factoring",
+      "item_node": "lim.indeterminate-factoring",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c07-quotient-order",
+      "blame_type": "topic",
+      "true_node": "der.quotient-rule",
+      "item_node": "der.quotient-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c08-partial-not-held-constant",
+      "blame_type": "topic",
+      "true_node": "mv.partial-derivative",
+      "item_node": "mv.partial-derivative",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c09-ascent-not-descent",
+      "blame_type": "topic",
+      "true_node": "ai.gradient-descent-step",
+      "item_node": "ai.gradient-descent-step",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c10-fraction-subtraction",
+      "blame_type": "prereq",
+      "true_node": "alg.fraction-arithmetic",
+      "item_node": "der.definition",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c11-control-correct",
+      "blame_type": "control",
+      "true_node": null,
+      "item_node": "der.chain-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c12-control-unsimplified",
+      "blame_type": "control",
+      "true_node": null,
+      "item_node": "der.product-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    }
+  ],
+  "raw": [
+    {
+      "case_id": "c01-sign-distribution",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_75b221ef-be39-461f-b4c3-26b9b3046dfc\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_09afdfc2-8deb-4462-b4c5-20ba17e38a5e\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_09de3b04-7c8d-4944-8176-08347dc71b98\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_e31ba1c4-07fe-4f3b-adde-5759f41ac7dc\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c05-unit-circle-value",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_e3497328-6e39-43e8-9847-8c4d119500d1\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c06-indeterminate-dne",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_eafe74ae-2694-40a5-95b3-dc1cb83c9471\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c07-quotient-order",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_b34f0e81-d498-40e1-8045-f220007586da\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c08-partial-not-held-constant",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_f6545856-a630-473a-8ba8-1d0eb2038c35\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c09-ascent-not-descent",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_bea14854-1478-446c-bc97-aed1c6b358c1\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c10-fraction-subtraction",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_e40c98a3-32c8-4884-8d78-7b7a6fc3df8e\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c11-control-correct",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_130d693d-25c8-4d7c-afa8-1024fb1619cb\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c12-control-unsimplified",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"max_tokens (8000) exceeds the maximum allowed for sarvam-105b for your subscription tier (starter): 4096. Please reduce max_tokens or upgrade your plan.\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_4758b1a3-df4f-4c05-a265-5ae5ea82d2bd\"}}",
+      "latency": 0,
+      "meta": {}
+    }
+  ]
+}

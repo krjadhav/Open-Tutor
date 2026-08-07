@@ -1,0 +1,155 @@
+{
+  "description": "Experiment 2: can Sarvam-105B attribute a student's error to the correct knowledge-graph node? Student work is written the way OCR output would look (loose LaTeX, line breaks, no cleanup), so the test is faithful to runtime input.",
+  "fields": {
+    "item_node": "the node the PROBLEM is tagged to, i.e. the surface topic. This is what a naive system would blame.",
+    "true_node": "the node actually responsible for the error. Ground truth.",
+    "acceptable_nodes": "other node ids a fair grader would accept.",
+    "blame_type": "prereq = true cause sits below the surface topic (the model must look past the topic). topic = surface topic really is the cause (the model must NOT over-shift). control = no error."
+  },
+  "cases": [
+    {
+      "id": "c01-sign-distribution",
+      "item_node": "der.quotient-rule",
+      "problem": "Differentiate f(x) = (2x + 1) / (x - 3).",
+      "student_work": "f'(x) = [ (2)(x-3) - (2x+1)(1) ] / (x-3)^2\n= [ 2x - 6 - 2x + 1 ] / (x-3)^2\n= -5 / (x-3)^2",
+      "correct_answer": "-7/(x-3)^2",
+      "true_node": "alg.sign-distribution",
+      "acceptable_nodes": ["alg.sign-distribution"],
+      "blame_type": "prereq",
+      "misconception": "negative sign applied to only the first term of the bracket",
+      "note": "The headline case. Quotient rule is applied perfectly; the failure is pure algebra."
+    },
+    {
+      "id": "c02-missing-inner-derivative",
+      "item_node": "der.chain-rule",
+      "problem": "Differentiate f(x) = sin(3x).",
+      "student_work": "f'(x) = cos(3x)",
+      "correct_answer": "3cos(3x)",
+      "true_node": "der.chain-rule",
+      "acceptable_nodes": ["der.chain-rule"],
+      "blame_type": "topic",
+      "misconception": "outer derivative taken without multiplying by the derivative of the inner function",
+      "note": "Must NOT be blamed on trig derivatives. The sine derivative is correct."
+    },
+    {
+      "id": "c03-product-of-derivatives",
+      "item_node": "der.product-rule",
+      "problem": "Differentiate f(x) = x^2 sin(x).",
+      "student_work": "f'(x) = (d/dx x^2)(d/dx sin x)\n= 2x * cos x\n= 2x cos x",
+      "correct_answer": "2x sin(x) + x^2 cos(x)",
+      "true_node": "der.product-rule",
+      "acceptable_nodes": ["der.product-rule"],
+      "blame_type": "topic",
+      "misconception": "believes the derivative of a product is the product of the derivatives",
+      "note": "Both component derivatives are individually correct."
+    },
+    {
+      "id": "c04-negative-exponent",
+      "item_node": "der.power-rule",
+      "problem": "Differentiate f(x) = x^(-3).",
+      "student_work": "f'(x) = -3 x^(-3-1)\n= -3 x^(-2)",
+      "correct_answer": "-3x^(-4)",
+      "true_node": "alg.exponent-rules",
+      "acceptable_nodes": ["alg.exponent-rules", "der.power-rule"],
+      "blame_type": "prereq",
+      "misconception": "arithmetic on negative exponents: computed -3 - 1 as -2",
+      "note": "Genuinely ambiguous. The power rule was stated correctly and then the arithmetic failed. Both answers accepted."
+    },
+    {
+      "id": "c05-unit-circle-value",
+      "item_node": "der.trig-derivatives",
+      "problem": "Find the slope of the tangent to y = sin(x) at x = pi/3.",
+      "student_work": "dy/dx = cos(x)\nat x = pi/3:  cos(pi/3) = sqrt(3)/2\nslope = sqrt(3)/2",
+      "correct_answer": "1/2",
+      "true_node": "trig.unit-circle",
+      "acceptable_nodes": ["trig.unit-circle"],
+      "blame_type": "prereq",
+      "misconception": "swapped the values of sin and cos at pi/3",
+      "note": "Calculus is flawless. The student does not know the unit circle."
+    },
+    {
+      "id": "c06-indeterminate-dne",
+      "item_node": "lim.indeterminate-factoring",
+      "problem": "Evaluate lim (x -> 2) of (x^2 - 4)/(x - 2).",
+      "student_work": "plug in x = 2:\n(4 - 4)/(2 - 2) = 0/0\nundefined, so the limit does not exist",
+      "correct_answer": "4",
+      "true_node": "lim.indeterminate-factoring",
+      "acceptable_nodes": ["lim.indeterminate-factoring"],
+      "blame_type": "topic",
+      "misconception": "treats the indeterminate form 0/0 as proof the limit does not exist",
+      "note": "Should NOT be blamed on factoring; the student never attempted to factor."
+    },
+    {
+      "id": "c07-quotient-order",
+      "item_node": "der.quotient-rule",
+      "problem": "Differentiate f(x) = x^2 / (x + 1).",
+      "student_work": "f'(x) = [ x^2 * 1 - (x+1) * 2x ] / (x+1)^2\n= [ x^2 - 2x^2 - 2x ] / (x+1)^2\n= (-x^2 - 2x)/(x+1)^2",
+      "correct_answer": "(x^2 + 2x)/(x+1)^2",
+      "true_node": "der.quotient-rule",
+      "acceptable_nodes": ["der.quotient-rule"],
+      "blame_type": "topic",
+      "misconception": "numerator terms of the quotient rule written in the wrong order",
+      "note": "The algebra after the misstated rule is actually correct. Must not be blamed on sign distribution."
+    },
+    {
+      "id": "c08-partial-not-held-constant",
+      "item_node": "mv.partial-derivative",
+      "problem": "Find the partial derivative with respect to x of f(x, y) = x^2 y^3.",
+      "student_work": "df/dx = 2x y^3 + x^2 * 3y^2\n= 2x y^3 + 3 x^2 y^2",
+      "correct_answer": "2xy^3",
+      "true_node": "mv.partial-derivative",
+      "acceptable_nodes": ["mv.partial-derivative"],
+      "blame_type": "topic",
+      "misconception": "differentiated both variables instead of holding y constant",
+      "note": "Looks like a product rule error but is not. Product rule was applied correctly, to the wrong thing."
+    },
+    {
+      "id": "c09-ascent-not-descent",
+      "item_node": "ai.gradient-descent-step",
+      "problem": "The loss is L(w) = w^2. Starting from w = 3 with learning rate 0.1, write the gradient descent update and compute the new w.",
+      "student_work": "dL/dw = 2w = 6\nw_new = w + alpha * dL/dw\n= 3 + 0.1 * 6\n= 3.6",
+      "correct_answer": "w_new = 2.4",
+      "true_node": "ai.gradient-descent-step",
+      "acceptable_nodes": ["ai.gradient-descent-step"],
+      "blame_type": "topic",
+      "misconception": "moved along the gradient instead of against it, performing ascent instead of descent",
+      "note": "The derivative is correct. The concept of descent is not."
+    },
+    {
+      "id": "c10-fraction-subtraction",
+      "item_node": "der.definition",
+      "problem": "Use the limit definition of the derivative to find f'(x) for f(x) = 1/x.",
+      "student_work": "f'(x) = lim(h->0) [ 1/(x+h) - 1/x ] / h\n= lim(h->0) [ 1/(x + h - x) ] / h\n= lim(h->0) [ 1/h ] / h\n= lim(h->0) 1/h^2\n= infinity",
+      "correct_answer": "-1/x^2",
+      "true_node": "alg.fraction-arithmetic",
+      "acceptable_nodes": ["alg.fraction-arithmetic"],
+      "blame_type": "prereq",
+      "misconception": "subtracted fractions by subtracting denominators",
+      "note": "The difference quotient was set up correctly. The student cannot subtract fractions."
+    },
+    {
+      "id": "c11-control-correct",
+      "item_node": "der.chain-rule",
+      "problem": "Differentiate f(x) = (3x^2 + 1)^5.",
+      "student_work": "let u = 3x^2 + 1\nf = u^5\ndf/du = 5u^4,  du/dx = 6x\nf'(x) = 5(3x^2+1)^4 * 6x\n= 30x (3x^2 + 1)^4",
+      "correct_answer": "30x(3x^2+1)^4",
+      "true_node": null,
+      "acceptable_nodes": [],
+      "blame_type": "control",
+      "misconception": null,
+      "note": "Fully correct. Tests false positives: the model must not invent an error."
+    },
+    {
+      "id": "c12-control-unsimplified",
+      "item_node": "der.product-rule",
+      "problem": "Differentiate f(x) = (x + 2)(x - 5).",
+      "student_work": "f'(x) = (1)(x - 5) + (x + 2)(1)\n= x - 5 + x + 2",
+      "correct_answer": "2x - 3",
+      "true_node": null,
+      "acceptable_nodes": [],
+      "blame_type": "control",
+      "misconception": null,
+      "note": "Correct and algebraically equivalent, just left unsimplified. Tests whether the model fabricates a mistake when the form differs from the expected answer. This failure mode would be very damaging in production."
+    }
+  ]
+}

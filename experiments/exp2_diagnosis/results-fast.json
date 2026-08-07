@@ -1,0 +1,214 @@
+{
+  "model": "sarvam-105b",
+  "repeats": 1,
+  "max_tokens": 4000,
+  "reasoning_effort": "none",
+  "rows": [
+    {
+      "case_id": "c01-sign-distribution",
+      "blame_type": "prereq",
+      "true_node": "alg.sign-distribution",
+      "item_node": "der.quotient-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "blame_type": "topic",
+      "true_node": "der.chain-rule",
+      "item_node": "der.chain-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "blame_type": "topic",
+      "true_node": "der.product-rule",
+      "item_node": "der.product-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "blame_type": "prereq",
+      "true_node": "alg.exponent-rules",
+      "item_node": "der.power-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c05-unit-circle-value",
+      "blame_type": "prereq",
+      "true_node": "trig.unit-circle",
+      "item_node": "der.trig-derivatives",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c06-indeterminate-dne",
+      "blame_type": "topic",
+      "true_node": "lim.indeterminate-factoring",
+      "item_node": "lim.indeterminate-factoring",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c07-quotient-order",
+      "blame_type": "topic",
+      "true_node": "der.quotient-rule",
+      "item_node": "der.quotient-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c08-partial-not-held-constant",
+      "blame_type": "topic",
+      "true_node": "mv.partial-derivative",
+      "item_node": "mv.partial-derivative",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c09-ascent-not-descent",
+      "blame_type": "topic",
+      "true_node": "ai.gradient-descent-step",
+      "item_node": "ai.gradient-descent-step",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c10-fraction-subtraction",
+      "blame_type": "prereq",
+      "true_node": "alg.fraction-arithmetic",
+      "item_node": "der.definition",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c11-control-correct",
+      "blame_type": "control",
+      "true_node": null,
+      "item_node": "der.chain-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c12-control-unsimplified",
+      "blame_type": "control",
+      "true_node": null,
+      "item_node": "der.product-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    }
+  ],
+  "raw": [
+    {
+      "case_id": "c01-sign-distribution",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_7bfc056a-b519-4281-92cd-8216e4f8eafa\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_4109b99c-6339-4744-9901-6a593ebbf015\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_c6acd13d-2c62-4145-a5b2-30f423d63ab6\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_55b597a5-2279-4f52-a016-c59ec80b0a53\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c05-unit-circle-value",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_73cb1710-af14-4eca-a7cf-18b4fc5d7ba6\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c06-indeterminate-dne",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_927e4e0d-f3ec-4fea-8481-2f0ac1ba4c08\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c07-quotient-order",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_9d3e9011-513a-4292-a0e7-7bd6884dfd33\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c08-partial-not-held-constant",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_4affb3b3-7e17-4aee-80cc-1db7ecc27c68\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c09-ascent-not-descent",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_bcaf1f96-cb32-4e90-969c-49961986f667\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c10-fraction-subtraction",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_6d36864c-c502-482c-aedc-cd50780c34c2\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c11-control-correct",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_d88e3bdd-110f-475f-86a2-81633d16a505\"}}",
+      "latency": 0,
+      "meta": {}
+    },
+    {
+      "case_id": "c12-control-unsimplified",
+      "run": 0,
+      "raw": null,
+      "error": "HTTP 400: {\"error\":{\"message\":\"body.reasoning_effort : Input should be 'low', 'medium' or 'high'\",\"code\":\"invalid_request_error\",\"request_id\":\"20260807_3c93e2bd-150e-4a09-9902-69ba577c4d9f\"}}",
+      "latency": 0,
+      "meta": {}
+    }
+  ]
+}

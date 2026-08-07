@@ -1,0 +1,310 @@
+{
+  "model": "sarvam-105b",
+  "repeats": 1,
+  "max_tokens": 4000,
+  "reasoning_effort": null,
+  "rows": [
+    {
+      "case_id": "c01-sign-distribution",
+      "blame_type": "prereq",
+      "true_node": "alg.sign-distribution",
+      "item_node": "der.quotient-rule",
+      "predicted": "alg.sign-distribution",
+      "confidence": 0.98,
+      "misconception_tag": "sign-distribution-error",
+      "student_message": "You correctly applied the quotient rule, but you made a sign error when distributing the negative sign. The term -(2x + 1) should become -2x - 1, not -2x + 1.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "blame_type": "topic",
+      "true_node": "der.chain-rule",
+      "item_node": "der.chain-rule",
+      "predicted": "der.chain-rule",
+      "confidence": 0.98,
+      "misconception_tag": "forgetting-inner-derivative",
+      "student_message": "You correctly identified the derivative of sin(x) as cos(x), but you missed the crucial step of multiplying by the derivative of the inner function, 3x.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "blame_type": "topic",
+      "true_node": "der.product-rule",
+      "item_node": "der.product-rule",
+      "predicted": "der.product-rule",
+      "confidence": 0.95,
+      "misconception_tag": "misapplying-product-rule",
+      "student_message": "You correctly found the individual derivatives of x^2 and sin(x), but you multiplied them instead of using the product rule formula (uv' + u'v).",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "blame_type": "prereq",
+      "true_node": "alg.exponent-rules",
+      "item_node": "der.power-rule",
+      "predicted": "alg.sign-distribution",
+      "confidence": 0.95,
+      "misconception_tag": "negative-arithmetic",
+      "student_message": "You correctly applied the power rule by multiplying by -3, but made an arithmetic error when calculating -3-1. The correct result is -4, not -2.",
+      "model_says_correct": false,
+      "verdict": "WRONG_NODE"
+    },
+    {
+      "case_id": "c05-unit-circle-value",
+      "blame_type": "prereq",
+      "true_node": "trig.unit-circle",
+      "item_node": "der.trig-derivatives",
+      "predicted": "trig.unit-circle",
+      "confidence": 0.95,
+      "misconception_tag": "unit-circle-values",
+      "student_message": "You correctly found the derivative of sin(x) and substituted the value. The mistake is in the evaluation of cos(pi/3); you used the value for sin(pi/3) instead.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c06-indeterminate-dne",
+      "blame_type": "topic",
+      "true_node": "lim.indeterminate-factoring",
+      "item_node": "lim.indeterminate-factoring",
+      "predicted": "lim.indeterminate-factoring",
+      "confidence": 0.95,
+      "misconception_tag": "indeterminate-form-misunderstanding",
+      "student_message": "You correctly found the 0/0 indeterminate form, which is the right first step. The error is concluding the limit doesn't exist from this form; you need to factor the expression to resolve it.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c07-quotient-order",
+      "blame_type": "topic",
+      "true_node": "der.quotient-rule",
+      "item_node": "der.quotient-rule",
+      "predicted": "der.quotient-rule",
+      "confidence": 1.0,
+      "misconception_tag": "misapplied-quotient-rule",
+      "student_message": "You correctly identified the need for the quotient rule, but you swapped the terms in the numerator. The formula is (u'v - uv'), not (uv' - u'v).",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c08-partial-not-held-constant",
+      "blame_type": "topic",
+      "true_node": "mv.partial-derivative",
+      "item_node": "mv.partial-derivative",
+      "predicted": "mv.partial-derivative",
+      "confidence": 0.95,
+      "misconception_tag": "partial-derivative-concept",
+      "student_message": "You correctly applied the power rule to the `x^2` term. However, when taking a partial derivative with respect to `x`, you must treat `y` as a constant, so the derivative of `y^3` is 0.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c09-ascent-not-descent",
+      "blame_type": "topic",
+      "true_node": "ai.gradient-descent-step",
+      "item_node": "ai.gradient-descent-step",
+      "predicted": "ai.gradient-descent-step",
+      "confidence": 0.99,
+      "misconception_tag": "sign-error",
+      "student_message": "You correctly calculated the derivative, dL/dw = 6. However, the gradient descent update rule uses subtraction, w_new = w - alpha * dL/dw, not addition.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c10-fraction-subtraction",
+      "blame_type": "prereq",
+      "true_node": "alg.fraction-arithmetic",
+      "item_node": "der.definition",
+      "predicted": "alg.fraction-arithmetic",
+      "confidence": 1.0,
+      "misconception_tag": "incorrect-fraction-combination",
+      "student_message": "You correctly set up the limit definition of the derivative. However, you made an algebra error when combining the fractions in the numerator. You cannot subtract the denominators; you need to find a common denominator first.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c11-control-correct",
+      "blame_type": "control",
+      "true_node": null,
+      "item_node": "der.chain-rule",
+      "predicted": null,
+      "confidence": 1.0,
+      "misconception_tag": null,
+      "student_message": "Your application of the chain rule was perfect. You correctly identified the inner and outer functions, found their derivatives, and combined them to get the correct answer.",
+      "model_says_correct": true,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c12-control-unsimplified",
+      "blame_type": "control",
+      "true_node": null,
+      "item_node": "der.product-rule",
+      "predicted": "alg.sign-distribution",
+      "confidence": 0.9,
+      "misconception_tag": "sign-distribution",
+      "student_message": "You correctly applied the product rule, but you made a sign error when simplifying the terms. The expression 'x - 5 + x + 2' simplifies to '2x - 3', not '2x + 3'.",
+      "model_says_correct": false,
+      "verdict": "FALSE_POSITIVE"
+    }
+  ],
+  "raw": [
+    {
+      "case_id": "c01-sign-distribution",
+      "run": 0,
+      "raw": "```json\n{\n  \"correct\": false,\n  \"failed_step\": \"= [ 2x - 6 - 2x + 1 ] / (x-3)^2\",\n  \"blamed_node\": \"alg.sign-distribution\",\n  \"misconception_tag\": \"sign-distribution-error\",\n  \"student_message\": \"You correctly applied the quotient rule, but you made a sign error when distributing the negative sign. The term -(2x + 1) should become -2x - 1, not -2x + 1.\",\n  \"confidence\": 0.98\n}\n```",
+      "error": null,
+      "latency": 72.63120937347412,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The user wants me to act as a diagnostic engine for a math tutoring system.\n\n**1. Analyze the Problem:**\n- **Problem:** Differentiate f(x) = (2x + 1) / (x - 3).\n- **Tagged Node:** `der.quotient-rule`. This is the correct high-level topic.\n\n**2. Analyze the Student's Work:**\n- **Step 1:** `f'(x) = [ (2)(x-3) - (2x+1)(1) ] / (x-3)^2`\n    - This is the application of the quotient rule: `(u/v)' = (u'v - uv') / v^2`.\n    - Let `u = 2x + 1`. Then `u' = 2`.\n    - Let `v = x - 3`. Then `v' = 1`.\n    - Substituting: `(2 * (x-3) - (2x+1) * 1) / (x-3)^2`.\n    - This step is **correct**. The student correctly identified u, u', v, and v', and plugged them into the formula.\n\n- **Step 2:** `= [ 2x - 6 - 2x + 1 ] / (x-3)^2`\n    - This is the expansion of the numerator.\n    - `(2)(x-3)` becomes `2x - 6`. Correct.\n    - `(2x+1)(1)` is `2x + 1`. Correct.\n    - The subtraction sign is distributed: `- (2x + 1)` becomes `-2x - 1`. Correct.\n    - So the numerator becomes `2x - 6 - 2x - 1`. Wait, the student wrote `2x - 6 - 2x + 1`.\n    - **ERROR IDENTIFIED HERE.** The student made a sign error when distributing the negative sign. `- (2x + 1)` should be `-2x - 1`, but the student wrote `-2x + 1`. This is a classic algebra error.\n\n- **Step 3:** `= -5 / (x-3)^2`\n    - This is the simplification of the numerator from the previous (incorrect) step.\n    - `2x - 6 - 2x + 1` simplifies to `(2x - 2x) + (-6 + 1)` which is `-5`.\n    - The simplification is correct *based on the previous step*, but the previous step was wrong.\n\n**3. Analyze the Expected Answer:**\n- Expected answer: `-7/(x-3)^2`\n- Let's work it out correctly:\n    - `u'v - uv' = (2)(x-3) - (2x+1)(1)`\n    - `= 2x - 6 - (2x + 1)`\n    - `= 2x - 6 - 2x - 1`\n    - `= (2x - 2x) + (-6 - 1)`\n    - `= -7`\n- So the correct derivative is `-7 / (x-3)^2`.\n\n**4. Connect the Error to a Knowledge Node:**\n- The student applied the quotient rule correctly. The error is in the algebraic manipulation of the numerator.\n- Specifically, it's a sign error when distributing a negative across a sum.\n- Looking at the available nodes:\n    - `der.quotient-rule`: The student did this correctly. So, not this.\n    - `der.chain-rule`: Not used.\n    - `der.product-rule`: Not used.\n    - `der.power-rule`: Not used.\n    - `alg.sign-distribution`: \"Distributing a negative across a sum or difference\". This is a perfect match for the error. The student had `- (2x + 1)` and incorrectly turned it into `-2x + 1`.\n    - `alg.fraction-arithmetic`: Not the primary error. The error was in the numerator, not in adding/subtracting fractions.\n    - Other `alg.*` nodes don't fit as well.\n- Therefore, the blamed node is `alg.sign-distribution`.\n\n**5. Formulate the JSON Response:**\n\n- `correct`: `false`. The final answer is incorrect.\n- `failed_step`: `\" = [ 2x - 6 - 2x + 1 ] / (x-3)^2\"`. This is the first line where the error occurs.\n- `blamed_node`: `\"alg.sign-distribution\"`.\n- `misconception_tag`: I need a short, kebab-case label. \"Sign-distribution-error\" or \"Negative-distribution-mistake\" would work. \"Sign-distribution-error\" is more general and fits the node name. Let's go with that.\n- `student_message`: \"You correctly applied the quotient rule, but you made a sign error when distributing the negative sign in the numerator. The term `-(2x + 1)` should become `-2x - 1`, not `-2x + 1`.\" This is clear, states what they did right, and pinpoints the error.\n- `confidence`: The error is very clear and matches a specific node perfectly. I'm very confident. Let's say 0.98.\n\n**Final Check:**\n- Does the response follow all rules?\n    - Single JSON object? Yes.\n    - No markdown fences or commentary? Yes.\n    - `correct` is `true` or `false`? Yes.\n    - `failed_step` is a quote or `null`? Yes.\n    - `blamed_node` is one of the listed nodes or `null`? Yes, `alg.sign-distribution` is in the list.\n    - `misconception_tag` is a short kebab-case label? Yes.\n    - `student_message` is one or two sentences? Yes.\n    - `confidence` is a number between 0.0 and 1.0? Yes.\n\nThe logic seems sound. I will now generate the JSON.",
+        "completion_tokens": 1506,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"f'(x) = cos(3x)\",\n  \"blamed_node\": \"der.chain-rule\",\n  \"misconception_tag\": \"forgetting-inner-derivative\",\n  \"student_message\": \"You correctly identified the derivative of sin(x) as cos(x), but you missed the crucial step of multiplying by the derivative of the inner function, 3x.\",\n  \"confidence\": 0.98\n}",
+      "error": null,
+      "latency": 20.64229702949524,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The user wants me to act as a diagnostic engine for a math tutoring system.\n\n**1. Analyze the Request:**\n- **Problem:** Differentiate f(x) = sin(3x).\n- **Tagged Topic:** `der.chain-rule`. This is the core concept being tested.\n- **Student's Work:** `f'(x) = cos(3x)`\n- **Expected Answer:** `3cos(3x)`\n- **Task:** Identify the single node responsible for the student's error.\n- **Output Format:** A specific JSON object with keys: `correct`, `failed_step`, `blamed_node`, `misconception_tag`, `student_message`, `confidence`.\n\n**2. Deconstruct the Student's Work:**\n- The student correctly identifies the derivative of `sin(u)` as `cos(u)`.\n- The student correctly identifies `u = 3x`.\n- The student correctly substitutes `u` back into the derivative: `cos(3x)`.\n- The student **fails to multiply by the derivative of the inner function**, which is `u' = (3x)' = 3`.\n\n**3. Identify the Error:**\n- The error is the omission of the `u'` term from the chain rule.\n- The chain rule is `(f(g(x)))' = f'(g(x)) * g'(x)`.\n- Here, `f(u) = sin(u)` and `g(x) = 3x`.\n- So, `f'(u) = cos(u)` and `g'(x) = 3`.\n- The correct application is `f'(g(x)) * g'(x) = cos(3x) * 3 = 3cos(3x)`.\n- The student calculated `f'(g(x))` but forgot to multiply by `g'(x)`.\n\n**4. Map the Error to a Knowledge Graph Node:**\n- The problem is tagged to `der.chain-rule`. Is the error in the chain rule itself?\n- The student *applied* the chain rule partially but missed a crucial step. They correctly identified the outer function's derivative but missed the inner function's derivative. This is a failure to fully execute the chain rule procedure.\n- Let's check the available nodes related to differentiation:\n    - `der.definition`: No, the student is using a rule, not the limit definition.\n    - `der.slope-interpretation`: No, this is about the geometric meaning, not the calculation.\n    - `der.power-rule`: No, this is for `x^n`.\n    - `der.constant-multiple-sum`: No, not directly applicable.\n    - `der.trig-derivatives`: The student correctly used the derivative of `sin(x)` is `cos(x)`. So this node is not the source of the error.\n    - `der.exp-log-derivatives`: No.\n    - `der.product-rule`: No.\n    - `der.quotient-rule`: No.\n    - `der.chain-rule`: This is the one. The student failed to apply the full chain rule. The error is a direct consequence of not correctly applying the chain rule. They missed the `g'(x)` part.\n    - `der.implicit`: No.\n    - `der.higher-order`: No.\n\n- The rule for differentiation of `sin(3x)` is a specific application of the chain rule. The student's error is a classic \"forget the inner derivative\" mistake. This is a failure to apply the chain rule correctly. Therefore, `der.chain-rule` is the most direct and accurate node to blame.\n\n**5. Formulate the JSON Response:**\n\n- **`correct`**: `false`. The answer is missing the factor of 3.\n- **`failed_step`**: The student's entire line of work is the failed step, as it's the only step provided. `f'(x) = cos(3x)`. This is where the error manifests.\n- **`blamed_node`**: `der.chain-rule`. This is the core rule that was misapplied.\n- **`misconception_tag`**: I need a short, kebab-case label. \"forgetting-inner-derivative\" or \"incomplete-chain-rule\" are good candidates. \"forgetting-inner-derivative\" is more specific and descriptive of the exact mistake. Let's go with that.\n- **`student_message`**:\n    - What they got right: \"You correctly found the derivative of the outer function, sin(x), which is cos(x).\"\n    - What went wrong: \"However, you forgot to multiply by the derivative of the inner function, 3x, which is 3.\"\n    - Combine: \"You correctly identified the derivative of sin(x) as cos(x), but you missed the crucial step of multiplying by the derivative of the inner function, 3x.\"\n- **`confidence`**: This is a very common, textbook error. I'm highly confident in this diagnosis. Let's set it to 0.98.\n\n**6. Final Review of the JSON Structure:**\n```json\n{\n  \"correct\": false,\n  \"failed_step\": \"f'(x) = cos(3x)\",\n  \"blamed_node\": \"der.chain-rule\",\n  \"misconception_tag\": \"forgetting-inner-derivative\",\n  \"student_message\": \"You correctly identified the derivative of sin(x) as cos(x), but you missed the crucial step of multiplying by the derivative of the inner function, 3x.\",\n  \"confidence\": 0.98\n}\n```\nThis looks correct and follows all the rules. The blamed node is from the list. The misconception tag is in the correct format. The student message is concise and helpful. The confidence is high. The JSON is valid. I will now output this JSON object directly, without any markdown fences or extra text.",
+        "completion_tokens": 1441,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "run": 0,
+      "raw": "```json\n{\n  \"correct\": false,\n  \"failed_step\": \"f'(x) = (d/dx x^2)(d/dx sin x)\",\n  \"blamed_node\": \"der.product-rule\",\n  \"misconception_tag\": \"misapplying-product-rule\",\n  \"student_message\": \"You correctly found the individual derivatives of x^2 and sin(x), but you multiplied them instead of using the product rule formula (uv' + u'v).\",\n  \"confidence\": 0.95\n}\n```",
+      "error": null,
+      "latency": 13.28233289718628,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The student is differentiating f(x) = x^2 sin(x) using the product rule.\nThe product rule states that (uv)' = u'v + uv'.\nThe student's work shows:\nf'(x) = (d/dx x^2)(d/dx sin x)\nThis is the first error. The student has multiplied the derivatives of the two functions, instead of applying the product rule correctly.\nThe student's work continues:\n= 2x * cos x\n= 2x cos x\nThis is the result of the incorrect application of the product rule.\n\nThe correct application of the product rule would be:\nLet u = x^2 and v = sin(x).\nu' = 2x\nv' = cos(x)\nf'(x) = u'v + uv'\nf'(x) = (2x)(sin(x)) + (x^2)(cos(x))\nf'(x) = 2x sin(x) + x^2 cos(x)\n\nThe student's error is in applying the product rule. They multiplied the derivatives instead of using the correct formula.\nThe node responsible for this error is `der.product-rule`.\nThe student has not understood the product rule formula.\nThe failed step is the first line: `f'(x) = (d/dx x^2)(d/dx sin x)`.\nThe student's misconception is that the derivative of a product is the product of the derivatives.\nThe confidence is high because the error is very clear and directly related to the product rule.\nThe student got the individual derivatives of x^2 and sin(x) correct (2x and cos(x)), but they applied the wrong rule for the product.\nThe message to the student should point out that they multiplied the derivatives instead of using the product rule formula.\nThe confidence is 0.95.\nThe student's work is incorrect.\nThe failed step is the first line.\nThe blamed node is `der.product-rule`.\nThe misconception tag is `misapplying-product-rule`.\nThe student message should be: \"You correctly found the individual derivatives of x^2 and sin(x), but you multiplied them instead of using the product rule formula (uv' + u'v).\"\nThe confidence is 0.95.\nLet's double check the rules.\n1. The problem is tagged to `der.product-rule`, and the error is in the application of this rule. This is a perfect fit.\n2. I'm not shifting blame downward, the surface topic is genuinely the problem.\n3. The work is mathematically incorrect.\n4. The blamed node is one of the available nodes.\nThe JSON structure is correct.\n`correct`: false\n`failed_step`: \"f'(x) = (d/dx x^2)(d/dx sin x)\"\n`blamed_node`: \"der.product-rule\"\n`misconception_tag`: \"misapplying-product-rule\"\n`student_message`: \"You correctly found the individual derivatives of x^2 and sin(x), but you multiplied them instead of using the product rule formula (uv' + u'v).\"\n`confidence`: 0.95\nThis seems correct.",
+        "completion_tokens": 842,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"-3 x^(-2)\",\n  \"blamed_node\": \"alg.sign-distribution\",\n  \"misconception_tag\": \"negative-arithmetic\",\n  \"student_message\": \"You correctly applied the power rule by multiplying by -3, but made an arithmetic error when calculating -3-1. The correct result is -4, not -2.\",\n  \"confidence\": 0.95\n}",
+      "error": null,
+      "latency": 7.6697587966918945,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "Let me analyze the student's work and the error.\n\nThe problem is to differentiate f(x) = x^(-3).\n\nThe student's work:\nf'(x) = -3 x^(-3-1)\n= -3 x^(-2)\n\nThe expected answer is -3x^(-4).\n\nLet me check what the power rule says. The power rule states that if f(x) = x^n, then f'(x) = n * x^(n-1).\n\nFor f(x) = x^(-3), we should have:\nf'(x) = -3 * x^(-3-1) = -3 * x^(-4)\n\nBut the student got:\nf'(x) = -3 x^(-3-1) = -3 x^(-2)\n\nThe student correctly identified that we need to multiply by -3 (the exponent), but then they made an error in the exponent calculation. They wrote -3-1 = -2, but -3-1 = -4.\n\nThis is a basic arithmetic error with negative numbers. Looking at the available nodes, this would fall under \"alg.sign-distribution\" which is about distributing a negative across a sum or difference.\n\nThe error is in the line where the student calculates -3-1. They got -2 instead of -4.\n\nSo the blamed_node should be \"alg.sign-distribution\" and the failed_step is \"f'(x) = -3 x^(-3-1) = -3 x^(-2)\" where the error is in calculating -3-1 = -2.\n\nActually, let me be more precise. The error is in the second line where they simplify -3-1 to -2. So the failed_step should be \"-3 x^(-2)\" where the error is in the exponent calculation.\n\nLet me revise:\nfailed_step: \"-3 x^(-2)\" (the error is in the exponent calculation)\nblamed_node: \"alg.sign-distribution\"",
+        "completion_tokens": 536,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c05-unit-circle-value",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"at x = pi/3: cos(pi/3) = sqrt(3)/2\",\n  \"blamed_node\": \"trig.unit-circle\",\n  \"misconception_tag\": \"unit-circle-values\",\n  \"student_message\": \"You correctly found the derivative of sin(x) and substituted the value. The mistake is in the evaluation of cos(pi/3); you used the value for sin(pi/3) instead.\",\n  \"confidence\": 0.95\n}",
+      "error": null,
+      "latency": 16.407456159591675,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The user wants me to act as a diagnostic engine for a math tutoring system.\n\n**1. Analyze the Problem:**\n- **Problem:** Find the slope of the tangent to y = sin(x) at x = pi/3.\n- **Tagged Node:** `der.trig-derivatives`\n- **Expected Answer:** 1/2\n- **Correct Answer Calculation:**\n    - The derivative of y = sin(x) is dy/dx = cos(x). This is correct.\n    - The slope at x = pi/3 is cos(pi/3).\n    - The value of cos(pi/3) is 1/2.\n    - So the expected answer is 1/2.\n\n**2. Analyze the Student's Work:**\n- **Student's Work (OCR):**\n    - `dy/dx = cos(x)` -> This is correct. The student knows the derivative of sin(x) is cos(x).\n    - `at x = pi/3: cos(pi/3) = sqrt(3)/2` -> This is the error. The student has confused the values for sin(pi/3) and cos(pi/3).\n        - sin(pi/3) = sqrt(3)/2\n        - cos(pi/3) = 1/2\n    - `slope = sqrt(3)/2` -> This is based on the previous error.\n\n**3. Identify the Error:**\n- The student correctly identified the derivative rule (`der.trig-derivatives`).\n- The student correctly substituted the value `pi/3` into the derivative.\n- The error is in the evaluation of the trigonometric function `cos(pi/3)`.\n- This is a fundamental trigonometric value error.\n\n**4. Map the Error to a Knowledge-Graph Node:**\n- The error is not in the differentiation step.\n- The error is in the evaluation of a trigonometric function at a standard angle.\n- Looking at the available nodes, `trig.unit-circle` is the most appropriate node. It covers the \"Exact values of sine and cosine at standard angles\".\n- The student has mixed up the values for sine and cosine at pi/3, which is a core concept within the unit circle.\n\n**5. Formulate the Response Fields:**\n- **`correct`**: `false`. The final answer is incorrect.\n- **`failed_step`**: `\"at x = pi/3: cos(pi/3) = sqrt(3)/2\"`. This is the first line where the mistake is made.\n- **`blamed_node`**: `\"trig.unit-circle\"`. This node is responsible for the correct evaluation of trigonometric values.\n- **`misconception_tag`**: `\"unit-circle-values\"`. This is a short, descriptive label for the error.\n- **`student_message`**: \"You correctly found the derivative of sin(x) and substituted the value. The mistake is in the evaluation of cos(pi/3); you used the value for sin(pi/3) instead.\" This message is positive first, then points out the specific error.\n- **`confidence`**: `0.95`. I am very confident about this diagnosis. The error is a classic, common mistake directly related to the unit circle values.\n\n**6. Final Check:**\n- Is the `blamed_node` one of the available nodes? Yes, `trig.unit-circle`.\n- Is the `failed_step` an exact quote? Yes.\n- Is the `misconception_tag` in the correct format? Yes, kebab-case.\n- Is the `student_message` helpful and concise? Yes.\n- Is the JSON structure correct? Yes.\n- Does the reasoning follow the rules?\n    - Rule 1: The problem is about derivatives, but the error is in trigonometry. I am blaming the trigonometry node. This is correct.\n    - Rule 2: The surface topic (derivatives) was not the problem. The rule was applied correctly. I am not blaming `der.trig-derivatives`. This is correct.\n    - Rule 3: The work is not mathematically correct. I am not returning `null` for `blamed_node`. This is correct.\n    - Rule 4: The blamed node is from the list. This is correct.\n\nThe plan is solid. I will now generate the JSON output.",
+        "completion_tokens": 1093,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c06-indeterminate-dne",
+      "run": 0,
+      "raw": "```json\n{\n  \"correct\": false,\n  \"failed_step\": \"undefined, so the limit does not exist\",\n  \"blamed_node\": \"lim.indeterminate-factoring\",\n  \"misconception_tag\": \"indeterminate-form-misunderstanding\",\n  \"student_message\": \"You correctly found the 0/0 indeterminate form, which is the right first step. The error is concluding the limit doesn't exist from this form; you need to factor the expression to resolve it.\",\n  \"confidence\": 0.95\n}\n```",
+      "error": null,
+      "latency": 15.310517072677612,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The user wants me to act as a diagnostic engine for a math tutoring system.\n\nHere's the plan:\n1.  **Analyze the Problem:**\n    *   **Problem:** Evaluate `lim (x -> 2) of (x^2 - 4)/(x - 2)`.\n    *   **Tagged Node:** `lim.indeterminate-factoring`. This is a strong hint. The form `0/0` at `x=2` is the classic indeterminate form that is solved by factoring.\n    *   **Expected Answer:** 4.\n\n2.  **Analyze the Student's Work:**\n    *   `plug in x = 2:`\n    *   `(4 - 4)/(2 - 2) = 0/0`\n    *   `undefined, so the limit does not exist`\n\n3.  **Identify the Error:**\n    *   The student correctly identified the indeterminate form `0/0`. This is the first step.\n    *   The student's conclusion is `undefined, so the limit does not exist`. This is the error.\n    *   The core mistake is not knowing how to resolve the `0/0` indeterminate form. They stopped at the first step and made an incorrect logical leap. The rule for `0/0` is not that the limit is undefined, but that further analysis is required. In this specific problem, the required analysis is factoring.\n\n4.  **Map the Error to a Knowledge Node:**\n    *   The problem is tagged `lim.indeterminate-factoring`. The student failed to perform the action associated with this node.\n    *   The student's error is a conceptual misunderstanding about what `0/0` means in the context of limits. They think `0/0` is simply \"undefined\" and therefore the limit doesn't exist.\n    *   The node `lim.indeterminate-factoring` describes the process of resolving `0/0` limits by factoring. The student failed to apply this process.\n    *   Let's check the available nodes:\n        *   `lim.concept`: The idea of a limit. The student seems to have a basic idea, but it's flawed.\n        *   `lim.direct-substitution`: The student used this and got `0/0`. This is correct.\n        *   `lim.indeterminate-factoring`: This is the *exact* node describing the technique the student failed to use. The problem is an indeterminate form, and the solution requires factoring. The student's failure to proceed from `0/0` to the factored form is the direct cause of the error.\n        *   Other nodes (derivatives, algebra, etc.) are not the primary source of the error. The error is specifically in the limit-solving procedure.\n\n5.  **Formulate the Diagnosis Components:**\n    *   `correct`: `false`. The student's answer is wrong.\n    *   `failed_step`: \"undefined, so the limit does not exist\". This is the line where the incorrect conclusion is drawn.\n    *   `blamed_node`: `lim.indeterminate-factoring`. This node encapsulates the knowledge the student is missing. They don't know what to do when they encounter the `0/0` form that this node is designed to solve.\n    *   `misconception_tag`: \"indeterminate-form-misunderstanding\". This is a short, descriptive label for the core conceptual error.\n    *   `student_message`: \"You correctly identified the 0/0 indeterminate form, which is a great first step. The mistake is concluding the limit doesn't exist from this form; you need to factor the numerator to resolve it.\" This message is encouraging, points out what was done right, and clearly explains the next required step.\n    *   `confidence`: `0.95`. I'm very confident. The error is a classic one, and the node `lim.indeterminate-factoring` is a perfect fit. The student's reasoning is a textbook example of misunderstanding this specific concept.\n\n6.  **Final Review:**\n    *   The JSON structure is correct.\n    *   The `blamed_node` is one of the available nodes.\n    *   The `failed_step` is the exact point of error.\n    *   The `student_message` is helpful and follows the \"what you got right, then what went wrong\" structure.\n    *   The `misconception_tag` is concise.\n    *   The `confidence` is high.\n\nThis seems solid. The student's error isn't in the algebra of substitution or factoring, but in the *concept* of how to handle the `0/0` result, which is precisely what the `lim.indeterminate-factoring` node is about. The problem is tagged to this node, and the student failed to execute the procedure associated with it. This is a clear-cut case.",
+        "completion_tokens": 1193,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c07-quotient-order",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"f'(x) = [ x^2 * 1 - (x+1) * 2x ] / (x+1)^2\",\n  \"blamed_node\": \"der.quotient-rule\",\n  \"misconception_tag\": \"misapplied-quotient-rule\",\n  \"student_message\": \"You correctly identified the need for the quotient rule, but you swapped the terms in the numerator. The formula is (u'v - uv'), not (uv' - u'v).\",\n  \"confidence\": 1.0\n}",
+      "error": null,
+      "latency": 73.03858780860901,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The user wants me to act as a diagnostic engine for a math tutoring system.\n\n**1. Analyze the Problem:**\n- **Problem:** Differentiate f(x) = x^2 / (x + 1).\n- **Tagged Node:** `der.quotient-rule`. This is the correct rule to use.\n- **Expected Answer:** (x^2 + 2x)/(x+1)^2.\n\n**2. Analyze the Student's Work:**\n- **Step 1:** `f'(x) = [ x^2 * 1 - (x+1) * 2x ] / (x+1)^2`\n    - This is the application of the quotient rule: (u/v)' = (u'v - uv') / v^2.\n    - Here, u = x^2, so u' = 2x.\n    - Here, v = x + 1, so v' = 1.\n    - The student has written `u'v` as `x^2 * 1`. This is incorrect. It should be `(2x) * (x+1)`.\n    - The student has written `uv'` as `(x+1) * 2x`. This is also incorrect. It should be `(x^2) * (1)`.\n    - The student has swapped the terms `u'v` and `uv'`. The correct numerator should be `(2x)(x+1) - (x^2)(1)`. The student has `(x^2)(1) - (x+1)(2x)`. This is a sign error in the application of the formula itself.\n    - Let's re-read the student's first line carefully: `[ x^2 * 1 - (x+1) * 2x ]`.\n    - Let's map it to the formula `(u'v - uv')`:\n        - `u'v` should be `(2x)(x+1)`. The student has `x^2 * 1`. This is `uv'`.\n        - `uv'` should be `(x^2)(1)`. The student has `(x+1) * 2x`. This is `u'v`.\n    - So, the student has swapped `u` and `u'` in the first term, and `v` and `v'` in the second term. This is a fundamental misapplication of the quotient rule formula. It's not just a sign error, it's a complete mix-up of the components.\n\n- **Step 2:** `= [ x^2 - 2x^2 - 2x ] / (x+1)^2`\n    - This step is a direct consequence of the error in Step 1.\n    - `x^2 * 1` becomes `x^2`.\n    - `(x+1) * 2x` becomes `2x^2 + 2x`.\n    - The student has `x^2 - 2x^2 - 2x`. This is consistent with their first line.\n\n- **Step 3:** `= (-x^2 - 2x)/(x+1)^2`\n    - This is a correct simplification of the previous line.\n\n**3. Identify the Error:**\n- The core error is in the first line. The student has misapplied the quotient rule formula.\n- The formula is `(u'v - uv') / v^2`.\n- The student wrote `(uv' - u'v) / v^2`.\n- This is a sign error in the structure of the formula. The student has the terms reversed.\n- Let's check the available nodes.\n    - `der.quotient-rule`: This is the topic. The student *tried* to use it, but failed. The error is in the application of this rule.\n    - `alg.sign-distribution`: The student didn't distribute a negative sign incorrectly. The error is in the setup.\n    - `alg.fraction-arithmetic`: No fractions are being added or subtracted.\n    - `alg.exponent-rules`: No exponent rules are misapplied.\n    - `alg.factoring`: No factoring is done.\n    - `alg.solving-equations`: Not an equation.\n    - `alg.function-composition`: Not composition.\n    - `alg.radicals`: Not radicals.\n    - `trig.unit-circle`: Not trig.\n    - `trig.identities`: Not trig.\n    - `explog.rules`: Not exponentials/logs.\n    - `lim.concept`: Not limits.\n    - `lim.direct-substitution`: Not limits.\n    - `lim.indeterminate-factoring`: Not limits.\n    - `lim.continuity`: Not limits.\n    - `der.definition`: Not the definition.\n    - `der.slope-interpretation`: Not the interpretation.\n    - `der.power-rule`: Not the power rule.\n    - `der.constant-multiple-sum`: Not these rules.\n    - `der.trig-derivatives`: Not trig derivatives.\n    - `der.exp-log-derivatives`: Not exp/log derivatives.\n    - `der.product-rule`: Not the product rule.\n    - `der.quotient-rule`: This is the node. The student misapplied the rule itself. The error is in the formula `(u'v - uv')`. The student wrote `(uv' - u'v)`. This is a sign error in the formula's structure.\n    - `der.implicit`: Not implicit differentiation.\n    - `der.higher-order`: Not higher-order.\n    - `mv.functions-several-vars`: Not multivariable.\n    - `mv.partial-derivative`: Not multivariable.\n    - `mv.chain-rule-multivar`: Not multivariable chain rule.\n    - `mv.gradient`: Not gradient.\n    - `mv.directional-derivative`: Not directional derivative.\n    - `opt.critical-points`: Not optimization.\n    - `opt.local-extrema`: Not optimization.\n    - `ai.loss-function`: Not AI.\n    - `ai.gradient-of-loss`: Not AI.\n    - `ai.gradient-descent-step`: Not AI.\n    - `ai.backprop-chain`: Not AI.\n\n- The error is a misapplication of the quotient rule. The student swapped the terms in the numerator. This is a sign error in the formula itself. The node `der.quotient-rule` is the most appropriate choice. The error is not in a prerequisite like `alg.sign-distribution` because the student didn't get to that step yet. The error is in the very first application of the rule.\n\n**4. Formulate the JSON response:**\n- **correct:** false. The final answer is wrong.\n- **failed_step:** The first line is where the error originates. `f'(x) = [ x^2 * 1 - (x+1) * 2x ] / (x+1)^2`. This is the first incorrect step.\n- **blamed_node:** `der.quotient-rule`. The student misapplied the rule itself.\n- **misconception_tag:** The error is a sign error in the formula. A good tag would be `sign-error-in-formula` or something similar. Let's look at the available nodes for a better fit. There isn't a specific node for this. The prompt says \"misconception_tag: <short-kebab-case-label>\". I can create one. `sign-error-in-formula` seems descriptive. Or maybe `misapplied-quotient-rule`. The latter is more direct. Let's go with `misapplied-quotient-rule`.\n- **student_message:** \"You correctly identified the need for the quotient rule, but you swapped the terms in the numerator. The formula is (u'v - uv'), not (uv' - u'v).\" This is clear and concise.\n- **confidence:** 1.0. The error is very clear and unambiguous.\n\n**5. Final Review:**\n- `correct`: false. Correct.\n- `failed_step`: The first line. Correct.\n- `blamed_node`: `der.quotient-rule`. Correct, as the error is in the application of this specific rule.\n- `misconception_tag`: `misapplied-quotient-rule`. This is a good, descriptive tag.\n- `student_message`: Explains the error clearly. Correct.\n- `confidence`: 1.0. High confidence.\n\nThe JSON structure is correct. I will now generate the final output.",
+        "completion_tokens": 2077,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c08-partial-not-held-constant",
+      "run": 0,
+      "raw": "```json\n{\n  \"correct\": false,\n  \"failed_step\": \"df/dx = 2x y^3 + x^2 * 3y^2\",\n  \"blamed_node\": \"mv.partial-derivative\",\n  \"misconception_tag\": \"partial-derivative-concept\",\n  \"student_message\": \"You correctly applied the power rule to the `x^2` term. However, when taking a partial derivative with respect to `x`, you must treat `y` as a constant, so the derivative of `y^3` is 0.\",\n  \"confidence\": 0.95\n}\n```",
+      "error": null,
+      "latency": 22.775318145751953,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The user wants me to act as a diagnostic engine for a math tutoring system.\n\n**1. Analyze the Problem:**\n- **Problem:** Find the partial derivative with respect to x of f(x, y) = x^2 y^3.\n- **Tagged Node:** `mv.partial-derivative`. This is the core topic.\n- **Expected Answer:** 2xy^3.\n\n**2. Analyze the Student's Work:**\n- **Student's Work:**\n    - `df/dx = 2x y^3 + x^2 * 3y^2`\n    - `= 2x y^3 + 3 x^2 y^2`\n- **What went wrong?** The student correctly differentiated the first term, `x^2`, with respect to `x`, getting `2x`. They correctly kept `y^3` as a constant factor. However, for the second term, `x^2 * 3y^2`, they seem to have differentiated *both* `x^2` and `y^2` with respect to `x`. The term `3y^2` is a constant with respect to `x`, so its derivative should be 0. The student treated it as if `y` were a function of `x` and applied the product rule incorrectly, or more likely, just differentiated both parts as if they were both functions of `x`. The correct approach for a partial derivative with respect to `x` is to treat all other variables (`y` in this case) as constants.\n\n**3. Identify the Error:**\n- The student is differentiating with respect to `x`.\n- The function is `f(x, y) = x^2 y^3`.\n- When taking the partial derivative `\u2202f/\u2202x`, we treat `y` as a constant.\n- The derivative of `x^2` is `2x`.\n- The derivative of `y^3` (a constant) is `0`.\n- So, `\u2202/\u2202x (x^2 y^3) = (\u2202/\u2202x x^2) * y^3 + x^2 * (\u2202/\u2202x y^3) = 2x * y^3 + x^2 * 0 = 2xy^3`.\n- The student's error is `x^2 * 3y^2`. They seem to have differentiated `y^3` as if `y` were a variable. This is a fundamental misunderstanding of what a partial derivative is. They are not treating `y` as a constant.\n\n**4. Map the Error to a Knowledge-Graph Node:**\n- The problem is about partial derivatives (`mv.partial-derivative`).\n- The error is in the *concept* of partial differentiation. The student is not treating `y` as a constant.\n- Let's look at the available nodes.\n    - `mv.partial-derivative`: This is the topic. The student is trying to apply it, but incorrectly. Is the error *in* the application of this node, or is it a prerequisite concept that's missing?\n    - `der.chain-rule`: No, this isn't a chain rule problem.\n    - `alg.exponent-rules`: They used `d/dx(x^2) = 2x` and `d/dx(y^3) = 3y^2` (incorrectly). The power rule itself was used, but the application was wrong.\n    - `alg.sign-distribution`, `alg.fraction-arithmetic`, `alg.factoring`: Not relevant.\n    - `mv.chain-rule-multivar`: This is a more complex chain rule, not applicable here.\n    - `mv.functions-several-vars`: This is the general topic. The error is about a specific property of functions of several variables.\n    - `lim.concept`, `lim.direct-substitution`, `der.definition`: The definition of the derivative is a limit, but the error isn't in the limit calculation itself. It's in the application of the differentiation rules.\n    - The core error is treating `y` as a variable when differentiating with respect to `x`. This is a failure to understand the *definition* or *concept* of a partial derivative. The student is applying a full derivative rule (like the product rule, which they seem to be doing implicitly) to a partial derivative problem.\n    - The node `mv.partial-derivative` seems most appropriate. The student is attempting to use this concept but is misapplying it. The rule for partial differentiation is \"differentiate with respect to the specified variable, treating all other variables as constants.\" The student failed to follow this rule. So, the blame lies with their understanding of the `mv.partial-derivative` node.\n    - Let's reconsider. Is there a more specific node? No. The error isn't about the chain rule, product rule, etc. It's about the fundamental idea of what a partial derivative *is*. The student is differentiating `y^3` with respect to `x`. This is a failure of the concept of partial differentiation. Therefore, blaming `mv.partial-derivative` is correct. The student misapplied the rule itself.\n\n**5. Formulate the Response:**\n- **correct:** `false`. The answer is wrong.\n- **failed_step:** The first line of incorrect work: `df/dx = 2x y^3 + x^2 * 3y^2`. This is where they introduced the error by differentiating `y^3`.\n- **blamed_node:** `mv.partial-derivative`. The student failed to apply the core rule of partial differentiation (treating other variables as constants).\n- **misconception_tag:** `partial-derivative-concept`. This is a good, concise label. It captures the idea that they don't understand the concept of a partial derivative.\n- **student_message:** \"You correctly applied the power rule to the `x^2` term. However, when taking a partial derivative with respect to `x`, you must treat `y` as a constant, so the derivative of `y^3` is 0.\"\n- **confidence:** `0.95`. This is a very clear and common mistake when first learning partial derivatives. The error is unambiguous.\n\n**6. Final JSON Construction:**\n```json\n{\n  \"correct\": false,\n  \"failed_step\": \"df/dx = 2x y^3 + x^2 * 3y^2\",\n  \"blamed_node\": \"mv.partial-derivative\",\n  \"misconception_tag\": \"partial-derivative-concept\",\n  \"student_message\": \"You correctly applied the power rule to the `x^2` term. However, when taking a partial derivative with respect to `x`, you must treat `y` as a constant, so the derivative of `y^3` is 0.\",\n  \"confidence\": 0.95\n}\n```\nThis looks correct and follows all the rules. The blamed node is one of the available ones. The failed step is the exact line. The message is concise and helpful. The confidence is high. The misconception tag is short and kebab-cased. The JSON is the only output.",
+        "completion_tokens": 1719,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c09-ascent-not-descent",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"w_new = w + alpha * dL/dw\",\n  \"blamed_node\": \"ai.gradient-descent-step\",\n  \"misconception_tag\": \"sign-error\",\n  \"student_message\": \"You correctly calculated the derivative, dL/dw = 6. However, the gradient descent update rule uses subtraction, w_new = w - alpha * dL/dw, not addition.\",\n  \"confidence\": 0.99\n}",
+      "error": null,
+      "latency": 21.25756025314331,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The user wants me to act as a diagnostic engine for a math tutoring system.\n\n**1. Analyze the Request:**\n- **Problem:** \"The loss is L(w) = w^2. Starting from w = 3 with learning rate 0.1, write the gradient descent update and compute the new w.\"\n- **Student's Work:**\n    - `dL/dw = 2w = 6`\n    - `w_new = w + alpha * dL/dw`\n    - `= 3 + 0.1 * 6`\n    - `= 3.6`\n- **Expected Answer:** `w_new = 2.4`\n- **Available Nodes:** A long list of math and ML concepts.\n- **Output Format:** A single JSON object with specific keys: `correct`, `failed_step`, `blamed_node`, `misconception_tag`, `student_message`, `confidence`.\n\n**2. Deconstruct the Student's Work and Identify the Error:**\n- **Step 1: `dL/dw = 2w = 6`**\n    - This is the derivative of L(w) = w^2, which is dL/dw = 2w.\n    - They then substitute w = 3 to get 2 * 3 = 6.\n    - This calculation is mathematically correct. `dL/dw = 6`.\n\n- **Step 2: `w_new = w + alpha * dL/dw`**\n    - This is the formula for gradient descent.\n    - This is correct.\n\n- **Step 3: `= 3 + 0.1 * 6`**\n    - This substitutes the values: w=3, alpha=0.1, dL/dw=6.\n    - This is also correct.\n\n- **Step 4: `= 3.6`**\n    - This is the result of the calculation in the previous step. 3 + 0.6 = 3.6.\n    - The calculation is arithmetically correct.\n\n- **The Error:** The student's calculation is `w_new = w + alpha * gradient`. The correct update rule for gradient descent is `w_new = w - alpha * gradient`. The student used addition instead of subtraction.\n\n**3. Map the Error to a Knowledge-Graph Node:**\n- The problem is tagged to `ai.gradient-descent-step`.\n- The student's error is in the *application* of the gradient descent update rule. They used `+` instead of `-`.\n- Looking at the available nodes, `ai.gradient-descent-step` is the most direct fit. The student misunderstood the fundamental update step for gradient descent.\n- Let's check other nodes just in case.\n    - `ai.backprop-chain`: This is about applying the chain rule in neural networks. Not the core issue here.\n    - `der.power-rule`: They used it correctly.\n    - `alg.fraction-arithmetic`: No fractions.\n    - `alg.exponent-rules`: No exponents (other than the one in the loss function, which was handled correctly).\n    - The error isn't in calculus (derivative calculation) or algebra (arithmetic). It's in the specific ML algorithm step.\n- Therefore, the blamed node should be `ai.gradient-descent-step`.\n\n**4. Determine the Failed Step:**\n- The first line of work is `dL/dw = 2w = 6`. This is correct.\n- The second line is `w_new = w + alpha * dL/dw`. This is the first instance of the incorrect formula. The error originates here. The student wrote the wrong update rule.\n- So, `failed_step` should be `\"w_new = w + alpha * dL/dw\"`.\n\n**5. Formulate the `misconception_tag`:**\n- The misconception is about the direction of the update.\n- A good, short, kebab-case tag would be `ai.wrong-update-direction` or `ai.sign-error-gradient-descent`. Let's go with something more general that fits the node. `ai.gradient-descent-step` is the node, the misconception is *within* that node. A good tag might be `ai.sign-error` or `ai.update-direction-error`. Let's stick with something concise and clear. `ai.wrong-update-direction` seems good. Or even simpler, just `sign-error`. Let's re-read the prompt. \"short-kebab-case-label\". `sign-error` is good. `wrong-update-direction` is also good. Let's go with `sign-error` as it's more general and points to the `+` vs `-` issue.\n\n**6. Write the `student_message`:**\n- Start by acknowledging what they did right. \"You correctly calculated the derivative of the loss function, dL/dw = 6.\"\n- Then explain what went wrong. \"The gradient descent update rule subtracts the gradient step, not adds it. The correct formula is w_new = w - alpha * dL/dw.\"\n- Combine and refine: \"You correctly found the gradient, dL/dw = 6. However, the gradient descent update rule is w_new = w - alpha * dL/dw, which subtracts the gradient step, not adds it.\" This is clear and helpful.\n\n**7. Set the `confidence`:**\n- The error is very clear and unambiguous. The student used `+` instead of `-`.\n- The calculation steps are all correct given their (wrong) formula.\n- This is a very common mistake for students learning gradient descent.\n- I am highly confident in this diagnosis. Let's set it to 0.98 or 0.99. 0.99 seems appropriate.\n\n**8. Assemble the final JSON:**\n- `correct`: false\n- `failed_step`: \"w_new = w + alpha * dL/dw\"\n- `blamed_node`: \"ai.gradient-descent-step\"\n- `misconception_tag`: \"sign-error\"\n- `student_message`: \"You correctly found the gradient, dL/dw = 6. However, the gradient descent update rule is w_new = w - alpha * dL/dw, which subtracts the gradient step, not adds it.\"\n- `confidence`: 0.99\n\nDouble-check all constraints:\n- Single JSON object. Yes.\n- No markdown fences. Yes.\n- `blamed_node` is from the list. Yes, `ai.gradient-descent-step` is on the list.\n- `failed_step` is an exact quote. Yes.\n- `student_message` is 1-2 sentences. Yes.\n- `confidence` is between 0.0 and 1.0. Yes.\n- No invented errors. The error is real.\n- The blamed node is the one at fault, not a prerequisite. Yes, the error is in the application of the `ai.gradient-descent-step` rule itself.\n\nThe plan looks solid. I will now generate the JSON output.",
+        "completion_tokens": 1721,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c10-fraction-subtraction",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"= lim(h->0) [ 1/(x + h - x) ] / h\",\n  \"blamed_node\": \"alg.fraction-arithmetic\",\n  \"misconception_tag\": \"incorrect-fraction-combination\",\n  \"student_message\": \"You correctly set up the limit definition of the derivative. However, you made an algebra error when combining the fractions in the numerator. You cannot subtract the denominators; you need to find a common denominator first.\",\n  \"confidence\": 1.0\n}",
+      "error": null,
+      "latency": 17.436556100845337,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": "The user wants me to act as a diagnostic engine for a math tutoring system.\n\n**1. Analyze the Problem:**\n- **Problem:** Find the derivative of `f(x) = 1/x` using the limit definition.\n- **Tagged Node:** `der.definition`. This is the core concept the student is supposed to be applying.\n\n**2. Analyze the Student's Work:**\n- **Line 1:** `f'(x) = lim(h->0) [ 1/(x+h) - 1/x ] / h`\n  - This is the correct setup for the limit definition of the derivative for `f(x) = 1/x`. The student has correctly identified `f(x+h)` and `f(x)` and set up the difference quotient.\n- **Line 2:** `= lim(h->0) [ 1/(x + h - x) ] / h`\n  - **ERROR IDENTIFIED HERE.** The student has combined the fractions `1/(x+h) - 1/x` incorrectly. They seem to have subtracted the denominators instead of finding a common denominator. The correct operation would be `[ (x - (x+h)) / (x(x+h)) ]`. The student has done something like `1/(x+h) - 1/x = 1/( (x+h) - x ) = 1/h`. This is a fundamental algebra error.\n- **Line 3:** `= lim(h->0) [ 1/h ] / h`\n  - This follows directly from the error in Line 2.\n- **Line 4:** `= lim(h->0) 1/h^2`\n  - This is a further simplification of the incorrect expression from Line 3.\n- **Line 5:** `= infinity`\n  - This is the conclusion from the incorrect expression.\n\n**3. Identify the Root Cause of the Error:**\n- The student's mistake is in the very first algebraic manipulation of the difference quotient. They failed to properly combine the two fractions.\n- The problem is about derivatives (`der.definition`), but the *error itself* is an algebra mistake. Specifically, it's an error in combining fractions.\n- Looking at the available nodes, `alg.fraction-arithmetic` is the perfect fit. It covers \"Adding and simplifying rational expressions,\" which is exactly what the student failed to do.\n\n**4. Formulate the Diagnosis JSON:**\n- **`correct`:** `false`. The final answer is wrong.\n- **`failed_step`:** I need to quote the exact line where it first goes wrong. That's Line 2: `= lim(h->0) [ 1/(x + h - x) ] / h`.\n- **`blamed_node`:** `alg.fraction-arithmetic`. This is the node that represents the knowledge the student is missing or misapplying.\n- **`misconception_tag`:** I need a short, kebab-case label. The error is about incorrectly combining fractions. `incorrect-fraction-combination` or `subtracted-denominators` would work. `incorrect-fraction-combination` is more general and accurate.\n- **`student_message`:**\n    - What they got right: \"You correctly set up the limit definition of the derivative.\"\n    - What went wrong: \"You then incorrectly combined the fractions `1/(x+h) - 1/x` by subtracting the denominators. To subtract fractions, you need a common denominator.\"\n- **`confidence`:** This is a very clear-cut error. The student subtracted denominators directly. There's no ambiguity. I'm very confident. I'll set it to 1.0.\n\n**5. Final JSON Construction:**\n```json\n{\n  \"correct\": false,\n  \"failed_step\": \"= lim(h->0) [ 1/(x + h - x) ] / h\",\n  \"blamed_node\": \"alg.fraction-arithmetic\",\n  \"misconception_tag\": \"incorrect-fraction-combination\",\n  \"student_message\": \"You correctly set up the limit definition of the derivative. However, you made an algebra error when combining the fractions in the numerator. You cannot subtract the denominators; you need to find a common denominator first.\",\n  \"confidence\": 1.0\n}\n```\nThis looks solid. It follows all the rules:\n1.  The problem is tagged to `der.definition`, but the error is in `alg.fraction-arithmetic`. This is correct per rule 1.\n2.  The error is not a misapplication of the derivative rule itself, but a prerequisite algebra skill. This is correct per rule 2.\n3.  The work is clearly incorrect, so `correct` is `false`.\n4.  `blamed_node` is one of the available nodes.\n5.  The JSON is structured correctly with no markdown.\n\nLet me double-check the `student_message`. \"what they got right, then what went wrong\".\n- Got right: \"You correctly set up the limit definition of the derivative.\"\n- Went wrong: \"However, you made an algebra error when combining the fractions in the numerator. You cannot subtract the denominators; you need to find a common denominator first.\"\nThis is perfect. It's concise and points to the exact error.\n\nThe `misconception_tag` `incorrect-fraction-combination` is also good. It's specific and uses kebab-case.\n\nThe `confidence` is 1.0 because the error is unambiguous. The student wrote `1/(x+h) - 1/x` and then immediately wrote `1/(x + h - x)`. There is no other plausible interpretation of this step.\n\nThe `failed_step` is the correct line to quote.\n\nThe `blamed_node` is the most appropriate node from the list.\n\nEverything seems correct. I will generate the JSON.",
+        "completion_tokens": 1430,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c11-control-correct",
+      "run": 0,
+      "raw": "{\n  \"correct\": true,\n  \"failed_step\": null,\n  \"blamed_node\": null,\n  \"misconception_tag\": null,\n  \"student_message\": \"Your application of the chain rule was perfect. You correctly identified the inner and outer functions, found their derivatives, and combined them to get the correct answer.\",\n  \"confidence\": 1.0\n}",
+      "error": null,
+      "latency": 1.2115318775177002,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": null,
+        "completion_tokens": 92,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "case_id": "c12-control-unsimplified",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"= x - 5 + x + 2\",\n  \"blamed_node\": \"alg.sign-distribution\",\n  \"misconception_tag\": \"sign-distribution\",\n  \"student_message\": \"You correctly applied the product rule, but you made a sign error when simplifying the terms. The expression 'x - 5 + x + 2' simplifies to '2x - 3', not '2x + 3'.\",\n  \"confidence\": 0.9\n}",
+      "error": null,
+      "latency": 1.607025146484375,
+      "meta": {
+        "finish_reason": "stop",
+        "reasoning_content": null,
+        "completion_tokens": 127,
+        "reasoning_tokens": null
+      }
+    }
+  ]
+}

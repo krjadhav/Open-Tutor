@@ -1,0 +1,212 @@
+{
+  "model": "sarvam-105b",
+  "repeats": 1,
+  "rows": [
+    {
+      "case_id": "c01-sign-distribution",
+      "blame_type": "prereq",
+      "true_node": "alg.sign-distribution",
+      "item_node": "der.quotient-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "blame_type": "topic",
+      "true_node": "der.chain-rule",
+      "item_node": "der.chain-rule",
+      "predicted": "der.chain-rule",
+      "confidence": 1.0,
+      "misconception_tag": "chain-rule-incomplete",
+      "student_message": "You correctly found the derivative of the outer function, sin(x), which is cos(x), and substituted the inner function, 3x, to get cos(3x). However, you forgot to multiply by the derivative of the inner function, which is 3.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "blame_type": "topic",
+      "true_node": "der.product-rule",
+      "item_node": "der.product-rule",
+      "predicted": "der.product-rule",
+      "confidence": 0.98,
+      "misconception_tag": "misapplied-product-rule",
+      "student_message": "You correctly found the derivatives of x^2 and sin(x), but you multiplied them together. The product rule states that the derivative of a product is the first function times the derivative of the second, plus the derivative of the first times the second function.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "blame_type": "prereq",
+      "true_node": "alg.exponent-rules",
+      "item_node": "der.power-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c05-unit-circle-value",
+      "blame_type": "prereq",
+      "true_node": "trig.unit-circle",
+      "item_node": "der.trig-derivatives",
+      "predicted": "trig.unit-circle",
+      "confidence": 0.95,
+      "misconception_tag": "trig-unit-circle-value-error",
+      "student_message": "You correctly found the derivative of sin(x) to be cos(x), but you misremembered the value of cos(pi/3) from the unit circle. The correct value is 1/2, not sqrt(3)/2.",
+      "model_says_correct": false,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c06-indeterminate-dne",
+      "blame_type": "topic",
+      "true_node": "lim.indeterminate-factoring",
+      "item_node": "lim.indeterminate-factoring",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c07-quotient-order",
+      "blame_type": "topic",
+      "true_node": "der.quotient-rule",
+      "item_node": "der.quotient-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c08-partial-not-held-constant",
+      "blame_type": "topic",
+      "true_node": "mv.partial-derivative",
+      "item_node": "mv.partial-derivative",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c09-ascent-not-descent",
+      "blame_type": "topic",
+      "true_node": "ai.gradient-descent-step",
+      "item_node": "ai.gradient-descent-step",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c10-fraction-subtraction",
+      "blame_type": "prereq",
+      "true_node": "alg.fraction-arithmetic",
+      "item_node": "der.definition",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    },
+    {
+      "case_id": "c11-control-correct",
+      "blame_type": "control",
+      "true_node": null,
+      "item_node": "der.chain-rule",
+      "predicted": null,
+      "confidence": 1.0,
+      "misconception_tag": null,
+      "student_message": "Your work is completely correct! You properly applied the chain rule by identifying the inner function u = 3x^2 + 1, differentiating both the outer and inner functions, and multiplying them together.",
+      "model_says_correct": true,
+      "verdict": "OK"
+    },
+    {
+      "case_id": "c12-control-unsimplified",
+      "blame_type": "control",
+      "true_node": null,
+      "item_node": "der.product-rule",
+      "predicted": null,
+      "verdict": "PARSE_FAIL",
+      "confidence": null
+    }
+  ],
+  "raw": [
+    {
+      "case_id": "c01-sign-distribution",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"= [",
+      "error": "unbalanced braces",
+      "latency": 11.927580118179321
+    },
+    {
+      "case_id": "c02-missing-inner-derivative",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"f'(x) = cos(3x)\",\n  \"blamed_node\": \"der.chain-rule\",\n  \"misconception_tag\": \"chain-rule-incomplete\",\n  \"student_message\": \"You correctly found the derivative of the outer function, sin(x), which is cos(x), and substituted the inner function, 3x, to get cos(3x). However, you forgot to multiply by the derivative of the inner function, which is 3.\",\n  \"confidence\": 1.0\n}",
+      "error": null,
+      "latency": 8.002953052520752
+    },
+    {
+      "case_id": "c03-product-of-derivatives",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"f'(x) = (d/dx x^2)(d/dx sin x)\",\n  \"blamed_node\": \"der.product-rule\",\n  \"misconception_tag\": \"misapplied-product-rule\",\n  \"student_message\": \"You correctly found the derivatives of x^2 and sin(x), but you multiplied them together. The product rule states that the derivative of a product is the first function times the derivative of the second, plus the derivative of the first times the second function.\",\n  \"confidence\": 0.98\n}",
+      "error": null,
+      "latency": 40.675580978393555
+    },
+    {
+      "case_id": "c04-negative-exponent",
+      "run": 0,
+      "raw": null,
+      "error": "empty response",
+      "latency": 18.032142162322998
+    },
+    {
+      "case_id": "c05-unit-circle-value",
+      "run": 0,
+      "raw": "```json\n{\n  \"correct\": false,\n  \"failed_step\": \"at x = pi/3: cos(pi/3) = sqrt(3)/2\",\n  \"blamed_node\": \"trig.unit-circle\",\n  \"misconception_tag\": \"trig-unit-circle-value-error\",\n  \"student_message\": \"You correctly found the derivative of sin(x) to be cos(x), but you misremembered the value of cos(pi/3) from the unit circle. The correct value is 1/2, not sqrt(3)/2.\",\n  \"confidence\": 0.95\n}\n```",
+      "error": null,
+      "latency": 16.84842014312744
+    },
+    {
+      "case_id": "c06-indeterminate-dne",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"undefined, so the limit does not exist\",\n  \"blamed_node\": \"lim.indeterminate-factoring\",\n  \"misconception_tag\": \"misconception-indeterminate-form\",\n  \"student_message\": \"You correctly identified the 0/0 indeterminate form, but you stopped there. When you see 0/0, it's a signal to simplify the expression, usually by factoring",
+      "error": "unbalanced braces",
+      "latency": 6.151335000991821
+    },
+    {
+      "case_id": "c07-quotient-order",
+      "run": 0,
+      "raw": null,
+      "error": "empty response",
+      "latency": 6.324854135513306
+    },
+    {
+      "case_id": "c08-partial-not-held-constant",
+      "run": 0,
+      "raw": null,
+      "error": "empty response",
+      "latency": 16.428214073181152
+    },
+    {
+      "case_id": "c09-ascent-not-descent",
+      "run": 0,
+      "raw": "```json\n{\n  \"correct\": false,\n  \"failed_step\": \"w_new = w + alpha * dL/dw\",\n  \"blamed_node\": \"ai.gradient-descent-step\",\n  \"misconception_tag\": \"sign-error-in-update\",\n  \"student_message\": \"You correctly calculated the gradient (dL",
+      "error": "unbalanced braces",
+      "latency": 16.917659044265747
+    },
+    {
+      "case_id": "c10-fraction-subtraction",
+      "run": 0,
+      "raw": "{\n  \"correct\": false,\n  \"failed_step\": \"lim(h->0) [ 1/(x + h - x) ] / h\",\n  \"blamed_node\": \"alg.fraction-arithmetic\",\n  \"misconception_tag\": \"alg.fraction-arithmetic\",\n  \"student_message\": \"You correctly set up the limit definition of the derivative. The error occurred when you combined the fractions in the numerator. You cannot subtract fractions by subtracting their denominators; you need to find",
+      "error": "unbalanced braces",
+      "latency": 10.293025970458984
+    },
+    {
+      "case_id": "c11-control-correct",
+      "run": 0,
+      "raw": "{\n  \"correct\": true,\n  \"failed_step\": null,\n  \"blamed_node\": null,\n  \"misconception_tag\": null,\n  \"student_message\": \"Your work is completely correct! You properly applied the chain rule by identifying the inner function u = 3x^2 + 1, differentiating both the outer and inner functions, and multiplying them together.\",\n  \"confidence\": 1.0\n}",
+      "error": null,
+      "latency": 7.378144979476929
+    },
+    {
+      "case_id": "c12-control-unsimplified",
+      "run": 0,
+      "raw": null,
+      "error": "empty response",
+      "latency": 12.194347143173218
+    }
+  ]
+}
