@@ -25,6 +25,36 @@ var CONFIG = {
 };
 
 /* --------------------------------------------------------------------------
+   1b. What the crop is allowed to do to the image.
+
+   BOTH NUMBERS ARE CONSERVATIVE ON PURPOSE, AND THE REASON IS EVIDENCE, NOT TASTE.
+
+   docs/learning-design.md section 15 measured 0.95 mean similarity and 0.98 math
+   token recall through Sarvam Vision on a FULL RESOLUTION phone photo. That is the
+   whole basis for the photo pillar and it is also the thinnest evidence in the
+   project: four samples, one writer, one page, one lighting condition. There are no
+   credits left to re-measure with, so any degradation we apply here is a risk we
+   would be taking blind against the one result we cannot afford to lose.
+
+   So the resampling is a floor, not an optimisation. 2000px on the long edge still
+   leaves a page of handwriting at roughly the density the measured sample carried,
+   and quality 0.9 is visually lossless on pencil-on-paper edges. There is
+   deliberately NO grayscale conversion, NO contrast stretching, NO thresholding and
+   no lower quality: every one of those is a plausible-sounding trick that changes
+   the pixels the model was measured on.
+
+   THE CROP IS THE REAL SAVING. It removes whole regions the model would otherwise
+   read, and it removes the multi-problem-per-page failure section 15 hit: four
+   solutions on one page, separated by handwritten labels, every one of which OCR'd
+   `c01:` as `Col:`. Fewer bytes is a side effect of asking the model to read less.
+   -------------------------------------------------------------------------- */
+
+var IMAGE_LIMITS = {
+  MAX_EDGE_PX: 2000,
+  JPEG_QUALITY: 0.9
+};
+
+/* --------------------------------------------------------------------------
    2. Chrome strings
    Content strings (chips, skill names, verdicts, the diagnosis, `needs:`,
    pace lines) always come from the server, already translated. Only the fixed
@@ -49,6 +79,13 @@ var CHROME = {
     photo: 'Photograph your working',
     check: 'Check answer',
     hints: 'Hints', hintNext: 'Show next hint', hintTwin: 'Try the twin problem',
+    cropHead: 'Keep just this working.',
+    cropSub: 'Drag the box so it holds only this problem, then confirm.',
+    cropReset: 'Whole photo', cropUse: 'Use this crop', cropCancel: 'Cancel',
+    cropOpening: 'Opening the photo…', cropMeasuring: 'Measuring…',
+    cropFailed: 'That photo could not be opened. Take another one.',
+    cropSizeUpload: 'Will upload: {{size}}', cropSizeOriginal: 'Original: {{size}}',
+    stepCrop: 'Crop',
     checkHead: 'Here’s what we read.', checkSub: 'Tap any line to correct it.',
     edit: 'edit', confirm: 'Looks right',
     expected: 'Expected', reading: 'Reading your working…',
@@ -62,6 +99,7 @@ var CHROME = {
     ocrEmpty: 'We could not read that photo. Type your answer instead.',
     ocrFailed: 'The photo did not go through. Type your answer instead.',
     diagFailed: 'We could not read the working this time.',
+    diagNoWorking: 'Photograph your working to see which step went wrong.',
     unsimplified: 'Correct, but it can be simplified further.',
     xp: 'XP', unlockedWord: 'unlocked',
     setDone: 'Today’s set is finished.',
@@ -90,6 +128,17 @@ var CHROME = {
     photo: 'अपना काम फ़ोटो करें',
     check: 'उत्तर जाँचें',
     hints: 'संकेत', hintNext: 'अगला संकेत दिखाएँ', hintTwin: 'जुड़वाँ प्रश्न आज़माएँ',
+    // The interpolated size sits at the END of both size lines, after a colon.
+    // A value placed directly before a Hindi postposition (से, को, पर, में, का,
+    // की, के) would put the noun in the oblique case and read wrong, so the
+    // sentence is turned around and the colon carries it instead.
+    cropHead: 'सिर्फ़ यही काम रखिए।',
+    cropSub: 'बॉक्स को खींचकर इतना कीजिए कि उसमें सिर्फ़ इसी सवाल का काम आए, फिर पक्का कीजिए।',
+    cropReset: 'पूरा फ़ोटो', cropUse: 'यही भेजिए', cropCancel: 'रद्द करें',
+    cropOpening: 'फ़ोटो खुल रहा है…', cropMeasuring: 'आकार जाँचा जा रहा है…',
+    cropFailed: 'यह फ़ोटो खुल नहीं सका। दूसरा फ़ोटो लीजिए।',
+    cropSizeUpload: 'भेजा जाएगा: {{size}}', cropSizeOriginal: 'मूल फ़ोटो: {{size}}',
+    stepCrop: 'काट-छाँट',
     checkHead: 'हमने यह पढ़ा।', checkSub: 'सुधारने के लिए किसी पंक्ति पर टैप करें।',
     edit: 'बदलें', confirm: 'सही है',
     expected: 'अपेक्षित', reading: 'आपका काम पढ़ा जा रहा है…',
@@ -103,6 +152,7 @@ var CHROME = {
     ocrEmpty: 'यह फ़ोटो पढ़ा नहीं जा सका। उत्तर लिखकर भेजें।',
     ocrFailed: 'फ़ोटो नहीं भेजा जा सका। उत्तर लिखकर भेजें।',
     diagFailed: 'इस बार आपका काम पढ़ा नहीं जा सका।',
+    diagNoWorking: 'कौन-सा चरण ग़लत हुआ, यह देखने के लिए अपना काम फ़ोटो कीजिए।',
     unsimplified: 'सही है, पर इसे और सरल किया जा सकता है।',
     xp: 'XP', unlockedWord: 'खुले',
     setDone: 'आज का सेट पूरा हो गया।',
@@ -131,6 +181,7 @@ var SERVER_UI_ALIASES = {
   'signup.name_label': 'namePlaceholder',
   'action.continue': 'continueWord',
   'action.sign_out': 'signOut',
+  'diagnosis.no_working': 'diagNoWorking',
   'screen.courses': 'coursesHead',
   'courses.subtitle': 'coursesNote',
   'course.ends_at': 'endsAt',
@@ -153,6 +204,21 @@ var SERVER_UI_ALIASES = {
   'action.take_photo': 'photo',
   'action.check_answer': 'check',
   'action.show_hint': 'hintNext',
+
+  // Crop. The two SIZE lines are absent on purpose: they carry a `{{size}}` the
+  // browser fills in from a byte count the server has never seen, and the server
+  // deliberately withholds every string with a placeholder from this map. They are
+  // still authored in data/i18n/*.json, and the copies in CHROME are kept in step
+  // with them by hand; see LOCAL_ONLY_CHROME.
+  'crop.head': 'cropHead',
+  'crop.subtitle': 'cropSub',
+  'crop.reset': 'cropReset',
+  'crop.use': 'cropUse',
+  'crop.opening': 'cropOpening',
+  'crop.measuring': 'cropMeasuring',
+  'crop.failed': 'cropFailed',
+  'screen.crop': 'stepCrop',
+  'action.cancel': 'cropCancel',
 
   // Check
   'confirm.ocr': 'checkHead',
@@ -190,6 +256,13 @@ var LOCAL_ONLY_CHROME = {
   expected: 'no server key', reading: 'no server key', done: 'no server key',
   finish: 'no server key', unsimplified: 'no server key',
   blockersHead: 'a function of the blocker count, not a string',
+
+  // Authored in data/i18n/*.json as ui:crop.size_upload and ui:crop.size_original,
+  // but the server withholds every string carrying a placeholder from `ui`, and
+  // this one's `{{size}}` is a byte count only the browser knows. So the template
+  // is interpolated here, and the copy above has to be kept in step by hand.
+  cropSizeUpload: 'ui:crop.size_upload carries {{size}}, so the server withholds it',
+  cropSizeOriginal: 'ui:crop.size_original carries {{size}}, so the server withholds it',
 
   // Deliberately local even though a loosely related server key exists.
   answerPlaceholder: 'action.type_answer is the photo-failure button, not this placeholder',
@@ -800,6 +873,30 @@ function splitCount(text) {
   return m ? { n: m[1], word: m[2] } : null;
 }
 
+/* Fill a `{{name}}` slot in a translated string. The same rule the server's `_fmt`
+   follows: the whole sentence is one key and the value goes wherever the language
+   puts it, never concatenated onto a fragment. An unfilled slot is dropped rather
+   than printed, because "{{size}}" on screen is a broken product. */
+function fill(template, values) {
+  var text = String(template === null || template === undefined ? '' : template);
+  return text.replace(/\{\{\s*(\w+)\s*\}\}/g, function (whole, name) {
+    if (Object.prototype.hasOwnProperty.call(values || {}, name)) { return String(values[name]); }
+    console.warn('[open-tutor] left {{' + name + '}} unfilled in: ' + text);
+    return '';
+  }).replace(/\s{2,}/g, ' ').trim();
+}
+
+/* A byte count a student can read. Binary units, one decimal above a megabyte and
+   whole kilobytes below it: the point of the number is "did the crop do anything",
+   and 412 KB answers that where 421,888 bytes does not. */
+function formatBytes(n) {
+  var bytes = Number(n) || 0;
+  if (bytes >= 1024 * 1024) { return (bytes / (1024 * 1024)).toFixed(1) + ' MB'; }
+  return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+}
+
+function clampNum(value, low, high) { return Math.min(high, Math.max(low, value)); }
+
 /* A bevelled panel: the outer node carries the hard drop shadow, the inner face
    carries the skew, the black border and the face colour. Two nodes because a
    filter and a clip-path on one element clip the shadow away. */
@@ -862,6 +959,8 @@ function applyChrome() {
   byId('bannerText').textContent = t.offline;
   byId('btnLangEn').classList.toggle('is-on', state.lang === 'en');
   byId('btnLangHi').classList.toggle('is-on', state.lang === 'hi');
+  // The two size lines are interpolated, so `data-t` cannot carry them.
+  if (state.screen === 'crop') { renderCropSize(); }
 }
 
 function setLang(lang) {
@@ -1306,19 +1405,48 @@ function stepLabels() {
     : [t.stepSolve, t.stepResult];
 }
 
+/* The bar across the top of the solve flow shows progress through TODAY'S SET, not the step
+   within one problem. A bar in that position reads as "how far through am I", and the question a
+   student is actually asking there is how much of the set is left, which is also what Today
+   promised them. As a step indicator it was misleading: two segments with the first filled looked
+   like being halfway through six problems, and it was not even useful, since the three screens are
+   obviously sequential and you can neither skip nor go back.
+
+   The label keeps naming the screen, so where-in-the-flow is still answered, just not by the bar.
+
+   A focused drill started from Blockers is NOT in today's set, so set progress would be a lie
+   there. In that case the old per-step bar comes back: it is the honest thing to show when there
+   is no set to be partway through. */
 function renderSteps(barsId, labelId, screenName) {
   var labels = stepLabels();
   var idx;
-  if (screenName === 'solve') { idx = 0; }
+  // Crop sits inside Solve rather than after it: the problem has not been answered
+  // yet and the set bar must not move for having taken a photograph. It is named on
+  // the label, which is what the label is for.
+  if (screenName === 'solve' || screenName === 'crop') { idx = 0; }
   else if (screenName === 'check') { idx = 1; }
   else { idx = labels.length - 1; }
 
   var bars = byId(barsId);
   clear(bars);
-  for (var i = 0; i < labels.length; i++) {
-    bars.appendChild(h('span', 'stepbar' + (i <= idx ? ' is-on' : '')));
+
+  var problems = (state.data && state.data.today && state.data.today.problems) || [];
+  var currentId = state.flow && state.flow.itemId;
+  var inSet = problems.some(function (p) { return p.item_id === currentId; });
+
+  if (inSet) {
+    problems.forEach(function (p) {
+      var cls = 'stepbar';
+      if (p.done) { cls += ' is-on'; }
+      else if (p.item_id === currentId) { cls += ' is-current'; }
+      bars.appendChild(h('span', cls));
+    });
+  } else {
+    for (var i = 0; i < labels.length; i++) {
+      bars.appendChild(h('span', 'stepbar' + (i <= idx ? ' is-on' : '')));
+    }
   }
-  byId(labelId).textContent = labels[idx];
+  byId(labelId).textContent = screenName === 'crop' ? T().stepCrop : labels[idx];
 }
 
 /* --------------------------------------------------------------------------
@@ -1412,16 +1540,569 @@ function submitTyped() {
   });
 }
 
+/* ==========================================================================
+   13. Photo path: capture, then CROP, then upload
+
+   The camera is still the phone's own: `capture="environment"` on a file input,
+   so autofocus, HDR and the flash come with it and nothing needs getUserMedia,
+   a secure context, a tunnel or a deployment. What is new is the step AFTER the
+   camera: the captured file is decoded here, drawn on the Crop screen, and only
+   the rectangle the student draws is uploaded.
+   ========================================================================== */
+
 /* --------------------------------------------------------------------------
-   13. Photo path
+   13a. EXIF orientation
+
+   THE SINGLE MOST LIKELY THING TO GO WRONG. Phones do not rotate the pixels they
+   write; they write the sensor's raster and an EXIF tag saying which way up it
+   was. A browser that ignores that tag draws a portrait photo on its side.
+
+   Since 2020 every current browser auto-orients an <img> (CSS `image-orientation:
+   from-image` is the initial value) and reports `naturalWidth`/`naturalHeight`
+   already oriented, so the usual answer is "do nothing". We do not take that on
+   trust, because being wrong is invisible in a unit test and obvious on stage.
+   Instead the file is measured:
+
+     * the EXIF orientation tag is read out of the file's own bytes;
+     * the RAW frame size is read out of the JPEG's SOF marker;
+     * for the four orientations that swap width and height (5 to 8, which is
+       where 6 and 8 live and which is what a rotated phone actually emits) the
+       decoded size is direct evidence: if it still matches the raw frame, the
+       browser did NOT orient and we apply the transform ourselves;
+     * for the three that do not change the dimensions (2, 3, 4) there is nothing
+       to compare, so THE SAME FILE is decoded a second time with its orientation
+       tag rewritten to 6, and the swap tells us what the decoder does. It is one
+       extra decode, on a rare branch, of a file already in memory.
+
+   Whatever the answer, the displayed image and the cropped image come from the
+   SAME oriented buffer, which is the property that actually matters: a crop can
+   never mean something different from what the student drew it on.
+   -------------------------------------------------------------------------- */
+
+/* Orientation -> [drawn width, drawn height] swapped? Values are the EXIF tag. */
+var EXIF_SWAPS = { 5: true, 6: true, 7: true, 8: true };
+
+/* Read the EXIF orientation out of a JPEG, and remember WHERE it was so the probe
+   below can rewrite it. Returns { value, offset } with value 1 for anything this
+   does not understand: a PNG, a stripped JPEG, a truncated file. 1 means "already
+   the right way up", which is the safe answer for a file we cannot read. */
+function readExifOrientation(bytes) {
+  var view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (view.byteLength < 4 || view.getUint16(0) !== 0xFFD8) { return { value: 1, offset: -1 }; }
+
+  var p = 2;
+  while (p + 4 <= view.byteLength) {
+    if (view.getUint8(p) !== 0xFF) { break; }        // not a marker: give up quietly
+    var marker = view.getUint8(p + 1);
+    if (marker === 0xD8 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)) { p += 2; continue; }
+    if (marker === 0xDA) { break; }                  // start of scan: no metadata past here
+    var size = view.getUint16(p + 2);
+    if (size < 2) { break; }
+    if (marker === 0xE1 && p + 10 <= view.byteLength && view.getUint32(p + 4) === 0x45786966) {
+      var found = readOrientationFromTiff(view, p + 10);
+      if (found) { return found; }
+    }
+    p += 2 + size;
+  }
+  return { value: 1, offset: -1 };
+}
+
+/* The TIFF block inside an Exif APP1 segment, starting at its byte-order mark. */
+function readOrientationFromTiff(view, tiff) {
+  if (tiff + 8 > view.byteLength) { return null; }
+  var mark = view.getUint16(tiff);
+  if (mark !== 0x4949 && mark !== 0x4D4D) { return null; }
+  var little = mark === 0x4949;
+  if (view.getUint16(tiff + 2, little) !== 42) { return null; }
+
+  var ifd = tiff + view.getUint32(tiff + 4, little);
+  if (ifd + 2 > view.byteLength) { return null; }
+  var count = view.getUint16(ifd, little);
+  for (var i = 0; i < count; i++) {
+    var entry = ifd + 2 + i * 12;
+    if (entry + 12 > view.byteLength) { return null; }
+    if (view.getUint16(entry, little) === 0x0112) {
+      var value = view.getUint16(entry + 8, little);
+      // The value sits in the entry's own 4-byte payload, at `entry + 8`, and the
+      // rewriting probe needs that absolute offset and the byte order with it.
+      return (value >= 1 && value <= 8)
+        ? { value: value, offset: entry + 8, little: little }
+        : null;
+    }
+  }
+  return null;
+}
+
+/* The RAW frame size, from the JPEG's start-of-frame marker: the dimensions BEFORE
+   any orientation is applied. Returns null for anything that is not a JPEG. */
+function readJpegFrameSize(bytes) {
+  var view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (view.byteLength < 4 || view.getUint16(0) !== 0xFFD8) { return null; }
+  var p = 2;
+  while (p + 4 <= view.byteLength) {
+    if (view.getUint8(p) !== 0xFF) { return null; }
+    var marker = view.getUint8(p + 1);
+    if (marker === 0xD8 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)) { p += 2; continue; }
+    if (marker === 0xDA) { return null; }
+    var size = view.getUint16(p + 2);
+    // Every SOFn except the four that are not frame headers: DHT, JPG, DAC, DNL.
+    var isFrame = (marker >= 0xC0 && marker <= 0xCF)
+      && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC;
+    if (isFrame && p + 9 <= view.byteLength) {
+      return { width: view.getUint16(p + 7), height: view.getUint16(p + 5) };
+    }
+    if (size < 2) { return null; }
+    p += 2 + size;
+  }
+  return null;
+}
+
+/* Decode one image file to an <img>. An <img> and not createImageBitmap on
+   purpose: `image-orientation: from-image` is the specified default for an image
+   element in every current browser, whereas createImageBitmap's orientation option
+   changed its default mid-spec and differs by version. */
+function decodeImage(blob) {
+  return new Promise(function (resolve, reject) {
+    var url = URL.createObjectURL(blob);
+    var img = new Image();
+    img.onload = function () { resolve({ img: img, url: url }); };
+    img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('decode failed')); };
+    img.src = url;
+  });
+}
+
+/* Does this browser honour the EXIF tag? Answered with the student's OWN file,
+   rewritten to orientation 6, so the answer cannot depend on where in the file a
+   synthetic probe put its APP1 segment. Only called for orientations 2, 3 and 4,
+   where the decoded dimensions carry no evidence of their own. */
+function browserHonoursExif(bytes, exif, raw) {
+  if (exif.offset < 0 || !raw || raw.width === raw.height) { return Promise.resolve(true); }
+  var copy = bytes.slice();
+  new DataView(copy.buffer).setUint16(exif.offset, 6, !!exif.little);
+  return decodeImage(new Blob([copy], { type: 'image/jpeg' })).then(function (probe) {
+    URL.revokeObjectURL(probe.url);
+    return probe.img.naturalWidth === raw.height && probe.img.naturalHeight === raw.width;
+  }).catch(function () {
+    return true;                      // could not tell: trust the browser, as above
+  });
+}
+
+/* The transform still owed on a decoded image: 1 when the browser has already done
+   it, otherwise the EXIF value. */
+function pendingOrientation(bytes, decoded) {
+  var exif = readExifOrientation(bytes);
+  if (exif.value === 1) { return Promise.resolve(1); }
+  var raw = readJpegFrameSize(bytes);
+
+  if (EXIF_SWAPS[exif.value] && raw && raw.width !== raw.height) {
+    var untouched = decoded.naturalWidth === raw.width && decoded.naturalHeight === raw.height;
+    return Promise.resolve(untouched ? exif.value : 1);
+  }
+  return browserHonoursExif(bytes, exif, raw).then(function (honours) {
+    return honours ? 1 : exif.value;
+  });
+}
+
+/* The image, the right way up, as something drawImage can read from. Returns the
+   <img> itself when nothing is owed, and a canvas carrying the rotated pixels when
+   the browser left the work to us. */
+function orientedSource(img, orientation) {
+  if (orientation === 1) { return { source: img, width: img.naturalWidth, height: img.naturalHeight }; }
+
+  var w = img.naturalWidth, h = img.naturalHeight;
+  var swap = !!EXIF_SWAPS[orientation];
+  var canvas = document.createElement('canvas');
+  canvas.width = swap ? h : w;
+  canvas.height = swap ? w : h;
+  var ctx = canvas.getContext('2d');
+
+  // The eight EXIF cases, as the affine transform each one names.
+  if (orientation === 2) { ctx.transform(-1, 0, 0, 1, w, 0); }
+  else if (orientation === 3) { ctx.transform(-1, 0, 0, -1, w, h); }
+  else if (orientation === 4) { ctx.transform(1, 0, 0, -1, 0, h); }
+  else if (orientation === 5) { ctx.transform(0, 1, 1, 0, 0, 0); }
+  else if (orientation === 6) { ctx.transform(0, 1, -1, 0, h, 0); }
+  else if (orientation === 7) { ctx.transform(0, -1, -1, 0, h, w); }
+  else if (orientation === 8) { ctx.transform(0, -1, 1, 0, 0, w); }
+
+  ctx.drawImage(img, 0, 0);
+  console.info('[open-tutor] applied EXIF orientation ' + orientation +
+               ' in software: the browser did not.');
+  return { source: canvas, width: canvas.width, height: canvas.height };
+}
+
+/* --------------------------------------------------------------------------
+   13b. The crop screen
+   -------------------------------------------------------------------------- */
+
+/* The default rectangle. Centred and 80% of the photo, because a student who
+   framed the shot on the page has already done most of the work; starting from
+   nothing would make them draw a box from scratch on every single problem. */
+var CROP_DEFAULT_FRACTION = 0.8;
+
+/* Room the corner handles need to hang outside the photo, matching the padding on
+   `.cropstage`. Read as a constant rather than off the computed style: it is a
+   layout fact both files have to agree on, and the CSS says so beside it. */
+var CROP_STAGE_PAD = 24;
+
+/* No crop edge shorter than this on screen. Small enough to isolate one line of
+   working, large enough that a thumb cannot collapse the box to nothing. */
+var CROP_MIN_PX = 56;
+
+/* Re-encoding on every pointer move would encode a two-megapixel JPEG sixty times
+   a second, so the size readout settles after the drag instead of during it. */
+var CROP_ENCODE_DELAY_MS = 220;
+
+var crop = {
+  flow: null,          // the solve attempt this photo belongs to
+  file: null,          // what the camera handed us
+  url: null,           // the object URL behind `source`, revoked on close
+  source: null,        // the ORIENTED full-resolution image, as a drawImage source
+  sourceW: 0, sourceH: 0,
+  dispW: 0, dispH: 0,  // the size it is drawn at on screen
+  rect: null,          // {x, y, w, h} in DISPLAY pixels, relative to the frame
+  drag: null,
+  blob: null,          // the encoded crop, so Confirm never has to wait
+  outW: 0, outH: 0,
+  timer: null,
+  seq: 0               // guards against a slow encode landing after a newer one
+};
+
+function openCrop(file) {
+  var flow = state.flow;
+  if (!flow) { return; }
+
+  closeCrop();                       // any previous photo, and its object URL
+  crop.flow = flow;
+  crop.file = file;
+
+  showScreen('crop');
+  renderSteps('cropSteps', 'cropStepLabel', 'crop');
+  byId('cropFrame').hidden = true;
+  byId('cropBusy').hidden = false;
+  byId('btnCropConfirm').disabled = true;
+  byId('cropSizeOut').textContent = T().cropMeasuring;
+  byId('cropSizeIn').textContent = fill(T().cropSizeOriginal, { size: formatBytes(file.size) });
+
+  readFileBytes(file)
+    .then(function (bytes) {
+      return decodeImage(file).then(function (decoded) {
+        return pendingOrientation(bytes, decoded.img).then(function (orientation) {
+          return { decoded: decoded, orientation: orientation };
+        });
+      });
+    })
+    .then(function (result) {
+      // The student may have cancelled, or left the flow, while the photo decoded.
+      if (crop.file !== file || state.screen !== 'crop') {
+        URL.revokeObjectURL(result.decoded.url);
+        return;
+      }
+      var oriented = orientedSource(result.decoded.img, result.orientation);
+      crop.url = result.decoded.url;
+      crop.source = oriented.source;
+      crop.sourceW = oriented.width;
+      crop.sourceH = oriented.height;
+      byId('cropBusy').hidden = true;
+      byId('cropFrame').hidden = false;
+      byId('btnCropConfirm').disabled = false;
+      layoutCrop(true);
+    })
+    .catch(function (err) {
+      console.warn('[open-tutor] could not open the photo:', err && err.message);
+      closeCrop();
+      showScreen('solve');
+      renderSteps('solveSteps', 'solveStepLabel', 'solve');
+      var note = byId('solveNote');
+      note.hidden = false;
+      note.textContent = T().cropFailed;
+    });
+}
+
+function readFileBytes(file) {
+  if (file.arrayBuffer) {
+    return file.arrayBuffer().then(function (buf) { return new Uint8Array(buf); });
+  }
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function () { resolve(new Uint8Array(reader.result)); };
+    reader.onerror = function () { reject(new Error('read failed')); };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+/* Scale the photo to fit the stage, size the canvas to match, and keep the crop
+   rectangle where it was in RELATIVE terms so a rotation or a resize does not
+   throw away the box the student drew. */
+function layoutCrop(reset) {
+  if (!crop.source) { return; }
+  var stage = byId('cropStage');
+  var availW = Math.max(80, stage.clientWidth - CROP_STAGE_PAD * 2);
+  var availH = Math.max(80, stage.clientHeight - CROP_STAGE_PAD * 2);
+  var scale = Math.min(availW / crop.sourceW, availH / crop.sourceH);
+
+  var before = (!reset && crop.rect && crop.dispW) ? {
+    x: crop.rect.x / crop.dispW, y: crop.rect.y / crop.dispH,
+    w: crop.rect.w / crop.dispW, h: crop.rect.h / crop.dispH
+  } : null;
+
+  crop.dispW = Math.max(1, Math.round(crop.sourceW * scale));
+  crop.dispH = Math.max(1, Math.round(crop.sourceH * scale));
+
+  var frame = byId('cropFrame');
+  frame.style.width = crop.dispW + 'px';
+  frame.style.height = crop.dispH + 'px';
+
+  // The backing store is drawn at device resolution so the preview is not a soft
+  // approximation of the thing being judged, capped at 2 because a 3x phone would
+  // buy nothing here and cost a third more memory.
+  var dpr = Math.min(2, window.devicePixelRatio || 1);
+  var canvas = byId('cropCanvas');
+  canvas.width = Math.round(crop.dispW * dpr);
+  canvas.height = Math.round(crop.dispH * dpr);
+  var ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(crop.source, 0, 0, canvas.width, canvas.height);
+
+  crop.rect = before
+    ? { x: before.x * crop.dispW, y: before.y * crop.dispH,
+        w: before.w * crop.dispW, h: before.h * crop.dispH }
+    : defaultCropRect();
+  applyCropRect();
+}
+
+function defaultCropRect() {
+  var w = crop.dispW * CROP_DEFAULT_FRACTION;
+  var h = crop.dispH * CROP_DEFAULT_FRACTION;
+  return { x: (crop.dispW - w) / 2, y: (crop.dispH - h) / 2, w: w, h: h };
+}
+
+function resetCropRect() {
+  if (!crop.source) { return; }
+  crop.rect = { x: 0, y: 0, w: crop.dispW, h: crop.dispH };
+  applyCropRect();
+}
+
+/* Clamp, draw, and ask for a fresh byte count. The only place the rectangle
+   reaches the DOM, so there is one definition of where the box is. */
+function applyCropRect() {
+  var r = crop.rect;
+  var minW = Math.min(CROP_MIN_PX, crop.dispW);
+  var minH = Math.min(CROP_MIN_PX, crop.dispH);
+  r.w = clampNum(r.w, minW, crop.dispW);
+  r.h = clampNum(r.h, minH, crop.dispH);
+  r.x = clampNum(r.x, 0, crop.dispW - r.w);
+  r.y = clampNum(r.y, 0, crop.dispH - r.h);
+
+  var css = { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' };
+  var box = byId('cropBox'), shade = byId('cropShade');
+  Object.keys(css).forEach(function (k) { box.style[k] = css[k]; shade.style[k] = css[k]; });
+
+  scheduleCropEncode();
+}
+
+/* --------------------------------------------------------------------------
+   13c. Dragging. Pointer events, so one code path serves touch and mouse, and
+   pointer capture so a finger that slides off the handle keeps the gesture.
+   -------------------------------------------------------------------------- */
+
+function cropPointerDown(ev) {
+  if (!crop.source || crop.drag) { return; }
+  var corner = ev.currentTarget.getAttribute('data-corner');
+  crop.drag = {
+    corner: corner,
+    x: ev.clientX, y: ev.clientY,
+    rect: { x: crop.rect.x, y: crop.rect.y, w: crop.rect.w, h: crop.rect.h }
+  };
+  byId('cropBox').classList.add('is-dragging');
+  // Capture keeps the gesture alive when a finger or a cursor slides off the handle,
+  // and it is an optimisation, not a requirement: the drag works without it. It
+  // throws for a pointer id the browser no longer considers active, and an uncaught
+  // throw inside a pointerdown handler is a page error, which is worse than a drag
+  // that stops at the edge of the element.
+  try {
+    if (ev.currentTarget.setPointerCapture) { ev.currentTarget.setPointerCapture(ev.pointerId); }
+  } catch (e) { /* no active pointer with this id */ }
+  ev.preventDefault();
+  ev.stopPropagation();
+}
+
+function cropPointerMove(ev) {
+  var drag = crop.drag;
+  if (!drag) { return; }
+  var dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+  var start = drag.rect;
+
+  if (!drag.corner) {
+    crop.rect = { x: start.x + dx, y: start.y + dy, w: start.w, h: start.h };
+  } else {
+    // Each corner moves its own two edges; the opposite two stay put. Working in
+    // edges rather than in width and height is what lets a corner be dragged past
+    // its opposite one without the box turning inside out.
+    var left = start.x, top = start.y, right = start.x + start.w, bottom = start.y + start.h;
+    if (drag.corner.indexOf('w') !== -1) { left = start.x + dx; } else { right = start.x + start.w + dx; }
+    if (drag.corner.indexOf('n') !== -1) { top = start.y + dy; } else { bottom = start.y + start.h + dy; }
+    crop.rect = {
+      x: Math.min(left, right), y: Math.min(top, bottom),
+      w: Math.abs(right - left), h: Math.abs(bottom - top)
+    };
+  }
+  applyCropRect();
+  ev.preventDefault();
+}
+
+function cropPointerUp(ev) {
+  if (!crop.drag) { return; }
+  crop.drag = null;
+  byId('cropBox').classList.remove('is-dragging');
+  if (ev.currentTarget.releasePointerCapture && ev.pointerId !== undefined) {
+    try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (e) { /* already gone */ }
+  }
+}
+
+function wireCropDragging() {
+  var targets = [byId('cropBox')];
+  var handles = document.querySelectorAll('#cropBox .crophandle');
+  for (var i = 0; i < handles.length; i++) { targets.push(handles[i]); }
+  targets.forEach(function (el) {
+    el.addEventListener('pointerdown', cropPointerDown);
+    el.addEventListener('pointermove', cropPointerMove);
+    el.addEventListener('pointerup', cropPointerUp);
+    el.addEventListener('pointercancel', cropPointerUp);
+  });
+}
+
+/* --------------------------------------------------------------------------
+   13d. Encoding, and the size the student is shown
+   -------------------------------------------------------------------------- */
+
+function scheduleCropEncode() {
+  crop.blob = null;
+  byId('cropSizeOut').textContent = T().cropMeasuring;
+  clearTimeout(crop.timer);
+  crop.timer = setTimeout(encodeCrop, CROP_ENCODE_DELAY_MS);
+}
+
+/* The crop, at the capped size and quality, as a JPEG blob. This is exactly the
+   bytes that will be uploaded: the number under the photo is measured, not
+   estimated, which is the only way it is worth showing at all. */
+function encodeCrop() {
+  clearTimeout(crop.timer);
+  if (!crop.source || !crop.rect) { return Promise.resolve(null); }
+
+  var seq = ++crop.seq;
+  var scaleToSource = crop.sourceW / crop.dispW;
+  var sx = clampNum(Math.round(crop.rect.x * scaleToSource), 0, crop.sourceW - 1);
+  var sy = clampNum(Math.round(crop.rect.y * scaleToSource), 0, crop.sourceH - 1);
+  var sw = clampNum(Math.round(crop.rect.w * scaleToSource), 1, crop.sourceW - sx);
+  var sh = clampNum(Math.round(crop.rect.h * scaleToSource), 1, crop.sourceH - sy);
+
+  var shrink = Math.min(1, IMAGE_LIMITS.MAX_EDGE_PX / Math.max(sw, sh));
+  var outW = Math.max(1, Math.round(sw * shrink));
+  var outH = Math.max(1, Math.round(sh * shrink));
+
+  var canvas = document.createElement('canvas');
+  canvas.width = outW;
+  canvas.height = outH;
+  var ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(crop.source, sx, sy, sw, sh, 0, 0, outW, outH);
+
+  return new Promise(function (resolve) {
+    canvas.toBlob(function (blob) {
+      if (seq !== crop.seq) { resolve(null); return; }   // a newer crop won
+      if (!blob) { resolve(null); return; }
+      crop.blob = blob;
+      crop.outW = outW;
+      crop.outH = outH;
+      renderCropSize();
+      resolve(blob);
+    }, 'image/jpeg', IMAGE_LIMITS.JPEG_QUALITY);
+  });
+}
+
+function renderCropSize() {
+  var t = T();
+  byId('cropSizeOut').textContent = crop.blob
+    ? fill(t.cropSizeUpload, { size: formatBytes(crop.blob.size) })
+    : t.cropMeasuring;
+  byId('cropSizeIn').textContent = crop.file
+    ? fill(t.cropSizeOriginal, { size: formatBytes(crop.file.size) })
+    : '';
+  if (crop.blob && crop.file) {
+    console.info('[open-tutor] crop: ' + crop.file.size + ' bytes (' +
+      crop.sourceW + 'x' + crop.sourceH + ') -> ' + crop.blob.size + ' bytes (' +
+      crop.outW + 'x' + crop.outH + '), quality ' + IMAGE_LIMITS.JPEG_QUALITY);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13e. Leaving the crop screen
+   -------------------------------------------------------------------------- */
+
+function confirmCrop() {
+  var flow = crop.flow;
+  if (!crop.source || !flow || state.flow !== flow) { return; }
+  byId('btnCropConfirm').disabled = true;
+  // Confirm never blocks on a stale readout: if the debounce has not fired yet the
+  // encode is forced here and the ready blob is used when it has.
+  var ready = crop.blob ? Promise.resolve(crop.blob) : encodeCrop();
+  ready.then(function (blob) {
+    byId('btnCropConfirm').disabled = false;
+    if (!blob) { return; }
+    var file = namedJpeg(blob, crop.file);
+    closeCrop();
+    showScreen('solve');
+    renderSteps('solveSteps', 'solveStepLabel', 'solve');
+    uploadWorking(file, flow);
+  });
+}
+
+/* A Blob has no name, and the contract's field is a file upload. Where `File` is
+   available the crop keeps a readable name; where it is not, FormData's own
+   filename argument covers it and the blob goes as it is. */
+function namedJpeg(blob, original) {
+  var stem = (original && original.name ? String(original.name) : 'working').replace(/\.[^.]*$/, '');
+  try {
+    return new File([blob], stem + '-crop.jpg', { type: 'image/jpeg' });
+  } catch (e) {
+    return blob;
+  }
+}
+
+function cancelCrop() {
+  closeCrop();
+  showScreen('solve');
+  renderSteps('solveSteps', 'solveStepLabel', 'solve');
+  byId('solveNote').hidden = true;
+}
+
+function closeCrop() {
+  clearTimeout(crop.timer);
+  crop.seq += 1;
+  if (crop.url) { URL.revokeObjectURL(crop.url); }
+  crop.flow = null; crop.file = null; crop.url = null; crop.source = null;
+  crop.sourceW = 0; crop.sourceH = 0; crop.dispW = 0; crop.dispH = 0;
+  crop.rect = null; crop.drag = null; crop.blob = null; crop.outW = 0; crop.outH = 0;
+  var box = byId('cropBox');
+  if (box) { box.classList.remove('is-dragging'); }
+}
+
+/* --------------------------------------------------------------------------
+   13f. Upload. Unchanged from before the crop existed, except that what goes up
+   is the cropped JPEG rather than whatever the camera produced.
    -------------------------------------------------------------------------- */
 
 function onPhotoChosen(ev) {
-  var f = state.flow;
   var file = ev.target.files && ev.target.files[0];
   ev.target.value = '';
-  if (!file || !f) { return; }
+  if (!file || !state.flow) { return; }
+  byId('solveNote').hidden = true;
+  openCrop(file);
+}
 
+function uploadWorking(file, f) {
   var note = byId('solveNote');
   note.hidden = false;
   note.textContent = T().reading;
@@ -1601,9 +2282,19 @@ function requestDiagnosis(f, gradePayload) {
       if (!state.flow || state.flow !== f) { return; }
       byId('resWaiting').hidden = true;
       f.diagnosis = dg;
-      if (!dg || (!dg.headline && !dg.body)) {
+      // The server ALWAYS sends a headline, even on a cache miss with no key, so a guard on
+      // "no headline and no body" never fired: the screen drew "What went wrong" with nothing
+      // under it and then asked the student to confirm a diagnosis that did not exist. What
+      // matters is whether there is an EXPLANATION, so test the body and the error instead.
+      if (!dg || dg.error || !dg.body) {
+        // Two different situations, and telling them apart matters. A TYPED answer carries no
+        // working, so there is nothing to diagnose step by step and saying "we could not read
+        // your working" blames the student for something they never submitted. A PHOTO that
+        // produced no diagnosis genuinely did fail to read.
         byId('resNote').hidden = false;
-        byId('resNote').textContent = T().diagFailed;
+        byId('resNote').textContent = (f.workLines && f.workLines.length)
+          ? T().diagFailed
+          : (T().diagNoWorking || T().diagFailed);
         showNextButton();
         return;
       }
@@ -1815,6 +2506,16 @@ function wire() {
 
   byId('btnPhoto').addEventListener('click', function () { byId('photoInput').click(); });
   byId('photoInput').addEventListener('change', onPhotoChosen);
+
+  byId('btnCropCancel').addEventListener('click', cancelCrop);
+  byId('btnCropReset').addEventListener('click', resetCropRect);
+  byId('btnCropConfirm').addEventListener('click', confirmCrop);
+  wireCropDragging();
+  // A rotated phone or a resized window rescales the photo; the box keeps its
+  // position relative to the image rather than being thrown away.
+  window.addEventListener('resize', function () {
+    if (state.screen === 'crop') { layoutCrop(false); }
+  });
 
   byId('btnConfirmLines').addEventListener('click', confirmLines);
 

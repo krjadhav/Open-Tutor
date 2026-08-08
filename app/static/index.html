@@ -222,6 +222,10 @@
             </button>
           </div>
         </div>
+        <!-- Still the NATIVE camera. `capture="environment"` hands the phone's own
+             camera app the job, which brings autofocus, HDR and the flash with it,
+             and needs no getUserMedia and therefore no HTTPS. The crop happens
+             AFTER, on the captured file, on the Crop screen below. -->
         <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
         <div class="answernote prose" data-t="photo"></div>
         <div class="inline-note" id="solveNote" hidden></div>
@@ -243,6 +247,72 @@
     <div class="flowfoot">
       <button class="btn btn--primary" id="btnCheckAnswer">
         <span class="bev-face bev-face--gold btn-face"><span class="btn-label" data-t="check"></span></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ CROP ============
+       Between the native camera and the upload. The photo the camera produced is
+       drawn here and the student drags a box over the working for THIS problem;
+       only what is inside the box is uploaded.
+
+       WHY POST-CAPTURE AND NOT A LIVE CAMERA OVERLAY. A viewfinder overlay needs
+       getUserMedia, which needs a secure context, which means a tunnel or a
+       deployment and gives up the LAN setup that works today. It also gives up the
+       native camera's autofocus, HDR and flash, which on crumpled paper in poor
+       light is a real loss. Cropping after the native camera has done its job
+       keeps both.
+
+       The crop surface is DARK and the excluded area is dimmed, rather than a
+       bright overlay: the thing being judged is a photograph, and it has to be the
+       brightest thing on the screen.
+       ============================================================================ -->
+  <section class="screen" id="screen-crop">
+    <div class="flowhead">
+      <button class="iconbtn" id="btnCropCancel">
+        <span class="bev-face bev-face--card iconbtn-face"><span class="glyph-x"></span></span>
+        <span class="sr-only" data-t="cropCancel"></span>
+      </button>
+      <span class="steps"><span class="stepbars" id="cropSteps"></span></span>
+      <span class="steplabel" id="cropStepLabel"></span>
+    </div>
+
+    <div class="crophead">
+      <h2 class="hd hd--m" data-t="cropHead"></h2>
+      <div class="prose" data-t="cropSub"></div>
+    </div>
+
+    <div class="cropstage" id="cropStage">
+      <!-- Sized in JS to the photo's aspect ratio. The handles hang OUTSIDE this
+           box, which is why the shade lives in its own clipped layer rather than
+           on the frame: `overflow: hidden` here would cut the handles off as soon
+           as the box reached an edge. -->
+      <div class="cropframe" id="cropFrame" hidden>
+        <canvas class="cropcanvas" id="cropCanvas"></canvas>
+        <div class="cropshadewrap"><span class="cropshade" id="cropShade"></span></div>
+        <div class="cropbox" id="cropBox">
+          <span class="crophandle crophandle--nw" data-corner="nw"></span>
+          <span class="crophandle crophandle--ne" data-corner="ne"></span>
+          <span class="crophandle crophandle--sw" data-corner="sw"></span>
+          <span class="crophandle crophandle--se" data-corner="se"></span>
+        </div>
+      </div>
+      <div class="thinking cropbusy" id="cropBusy">
+        <span class="blip"></span><span data-t="cropOpening"></span>
+      </div>
+    </div>
+
+    <!-- The only feedback that the crop did anything, so it is stated plainly and
+         in bytes rather than as a percentage of something the student cannot see. -->
+    <div class="cropbar">
+      <span class="chip chip--size" id="cropSizeOut"></span>
+      <span class="pill" id="cropSizeIn"></span>
+      <button class="chipbtn cropreset" id="btnCropReset" data-t="cropReset"></button>
+    </div>
+
+    <div class="flowfoot">
+      <button class="btn btn--primary" id="btnCropConfirm">
+        <span class="bev-face bev-face--gold btn-face"><span class="btn-label" data-t="cropUse"></span></span>
       </button>
     </div>
   </section>

@@ -1063,6 +1063,72 @@ def test_transcribe_serves_the_cached_demo_working_without_vision(client):
     assert miss["error"]
 
 
+# --------------------------------------------------------------------------- what phones send
+
+def _jpeg_header(width: int, height: int) -> bytes:
+    """A JPEG's first two segments and nothing else.
+
+    Not a decodable image, and it does not need to be: `_image_dimensions` reads the header and
+    never touches the entropy-coded data, so a real photograph in the test tree would only make
+    the repository bigger. The APP0 segment is here on purpose, because a parser that assumed the
+    frame header came first would pass without it.
+    """
+    app0 = b"\xff\xe0" + (16).to_bytes(2, "big") + b"JFIF\x00" + b"\x01\x01\x00" + b"\x00\x01" * 2 + b"\x00\x00"
+    sof0 = (b"\xff\xc0" + (17).to_bytes(2, "big") + b"\x08"
+            + height.to_bytes(2, "big") + width.to_bytes(2, "big")
+            + b"\x03" + b"\x01\x11\x00\x02\x11\x01\x03\x11\x01")
+    return b"\xff\xd8" + app0 + sof0
+
+
+def test_image_dimensions_reads_a_jpeg_header_and_a_png_header():
+    from app.server import _image_dimensions
+
+    assert _image_dimensions(_jpeg_header(1600, 1200)) == (1600, 1200)
+
+    png = (b"\x89PNG\r\n\x1a\n" + (13).to_bytes(4, "big") + b"IHDR"
+           + (320).to_bytes(4, "big") + (240).to_bytes(4, "big"))
+    assert _image_dimensions(png) == (320, 240)
+
+    # Never a guess and never an exception: a format we do not parse, and a truncated file that
+    # promises a frame header it does not contain, both come back as "we do not know".
+    assert _image_dimensions(b"ftypheic-ish bytes") is None
+    assert _image_dimensions(b"\xff\xd8\xff\xc0\x00") is None
+    assert _image_dimensions(b"") is None
+
+
+def test_transcribe_logs_what_the_phone_actually_sent(client, caplog):
+    """The upload is measured on the way past.
+
+    The frontend crops and downscales before it uploads, and this line is the only evidence of
+    what a real phone on venue wifi puts through that path.
+    """
+    raw = _jpeg_header(1994, 1500) + b"\x00" * 4096
+    with caplog.at_level(logging.INFO, logger="app.server"):
+        response = client.post("/api/solve/transcribe",
+                               data={"item_id": QUOTIENT_ITEM},
+                               files={"image": ("working-crop.jpg", raw, "image/jpeg")})
+
+    assert response.status_code == 200
+    logged = [r.getMessage() for r in caplog.records if "transcribe upload" in r.getMessage()]
+    assert len(logged) == 1, "one line per upload, no more and no fewer"
+    assert str(len(raw)) in logged[0]
+    assert "1994x1500" in logged[0]
+    assert "image/jpeg" in logged[0]
+    assert "working-crop.jpg" in logged[0]
+    assert QUOTIENT_ITEM in logged[0]
+
+    # Measuring the upload must not change what the endpoint serves, and an image whose header we
+    # cannot read still gets its cached transcription rather than an error.
+    assert response.json()["lines"] == [line.strip() for line in DEMO_STUDENT_WORK.splitlines()]
+    caplog.clear()
+    with caplog.at_level(logging.INFO, logger="app.server"):
+        opaque = client.post("/api/solve/transcribe",
+                             data={"item_id": QUOTIENT_ITEM},
+                             files={"image": ("scan.heic", b"not an image at all", "image/heic")})
+    assert opaque.json()["lines"]
+    assert any("dimensions=unknown" in r.getMessage() for r in caplog.records)
+
+
 def test_session_complete_reports_xp_and_tomorrows_focus(client, monkeypatch):
     _no_network(monkeypatch)
     graded = client.post("/api/solve/grade", json={

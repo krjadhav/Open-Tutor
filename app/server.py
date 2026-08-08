@@ -1111,9 +1111,14 @@ async def solve_transcribe(
     finding (Vision inserted a spurious `^-` in one of four real samples) is precisely why the
     Check screen exists. A miss returns HTTP 200 with `lines: []` and an `error`, so the UI falls
     back to the typed path rather than dead-ending.
+
+    The upload is still drained and its bytes are still unused, but it is now MEASURED on the way
+    past. The frontend crops and downscales before it uploads (see `IMAGE_LIMITS` in
+    `app/static/app.js`), and the only way to know what real phones on venue wifi actually send
+    through that path is to write down what arrived.
     """
     if image is not None:
-        await image.read()                     # drain the upload; the bytes are not used offline
+        _log_upload(await image.read(), image, item_id)   # drained; the bytes are unused offline
 
     lines = _cached_transcription(item_id)
     if lines is None:
@@ -1122,6 +1127,81 @@ async def solve_transcribe(
                 "error": tr.t("ui:error.generic",
                               default="No cached transcription for this problem.")}
     return {"lines": lines, "ocr_seconds": 0.0, "source": "cache"}
+
+
+def _enable_upload_logging() -> None:
+    """Make sure this module's INFO lines actually reach a stream.
+
+    Uvicorn configures `uvicorn`, `uvicorn.error` and `uvicorn.access`, and leaves the ROOT logger
+    at its default: level WARNING and no handler. An `INFO` record from `app.server` was therefore
+    filtered out before it reached anything, and the upload line below was written and never seen,
+    which is the same as not writing it. Uvicorn's own handler is borrowed when there is one so the
+    line is formatted like every other line in the terminal.
+
+    `propagate` is deliberately left alone: pytest's `caplog` listens on the root logger, and
+    turning propagation off here would make the log unobservable in exactly the place it is
+    asserted on.
+    """
+    log.setLevel(logging.INFO)
+    if log.handlers:
+        return
+    for handler in logging.getLogger("uvicorn.error").handlers:
+        log.addHandler(handler)
+    if not log.handlers and not logging.getLogger().handlers:
+        log.addHandler(logging.StreamHandler())
+
+
+_enable_upload_logging()
+
+
+def _log_upload(raw: bytes, image: UploadFile, item_id: str) -> None:
+    """One line per photo: which problem it was for, how big it is, and what it says it is.
+
+    This is the only visibility we have into what a phone actually sends. It never raises: a
+    malformed header is logged as unknown dimensions, because a photo that cannot be measured is
+    still a photo we can serve a cached transcription for.
+    """
+    size = _image_dimensions(raw)
+    log.info(
+        "transcribe upload: item=%s filename=%r content_type=%r bytes=%d dimensions=%s",
+        item_id, image.filename, image.content_type, len(raw),
+        f"{size[0]}x{size[1]}" if size else "unknown",
+    )
+
+
+def _image_dimensions(raw: bytes) -> Optional[tuple[int, int]]:
+    """`(width, height)` from the file header alone, for JPEG and PNG. No decode, no Pillow.
+
+    Cheap enough to run on every upload: PNG carries the size at a fixed offset, and a JPEG needs
+    a walk over its marker segments to the start-of-frame header, which is a few dozen bytes in.
+    Anything else, including HEIC, returns None rather than a guess.
+    """
+    if raw[:8] == b"\x89PNG\r\n\x1a\n" and len(raw) >= 24:
+        return int.from_bytes(raw[16:20], "big"), int.from_bytes(raw[20:24], "big")
+    if raw[:2] != b"\xff\xd8":
+        return None
+
+    #: SOF0 to SOF15, minus the four codes in that range that are not frame headers:
+    #: DHT (c4), JPG (c8) and DAC (cc). DNL (dc) is outside the range.
+    frame_markers = {m for m in range(0xC0, 0xD0)} - {0xC4, 0xC8, 0xCC}
+    pos = 2
+    while pos + 4 <= len(raw):
+        if raw[pos] != 0xFF:
+            return None
+        marker = raw[pos + 1]
+        if marker == 0xD8 or marker == 0x01 or 0xD0 <= marker <= 0xD7:
+            pos += 2
+            continue
+        if marker == 0xDA:                     # start of scan: the header is behind us
+            return None
+        length = int.from_bytes(raw[pos + 2:pos + 4], "big")
+        if marker in frame_markers and pos + 9 <= len(raw):
+            return (int.from_bytes(raw[pos + 7:pos + 9], "big"),
+                    int.from_bytes(raw[pos + 5:pos + 7], "big"))
+        if length < 2:
+            return None
+        pos += 2 + length
+    return None
 
 
 def _cached_transcription(item_id: str) -> Optional[list[str]]:
