@@ -1045,32 +1045,26 @@ def test_maths_rungs_are_never_translated(client, node_id):
         assert not DEVANAGARI.search(hi_rung["text"])
 
 
-def test_an_untranslated_hint_falls_back_to_readable_english(client):
-    """The other 74 prose rungs have no entry. They must come back as English prose, not as a
-    lookup key and not as an empty string, which is what an accordion with a blank rung is."""
-    from app.server import _hint_translations
+def test_an_untranslated_hint_falls_back_to_readable_english(monkeypatch, client):
+    """Hindi hint coverage is now complete, so this case no longer exists in the shipped data.
+    It is CONSTRUCTED instead, because the guarantee still has to hold for the next node someone
+    adds: a rung with no translation must come back as readable English prose, never a lookup key
+    and never an empty string, which is what a blank rung in an accordion amounts to.
 
-    session = get_session()
-    translations = _hint_translations("hi")
-    assert translations, "the Hindi hint file is not being read at all"
+    Searching the data for an untranslated rung, as this test used to, quietly stopped testing
+    anything the moment coverage reached 100 percent.
+    """
+    from app import server
 
-    untranslated = next(
-        n for n in session.graph.nodes
-        if session.items_by_node.get(n)
-        and any(not r["is_math"] and r["text"] not in translations
-                for r in client.post("/api/solve/start",
-                                     json={"item_id": session.items_by_node[n][0].item_id}
-                                     ).json()["hints"])
-    )
-    english = _hints_for(client, untranslated, "en")
-    hindi = _hints_for(client, untranslated, "hi")
-    for hi_rung, en_rung in zip(hindi, english):
-        assert hi_rung["text"], "a blank rung is worse than an English one"
-        assert not TOKEN.search(hi_rung["text"])
-        if not en_rung["is_math"] and en_rung["text"] not in translations:
-            assert hi_rung["text"] == en_rung["text"], "an untranslated rung must show English"
-
-
+    monkeypatch.setattr(server, "_hint_translations", lambda lang: {})
+    rungs = _hints_for(client, "der.quotient-rule", "hi")
+    assert rungs, "no rungs came back at all"
+    for r in rungs:
+        assert r["text"].strip(), "a blank rung is worse than an English one"
+        assert not TOKEN.search(r["text"]), "a placeholder leaked into a fallback rung"
+    prose = [r for r in rungs if not r["is_math"]]
+    assert prose and all(_ASCII_LETTERS.search(r["text"]) for r in prose), (
+        "with no translations available the prose must fall back to English")
 # --------------------------------------------------------------------------- surviving English
 
 #: Fields that are pure chrome or a pure sentence: no interpolated content, so no ASCII letter has
