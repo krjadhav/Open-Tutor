@@ -168,84 +168,138 @@ body{
 
 /* ===== event-lobby homepage (Brawl "Choose Event" style) ===== */
 .ev-screen{
-  min-height:100%;display:flex;flex-direction:column;
-  background:
-    radial-gradient(60px 60px at 12% 22%, rgba(255,255,255,.05) 40%, transparent 42%),
-    radial-gradient(60px 60px at 78% 12%, rgba(255,255,255,.05) 40%, transparent 42%),
-    radial-gradient(60px 60px at 40% 70%, rgba(255,255,255,.05) 40%, transparent 42%),
-    radial-gradient(60px 60px at 90% 60%, rgba(255,255,255,.05) 40%, transparent 42%),
-    linear-gradient(180deg,#2f84e8 0%, #1f66c9 100%);
+  min-height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#3a90ee 0%, #2170cf 55%, #1a5cb8 100%);
   color:#fff;
 }
-.ev-top{
-  display:flex;align-items:center;gap:14px;padding:11px 18px;
-  background:#131a2e;border-bottom:4px solid #0a0f1e;
+/* faint brawler-skull wallpaper */
+.ev-screen::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 100 100'%3E%3Cg fill='%23ffffff' opacity='0.05'%3E%3Cpath d='M50 14c-19 0-31 13-31 31 0 11 5 18 11 22l0 9c0 3 3 6 6 6l28 0c3 0 6-3 6-6l0-9c6-4 11-11 11-22 0-18-12-31-31-31z'/%3E%3Ccircle cx='37' cy='47' r='8' fill='%232170cf'/%3E%3Ccircle cx='63' cy='47' r='8' fill='%232170cf'/%3E%3Cpath d='M46 66h8v12h-8z' fill='%232170cf'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:170px 170px;
 }
-.ev-title{font-family:var(--f-head);font-size:26px;letter-spacing:1px;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.5)}
+.ev-top,.ev-body,.ev-tabs{position:relative;z-index:1}
+.ev-top{
+  display:flex;align-items:center;gap:16px;padding:10px 20px;
+  background:#141d33;border-bottom:4px solid #0a0f1e;box-shadow:0 4px 0 rgba(0,0,0,.3);
+}
+.ev-title{font-family:var(--f-head);font-size:30px;letter-spacing:1px;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.5)}
 .ev-iconbtn{
-  width:48px;height:40px;display:grid;place-items:center;font-size:19px;color:#17213a;cursor:pointer;
-  background:linear-gradient(180deg,#fff,#dfe6f5);border:3px solid #0a0f1e;border-radius:12px;
-  box-shadow:0 4px 0 rgba(0,0,0,.45);transition:.08s;
-  clip-path:polygon(10% 0,100% 0,90% 100%,0 100%);
+  width:58px;height:44px;display:grid;place-items:center;font-size:22px;color:#17213a;cursor:pointer;
+  background:linear-gradient(180deg,#fff,#d5deee);border:4px solid #0a0f1e;border-radius:14px;
+  box-shadow:0 5px 0 rgba(0,0,0,.45);transition:.08s;
+  clip-path:polygon(14% 0,100% 0,86% 100%,0 100%);
 }
 .ev-iconbtn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
-.ev-body{flex:1;display:flex;gap:16px;padding:16px 18px}
-.ev-left{flex:0 0 clamp(180px,20%,230px);display:flex;flex-direction:column;gap:10px}
-.ev-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
-.ev-h{font-family:var(--f-head);font-size:14px;letter-spacing:1.5px;color:#dbe8ff;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.ev-body{flex:1;display:flex;gap:16px;padding:14px 18px;min-height:0}
+.ev-left{flex:0 0 clamp(190px,19%,240px);display:flex;flex-direction:column;gap:10px;min-height:0}
+.ev-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;min-height:0}
+.ev-h{font-family:var(--f-head);font-size:15px;letter-spacing:1.5px;color:#eaf2ff;text-shadow:0 2px 0 rgba(0,0,0,.4)}
 .ev-rhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
 
+/* the blue framed well that holds the featured card (like brawl) */
+.ev-well{flex:1;min-height:0;background:rgba(10,26,54,.28);border:3px solid rgba(10,15,30,.5);
+  border-radius:16px;padding:10px;display:flex;flex-direction:column}
+
 /* featured left card */
-.ev-feat{background:#141c33;border:4px solid #0a0f1e;border-radius:16px;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.45)}
-.ev-feat .cover{position:relative;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  background:radial-gradient(circle at 50% 30%, #ffd23f 0%, #ff8a1e 55%, #c85a00 100%)}
-.ev-feat .bookart{font-size:54px;filter:drop-shadow(0 4px 0 rgba(0,0,0,.3))}
-.ev-feat .covname{font-family:var(--f-display);font-size:22px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.4)}
-.ev-feat .covsub{font-size:11px;color:rgba(255,255,255,.9)}
-.ev-feat .fbody{padding:12px}
-.ev-feat .ftime{font-family:var(--f-head);font-size:18px;color:#ffd23f;margin:2px 0 8px}
+.ev-feat{flex:1;min-height:0;display:flex;flex-direction:column;background:#0f1830;
+  border:4px solid #0a0f1e;border-radius:14px;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.45)}
+.ev-feat .cover{position:relative;flex:1;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:14px;gap:2px;overflow:hidden;
+  background:linear-gradient(180deg,#31b0ff 0%, #1d7fd6 60%, #0f5aa8 100%)}
+.ev-feat .bookart{font-size:64px;filter:drop-shadow(0 5px 0 rgba(0,0,0,.3));margin-bottom:4px}
+.ev-feat .covname{font-family:var(--f-display);font-size:24px;color:#ffe066;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+.ev-feat .covsub{font-size:11px;color:rgba(255,255,255,.92)}
+.ev-feat .fbody{padding:12px;background:#0f1830}
+.ev-feat .ftime{display:flex;align-items:center;gap:6px;font-family:var(--f-head);font-size:20px;color:#ffd23f;margin:2px 0 8px}
 .badge-i{position:absolute;top:8px;right:8px}
-.ev-i{width:20px;height:20px;flex:0 0 20px;border-radius:50%;background:linear-gradient(180deg,#4fb0ff,#1c7fe0);
-  border:2px solid #0a0f1e;color:#fff;font-family:var(--f-head);font-size:12px;display:grid;place-items:center;cursor:pointer}
-.ev-mini-bar{height:12px;border-radius:8px;background:rgba(0,0,0,.35);border:2px solid #0a0f1e;overflow:hidden}
+.ev-i{width:22px;height:22px;flex:0 0 22px;border-radius:50%;background:linear-gradient(180deg,#4fb0ff,#1c7fe0);
+  border:2px solid #0a0f1e;color:#fff;font-family:var(--f-head);font-size:13px;display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.ev-mini-bar{height:12px;border-radius:8px;background:rgba(0,0,0,.4);border:2px solid #0a0f1e;overflow:hidden}
 .ev-mini-bar>i{display:block;height:100%;background:linear-gradient(90deg,#18ABEF,#7EDCFD)}
-.ev-btn{width:100%;font-family:var(--f-head);letter-spacing:.5px;color:#fff;border:3px solid #0a0f1e;border-radius:12px;
-  padding:10px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.45);margin-top:10px;font-size:14px;transition:.08s}
+.ev-btn{width:100%;font-family:var(--f-head);letter-spacing:.5px;color:#fff;border:4px solid #0a0f1e;border-radius:14px;
+  padding:11px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.45);margin-top:10px;font-size:15px;transition:.08s}
 .ev-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
 .ev-btn.play{background:linear-gradient(180deg,#5cf08c,#1f9e46)}
 .ev-btn.up{background:linear-gradient(180deg,#ffd83f,#dd7504);color:#3a2400;margin-top:0}
 
 /* streak badge */
-.ev-streak{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-head);font-size:13px;color:#3a2400;
-  background:linear-gradient(180deg,#ffe066,#e08a00);border:3px solid #0a0f1e;border-radius:22px;padding:4px 14px 4px 4px;
+.ev-streak{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-head);font-size:14px;color:#3a2400;
+  background:linear-gradient(180deg,#ffe066,#e08a00);border:3px solid #0a0f1e;border-radius:22px;padding:4px 16px 4px 4px;
   box-shadow:0 4px 0 rgba(0,0,0,.4)}
-.ev-streak .cnt{width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#ff5b52,#b3160c);color:#fff;
-  display:grid;place-items:center;border:2px solid #0a0f1e;font-size:14px}
+.ev-streak .cnt{width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,#ff5b52,#b3160c);color:#fff;
+  display:grid;place-items:center;border:2px solid #0a0f1e;font-size:15px}
 
-/* course card grid */
-.ev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media(max-width:1150px){.ev-grid{grid-template-columns:repeat(2,1fr)}}
-.ev-card{background:#141c33;border:4px solid #0a0f1e;border-radius:16px;overflow:hidden;cursor:pointer;
-  box-shadow:0 6px 0 rgba(0,0,0,.45);transition:.12s}
-.ev-card:hover{transform:translateY(-3px)}
-.ev-card .strip{display:flex;align-items:center;gap:8px;background:#1d2848;padding:6px 9px;font-size:11px;color:#9fb0d6}
-.ev-card .strip .ck{color:#5cf08c;font-weight:700}
-.ev-card .band{display:flex;align-items:center;gap:10px;padding:9px 11px;border-bottom:3px solid #0a0f1e}
-.ev-card .band .mi{width:36px;height:36px;flex:0 0 36px;border-radius:9px;background:rgba(0,0,0,.28);
-  display:grid;place-items:center;font-size:19px;border:2px solid rgba(0,0,0,.4)}
-.ev-card .band h5{font-family:var(--f-head);font-size:16px;color:#fff;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ev-card .band .sub{font-size:11px;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ev-card .prev{padding:11px}
-.ev-card .dots{display:flex;gap:5px;margin-top:9px}
-.ev-card .dots span{flex:1;height:10px;border-radius:3px;background:rgba(255,255,255,.14);border:1px solid rgba(0,0,0,.4)}
+/* course card grid — fills the frame */
+.ev-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:14px}
+@media(max-width:1150px){.ev-grid{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,1fr)}}
+.ev-card{display:flex;flex-direction:column;min-height:0;background:#0f1830;border:4px solid #0a0f1e;border-radius:14px;
+  overflow:hidden;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.45);transition:.1s}
+.ev-card:hover{transform:translateY(-3px);filter:brightness(1.05)}
+.ev-card .strip{display:flex;align-items:center;gap:8px;background:#18223f;padding:5px 10px;font-size:11px;color:#9fb0d6;flex:0 0 auto}
+.ev-card .strip .clip{width:18px;height:18px;border-radius:5px;background:#fff;border:2px solid #0a0f1e;color:#1f9e46;
+  font-size:12px;font-weight:900;display:grid;place-items:center;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.ev-card .strip .ne{margin-left:auto}
+.ev-card .band{display:flex;align-items:center;gap:10px;padding:8px 11px;flex:0 0 auto;border-bottom:3px solid #0a0f1e;position:relative}
+.ev-card .band .mi{width:40px;height:40px;flex:0 0 40px;border-radius:50%;font-size:20px;display:grid;place-items:center;
+  color:#fff;background:radial-gradient(circle at 38% 32%, rgba(255,255,255,.35), rgba(0,0,0,.4));border:3px solid #0a0f1e;
+  box-shadow:0 3px 0 rgba(0,0,0,.4)}
+.ev-card .band h5{font-family:var(--f-head);font-size:17px;color:#fff;line-height:1.05;text-shadow:0 2px 0 rgba(0,0,0,.35);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-card .band .sub{font-size:12px;color:rgba(255,255,255,.92);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* the illustrated "map" art panel */
+.ev-card .prev{position:relative;flex:1;min-height:64px;overflow:hidden}
+.ev-card .prev .artmotif{position:absolute;left:16px;top:46%;transform:translateY(-50%) rotate(-6deg);
+  font-size:min(9vw,58px);filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+.ev-card .prev .hill{position:absolute;left:-8%;right:-8%;bottom:-42px;height:80px;border-radius:50%;background:rgba(0,0,0,.25)}
+.ev-card .prev .conf span{position:absolute;width:7px;height:11px;border-radius:2px;opacity:.9}
+.ev-card .prev .ov{position:absolute;left:0;right:0;bottom:0;padding:5px 10px 7px;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.6))}
+.ev-card .prev .ovmeta{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;margin-top:4px}
+.ev-card .prev .ovmeta .m{color:#ffd23f}
 
 /* bottom tabs */
-.ev-tabs{display:flex;background:#131a2e;border-top:4px solid #0a0f1e}
-.ev-tab{flex:1;text-align:center;padding:13px 8px;font-family:var(--f-head);font-size:14px;letter-spacing:1.5px;
+.ev-tabs{display:flex;background:#141d33;border-top:4px solid #0a0f1e;box-shadow:0 -4px 0 rgba(0,0,0,.25)}
+.ev-tab{flex:1;text-align:center;padding:14px 8px;font-family:var(--f-head);font-size:15px;letter-spacing:1.5px;
   color:#7f92bd;cursor:pointer;position:relative;transition:.1s}
 .ev-tab:hover{color:#cdd9f2}
 .ev-tab.active{color:#ffd23f}
 .ev-tab.active::after{content:"";position:absolute;left:22%;right:22%;bottom:6px;height:4px;border-radius:3px;background:#ffd23f}
+
+/* ===== BRAWLERS-style assignment grid ===== */
+.br-count{font-family:var(--f-head);font-size:20px;color:#ffd23f;margin-left:4px}
+.br-chip{font-family:var(--f-head);font-size:12px;letter-spacing:.5px;color:#cdd9f2;background:rgba(10,15,30,.5);
+  border:2px solid #0a0f1e;border-radius:12px;padding:5px 12px;margin-left:14px}
+.br-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);
+  gap:16px;padding:16px 18px;position:relative;z-index:1}
+@media(max-width:1150px){.br-grid{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,1fr)}}
+.br-card{position:relative;display:flex;flex-direction:column;min-height:0;background:#0f1830;
+  border:4px solid #0a0f1e;border-radius:16px;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.45);cursor:pointer;transition:.1s}
+.br-card:hover{transform:translateY(-3px);filter:brightness(1.05)}
+.br-card.locked{filter:grayscale(.55) brightness(.7);cursor:not-allowed}
+.br-card.locked:hover{transform:none;filter:grayscale(.55) brightness(.7)}
+.br-portrait{position:relative;flex:1;min-height:90px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.br-portrait .p-emoji{font-size:min(9vw,66px);filter:drop-shadow(0 5px 0 rgba(0,0,0,.35));z-index:1}
+.br-lvl{position:absolute;top:8px;left:8px;z-index:3;width:36px;height:40px;display:grid;place-items:center;
+  font-family:var(--f-head);font-size:14px;color:#3a2400;background:linear-gradient(180deg,#ffd23f,#e08a00);
+  border:3px solid #0a0f1e;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);filter:drop-shadow(0 3px 0 rgba(0,0,0,.4))}
+.br-clip{position:absolute;top:6px;left:50px;z-index:3;width:22px;height:22px;border-radius:6px;background:#fff;
+  border:2px solid #0a0f1e;color:#1f9e46;font-weight:900;font-size:13px;display:grid;place-items:center;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.br-xp{position:absolute;top:8px;right:8px;z-index:3;display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--f-head);font-size:13px;color:#ffd23f;background:rgba(10,15,30,.6);border:2px solid #0a0f1e;
+  border-radius:12px;padding:2px 9px}
+.br-name{position:absolute;right:10px;bottom:8px;z-index:2;font-family:var(--f-head);font-size:19px;color:#fff;
+  letter-spacing:.5px;text-shadow:0 2px 0 #0a0f1e,0 0 8px rgba(0,0,0,.6)}
+.br-band{flex:0 0 auto;border-top:3px solid #0a0f1e;display:flex;align-items:center;gap:8px;padding:9px 11px;
+  background:#111a30;font-size:13px}
+.br-band.max{background:linear-gradient(180deg,#ffd23f,#e08a00);color:#3a2400;font-family:var(--f-head);justify-content:center;font-size:15px;letter-spacing:.5px}
+.br-band.start{background:linear-gradient(180deg,#5cf08c,#1f9e46);color:#06331a;font-family:var(--f-head);justify-content:center;font-size:15px;letter-spacing:.5px}
+.br-band.locked{background:#0e1626;color:#8fa0c4;font-family:var(--f-head);justify-content:center;font-size:13px;letter-spacing:.5px}
+.br-stat{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:12px;color:#cdd9f2}
+.br-stat.gold{color:#ffd23f;font-family:var(--f-head)}
+.br-circle{width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#3aa0ff,#0064c8);border:2px solid #0a0f1e;
+  display:grid;place-items:center;font-family:var(--f-head);font-size:11px;color:#fff}
 
 /* ===== reusable UI ===== */
 .pad{padding:16px}
@@ -527,19 +581,21 @@ R.library = {
     <div class="ev-body">
       <div class="ev-left">
         <div class="ev-h">MY LIBRARY</div>
-        <div class="ev-feat">
-          <div class="cover">
-            <div class="badge-i ev-i" onclick="toast('Textbook info')">i</div>
-            <div class="bookart">📕</div>
-            <div class="covname">CALCULUS</div>
-            <div class="covsub">Stewart · 8e</div>
-          </div>
-          <div class="fbody">
-            <div class="tiny muted">Next review in</div>
-            <div class="ftime">⏳ 2d 8h</div>
-            <div class="ev-mini-bar"><i style="width:82%"></i></div>
-            <div class="tiny muted" style="margin-top:4px">82% complete</div>
-            <button class="ev-btn play" onclick="go(3)">▶ RESUME</button>
+        <div class="ev-well">
+          <div class="ev-feat">
+            <div class="cover">
+              <div class="badge-i ev-i" onclick="toast('Textbook info')">i</div>
+              <div class="bookart">📕</div>
+              <div class="covname">CALCULUS</div>
+              <div class="covsub">Stewart · 8e</div>
+            </div>
+            <div class="fbody">
+              <div class="tiny muted">Next review in</div>
+              <div class="ftime">⏳ 2d 8h</div>
+              <div class="ev-mini-bar"><i style="width:82%"></i></div>
+              <div class="tiny muted" style="margin-top:4px">82% complete</div>
+              <button class="ev-btn play" onclick="go(3)">▶ RESUME</button>
+            </div>
           </div>
         </div>
         <button class="ev-btn up" onclick="toast('📄 upload a textbook — PDF, EPUB, notes')">＋ UPLOAD TEXTBOOK</button>
@@ -550,12 +606,12 @@ R.library = {
           <span class="ev-h" style="margin:0">MY COURSES</span>
         </div>
         <div class="ev-grid">
-          ${evCard('#9be000','#5f9e00','∫','Calculus I','Limits &amp; Derivatives','2h 5m',62,'11/18 topics')}
-          ${evCard('#c58bff','#8a2fe0','⟂','Linear Algebra','Vector Spaces','5h 0m',40,'8/20 topics')}
-          ${evCard('#ff7b7b','#d02020','⚗️','Organic Chem','Reaction Mechanisms','1d 3h',12,'3/24 topics')}
-          ${evCard('#aebeff','#5b73d8','💻','Intro to CS','Recursion','7h 5m',67,'16/24 topics')}
-          ${evCard('#ffb35c','#e07a00','📈','Micro-economics','Supply &amp; Demand','NEW',0,'0/15 topics')}
-          ${evCard('#4fe0d2','#12a99b','🏛️','World History','World War II','3d 1h',5,'1/30 topics')}
+          ${evCard('#9be000','#5f9e00','∫','Calculus I','Limits &amp; Derivatives','2h 5m',62,'11/18 topics','#8fd94a','#256b2e','📈')}
+          ${evCard('#c58bff','#8a2fe0','⟂','Linear Algebra','Vector Spaces','5h 0m',40,'8/20 topics','#7a56c8','#2c1a5e','🧮')}
+          ${evCard('#ff7b7b','#d02020','⚗️','Organic Chem','Reaction Mechanisms','1d 3h',12,'3/24 topics','#e05555','#5e1010','🧪')}
+          ${evCard('#aebeff','#5b73d8','💻','Intro to CS','Recursion','7h 5m',67,'16/24 topics','#5f7ad6','#232f5e','💻')}
+          ${evCard('#ffb35c','#e07a00','📈','Micro-economics','Supply &amp; Demand','NEW',0,'0/15 topics','#e0902f','#7a4300','💰')}
+          ${evCard('#4fe0d2','#12a99b','🏛️','World History','World War II','3d 1h',5,'1/30 topics','#2fb8ac','#0a5c54','🏛️')}
         </div>
       </div>
     </div>
@@ -578,26 +634,33 @@ R.library = {
     ${book('#8a4bff','Intro to CS','CS50','67%')}
   </div>`;}
 };
-function evCard(cLight,cDark,ic,name,topic,meta,pct,count){
+function evConfetti(){
+  const c=['#ffd23f','#ff5b52','#3fd971','#18ABEF','#ffffff','#ff8a1e','#c58bff'];
+  let h='<div class="conf">';
+  for(let i=0;i<14;i++){const l=(i*7+(i%3)*5)%94+2;const b=3+(i%6)*7;const r=(i*41)%90-45;
+    h+=`<span style="left:${l}%;bottom:${b}px;background:${c[i%c.length]};transform:rotate(${r}deg)"></span>`;}
+  return h+'</div>';
+}
+function evCard(cLight,cDark,ic,name,topic,meta,pct,count,sTop,sBot,art){
   const isNew=meta==='NEW';
-  const dots=[...Array(6)].map((_,k)=>`<span style="${k<Math.round(pct/16.7)?'background:'+cLight:''}"></span>`).join('');
   return `<div class="ev-card" onclick="go(3)">
     <div class="strip">
-      <span class="ck">${pct>0?'✓':'▢'}</span>
-      <span>${isNew?'✨ New course':'Next: '+meta}</span>
+      <span class="clip">${pct>0?'✓':'✎'}</span>
+      <span class="ne">${isNew?'New course available':'New review in: '+meta}</span>
       <span class="ev-i" onclick="event.stopPropagation();toast('${name} info')">i</span>
     </div>
     <div class="band" style="background:linear-gradient(180deg,${cLight},${cDark})">
       <div class="mi">${ic}</div>
       <div style="min-width:0"><h5>${name}</h5><div class="sub">${topic}</div></div>
     </div>
-    <div class="prev">
-      <div class="ev-mini-bar"><i style="width:${pct}%"></i></div>
-      <div class="row" style="justify-content:space-between;align-items:center;margin-top:6px">
-        <span class="tiny" style="color:#aebbd8">${count}</span>
-        <span class="tiny" style="color:#ffd23f;font-weight:700">${pct}% mastered</span>
+    <div class="prev" style="background:linear-gradient(180deg,${sTop} 0%, ${sBot} 100%)">
+      <div class="artmotif">${art}</div>
+      <div class="hill"></div>
+      ${evConfetti()}
+      <div class="ov">
+        <div class="ev-mini-bar"><i style="width:${pct}%"></i></div>
+        <div class="ovmeta"><span>${count}</span><span class="m">${pct}% mastered</span></div>
       </div>
-      <div class="dots">${dots}</div>
     </div>
   </div>`;
 }
@@ -829,27 +892,42 @@ function xpToNext(){return (1000-(state.xp%1000)).toLocaleString();}
 
 /* ---- 6. ASSIGNMENTS ---- */
 R.assignments = {
-  desktop(){return `<div class="pad-lg col">
-    <h3 class="sec">🗺️ Calculus I · Unit 1 map</h3>
-    <div class="small muted">Do the 4 reviews in any order, then unlock the assessment. ${state.reviewDone.filter(Boolean).length}/4 reviews complete.</div>
-    <div class="grid2" style="align-items:start">
-      <div class="map">
-        ${assign('review','Review · Limits','5 Q · untimed · +150 XP',0)}
-        ${assign('review','Review · Continuity','5 Q · untimed · +150 XP',1)}
-        ${assign('review','Review · Derivatives','5 Q · untimed · +150 XP',2)}
-        ${assign('review','Review · Diff. Rules','5 Q · untimed · +150 XP',3)}
+  desktop(){
+    const done=state.reviewDone.filter(Boolean).length;
+    const ready=done>=4;
+    const reviews=[
+      {name:'LIMITS',em:'∞'},{name:'CONTINUITY',em:'〰️'},
+      {name:'DERIVATIVES',em:'📈'},{name:'DIFF. RULES',em:'✖️'}];
+    return `<div class="ev-screen">
+      <div class="ev-top">
+        <div class="ev-iconbtn" onclick="toast('Back')">◀</div>
+        <div class="ev-title">ASSIGNMENTS <span class="br-count">${done}/5</span></div>
+        <span class="br-chip">Unit 1 · Calculus I</span>
+        <div style="flex:1"></div>
+        <div class="ev-iconbtn" onclick="go(4)">🏠</div>
       </div>
-      <div class="map">
-        ${assignAssess()}
-        <div class="card" style="margin-top:8px"><h4 class="sec">Rules</h4>
-          <div class="small muted col" style="gap:6px">
-            <div>🔵 <b>Review</b>: untimed, 5 Q, one-at-a-time + explanation. Bonus XP for perfect.</div>
-            <div>🔴 <b>Assessment</b>: timed, 10 Q, any order. XP scales with score; poor score = XP penalty (bigger miss = bigger penalty).</div>
-            <div>📱 Answers are handwritten & photographed on mobile.</div>
-          </div>
-        </div>
+      <div class="br-grid">
+        ${reviews.map((r,i)=>brCard({
+          num:'R'+(i+1),name:r.name,em:r.em,xp:'150',pTop:'#3aa0ff',pBot:'#0a4f9e',
+          done:state.reviewDone[i],
+          band:state.reviewDone[i]
+            ? `<div class="br-band max">✓ COMPLETE</div>`
+            : `<div class="br-band"><span class="br-circle">5Q</span><span class="br-stat">📘 untimed</span><span class="br-stat gold" style="margin-left:auto">＋150</span></div>`,
+          onclick:'go(6)'
+        })).join('')}
+        ${brCard({
+          num:'A',name:'ASSESSMENT',em:'⚔️',xp:'500',pTop:'#ff5b61',pBot:'#8a1010',
+          locked:!ready,
+          band:ready?`<div class="br-band start">START ▶</div>`:`<div class="br-band locked">🔒 FINISH 4 REVIEWS</div>`,
+          onclick:ready?'go(7)':`toast('Finish all 4 reviews to unlock')`
+        })}
+        ${brCard({
+          num:'U2',name:'INTEGRALS',em:'∫',xp:'—',pTop:'#7a56c8',pBot:'#2c1a5e',
+          locked:true,band:`<div class="br-band locked">🔒 UNIT 2 LOCKED</div>`,
+          onclick:`toast('Complete Unit 1 first')`
+        })}
       </div>
-    </div></div>`;},
+    </div>`;},
   phone(){return `<div class="pad col">
     <h3 class="sec">🗺️ Unit 1</h3>
     ${assign('review','Review · Limits','5 Q · +150 XP',0,true)}
@@ -859,6 +937,20 @@ R.assignments = {
     ${assignAssess(true)}
   </div>`;}
 };
+function brCard(o){
+  const lock=o.locked?'locked':'';
+  return `<div class="br-card ${lock}" ${o.locked?'':'onclick="'+o.onclick+'"'} ${o.locked?'onclick="'+o.onclick+'"':''}>
+    <div class="br-lvl">${o.num}</div>
+    ${o.done?'<div class="br-clip">✓</div>':(o.locked?'<div class="br-clip">🔒</div>':'')}
+    <div class="br-xp">⭐ ${o.xp}</div>
+    <div class="br-portrait" style="background:radial-gradient(circle at 50% 38%, ${o.pTop} 0%, ${o.pBot} 100%)">
+      ${evConfetti()}
+      <div class="p-emoji">${o.em}</div>
+      <div class="br-name">${o.name}</div>
+    </div>
+    ${o.band}
+  </div>`;
+}
 function assign(type,t,sub,idx,mobile){
   const done=state.reviewDone[idx];
   return `<div class="assign ${type}" onclick="go(6)">
@@ -1166,6 +1258,7 @@ $('nextBtn').onclick=()=>go(state.stage+1);
 document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(state.stage+1);if(e.key==='ArrowLeft')go(state.stage-1);});
 
 buildStepper();
+try{const q=new URLSearchParams(location.search);if(q.has('stage'))state.stage=Math.max(0,Math.min(STAGES.length-1,+q.get('stage')||0));}catch(e){}
 render();
 // KaTeX loads deferred; re-typeset current screens once it's ready
 window.addEventListener('load',()=>{typeset($('desktopScreen'));typeset($('phoneScreen'));});
