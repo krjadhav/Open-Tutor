@@ -203,6 +203,15 @@ Stated plainly, since none of this is in the contract:
   on that list, `goal.prompt`, `goal.example` and `action.get_started`, were the welcome question,
   its prefill and its button; they left `data/i18n/*.json` with the screen. `offline` is local by
   necessity: it is the message shown when the server is gone, so it cannot come from the server.
+- **The photo path strips the leading `=` off the last transcript line before grading, and only
+  before grading.** A derivation's last line is written as a continuation, `= -5 / (x-3)^2`, and that
+  equals sign is not part of the answer: sent verbatim the CAS answers `could not read that answer`,
+  which came back as an error verdict with `needs_diagnosis: false`, so the photo path could never
+  reach a diagnosis at all. That is step 7 of `docs/demo-runbook.md`, the moment the product exists
+  for, and it was dead on both quotient rule items. `work_lines` are sent **unchanged**, so the
+  diagnosis cache still matches the transcript exactly as it was read and no live call is possible.
+  Only a leading `=` is removed, never an internal one: the CAS still decides correctness and
+  nothing else about the gate moved.
 - **The Blockers headline** ("Two things keep tripping you up") is generated from the number of
   blockers, because the contract returns no headline for that tab.
 - **"N skills away"** renders `goal.skills_away` plus the words "skills away". The number is the
@@ -320,5 +329,70 @@ and a light Brawl Stars is not a thing, so the light palette, the `data-theme` a
 Light/Dark segmented control on You were all removed together rather than left as a second palette
 nobody designed. The language toggle stays. `prefers-reduced-motion` disables the animations.
 
-Phone first at 390x844. On desktop the same phone frame is centred. Below 460px wide the frame goes
-full bleed. There is no dashboard variant.
+Phone first at 390x844. Below 460px wide the frame goes full bleed. Between 460px and 1024px the
+phone frame is centred on the page as a device shell. Above 1024px there is a desktop layout, below.
+
+## Desktop layout mode, above 1024px
+
+One app, two layouts. **Same markup, same JS, same API, same design system**: everything that makes
+the desktop layout is a single `@media (min-width: 1025px)` block at the foot of `styles.css`, and
+every rule in it is a modifier on a class that already existed. There is no second stylesheet, no
+second set of screens and no behaviour that differs by width. `docs/audits/desktop-shots/` holds
+every screen at 1440x900 and at 390x844, in both languages.
+
+**The phone layout is untouched, and that is verified rather than asserted.** The 390x844 walk was
+screenshotted before and after the change, in English and Hindi, across sixteen states each,
+including the Path accordion opened, switched and closed. All thirty-two images are byte-identical.
+The only markup change is that `renderPath` now emits every stage's skills instead of only the open
+one's, and `.skills:not(.skills--open) { display: none }` hides the closed ones, which occupies no
+space and measures identically. The desktop graph needs them in the DOM.
+
+The width buys four things. A widened phone would have bought none of them.
+
+**1. The Path becomes a graph.** At 390px the goal slice had to collapse into a one-open-at-a-time
+spine, because a DAG at that width is a hairball. Here the stages are **columns ordered by depth**,
+with `flex-direction: row-reverse` putting the foundations on the left and the target on the right,
+because `path.stages` arrives target first. A horizontal rail runs through every stage node with a
+chevron at each boundary; the target column is anchored at the end of it and wears the same gold as
+the goal card. All 28 nodes of the visible slice are on screen at once at 1440x900, and the frontier
+is the loud thing on the screen.
+
+Prerequisite structure is readable three ways: the left-to-right depth order, the `needs:` line on a
+node, which names the exact prerequisite the engine is waiting on and which always lives in a column
+to its left, and the four node states. **Per-edge lines are deliberately not drawn.** `GET /api/state`
+sends one `needs` string per node, being the *first unmet* prerequisite, and never the edge list, so
+a mastered node carries no `needs` at all. Drawing what the payload contains would show eight of the
+forty-odd prerequisite edges and imply the other thirty-two do not exist, which is worse than not
+drawing them. Real edges need an `edges` array on the contract; that is a server change, not a
+layout one.
+
+The per-node state *word* is hidden on desktop and kept on `now` nodes only. The four shapes carry
+the state and the legend at the foot of the screen names all four; repeating the word on 28 nodes at
+graph density is noise. The small `.dot` also gains shape as well as colour here (gold star, half
+disc, ringed circle, grey square), matching the large `.stage-node` shapes the phone already uses.
+
+**2. Result shows the working and the diagnosis side by side.** On the phone the diagnosis arrives
+below the working and pushes it off screen. Here they sit in one row, the blamed line lit in place,
+so the error and the sentence explaining it are read together. It is a wrapping flex row and not a
+fixed grid on purpose: the working only exists on the photo path, and when `#resWork` is hidden the
+diagnosis takes the middle of the screen instead of leaving a column-shaped hole beside it. The
+readability rule is unchanged and was measured: `.diag-prose` computes
+`-webkit-text-stroke-width: 0px` at 390px and at 1440px, in both languages.
+
+**3. Today becomes a board.** Six problems, three by two, every reason chip visible, no scrolling.
+The chip is pushed to the foot of each card so the six line up.
+
+**4. The tab bar becomes a persistent left rail**, `--rail-w: 236px`, and `.screen--tabbed` reserves
+it on the left instead of reserving `--tabbar-h` underneath. The four destinations are always
+visible, which matters most for Blockers: on the phone it is a tab you have to remember to visit.
+The rail is still hidden during the solve flow, which is full screen with one exit, exactly as before.
+
+The fake phone clock in the status bar is hidden above 1024px and the wordmark becomes the brand mark
+at the head of the rail. The solve flow keeps its content in one centred column of at most
+`--flow-max`, never edge to edge across 1440px, and an anchored footer stays a full-width bar with a
+420px button in the middle of it.
+
+Everything degrades outward from there: at 1280x800 the whole graph still fits, at 1025px it scrolls
+sideways *inside* `.stages` rather than making the page wider, and the page has no horizontal
+overflow at any width tested (390, 768, 1024, 1025, 1280, 1440, 1920). `prefers-reduced-motion` is
+respected at every width by the same rule as before.

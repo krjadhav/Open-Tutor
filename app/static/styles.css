@@ -631,7 +631,12 @@ button.coursecard:active { transform: translateY(4px); filter: drop-shadow(0 2px
 .stage-count.is-locked { color: var(--faint); }
 .stage-name.is-mastered, .stage-state.is-mastered, .stage-count.is-mastered { color: var(--yellow); }
 
+/* Every stage renders its skills; only the open one is shown. On the phone that is
+   the one-open-at-a-time spine exactly as before, because a `display: none` block
+   occupies no space. The desktop Path shows all of them at once, which is the whole
+   point of having the width, and it needs them in the DOM to do it. */
 .skills { margin-top: 9px; animation: arrive .28s ease-out; }
+.skills:not(.skills--open) { display: none; }
 .skills .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 2px 100%); }
 .skills-body { display: flex; flex-direction: column; gap: 10px; padding: 11px 14px 13px; }
 .skill { display: flex; align-items: flex-start; gap: 9px; }
@@ -1048,3 +1053,387 @@ button.coursecard:active { transform: translateY(4px); filter: drop-shadow(0 2px
    about it is discoverable, which is the point. */
 .problem.is-revealed { outline: 3px solid var(--cyan); outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) { .problem.is-revealed { outline-width: 2px; } }
+
+/* ==========================================================================
+   DESKTOP LAYOUT MODE, above 1024px
+   ==========================================================================
+   One app, two layouts. Everything below this line is a media query and a set of
+   MODIFIERS on the classes already defined above: same markup, same JS, same API,
+   same bevel / chip / card / stroke vocabulary. Nothing here is a second design
+   system, and nothing here changes behaviour.
+
+   THE PHONE LAYOUT IS UNTOUCHED. Every rule in this section is inside
+   `@media (min-width: 1025px)`, so at 390x844, at 1024px and at every width in
+   between the stylesheet ends at the line above and the app is byte-for-byte the
+   layout we have screenshots of.
+
+   Four things the width is actually FOR. A widened phone would be worth nothing:
+
+   1. The Path becomes a graph. 390px forced the goal slice into a one-open-at-a-
+      time spine of eight stages. Here the stages are COLUMNS ordered by depth,
+      foundations on the left and the target anchored on the right, with every node
+      in the slice visible at once.
+   2. Result puts the working and the diagnosis SIDE BY SIDE, so the blamed line and
+      the sentence explaining it are read together. On the phone the diagnosis
+      arrives underneath and pushes the working off screen.
+   3. Today becomes a board: six problems and their reason chips, no scroll.
+   4. The tab bar becomes a persistent left rail. Blockers is then permanently in
+      view instead of being a tab you have to remember to visit.
+
+   The readability rule still holds absolutely: no stroke is added to prose here,
+   and the Result diagnosis computes `-webkit-text-stroke-width: 0px` at every width.
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 1025px) {
+  :root { --tabhead-top: 34px; --tabscroll-top: 8px; }
+
+
+  body {
+    --rail-w: 236px;      /* the left navigation rail, replacing the tab bar */
+    --gutter: 32px;       /* the page margin on every screen */
+    --flow-max: 1120px;   /* the widest a solve-flow column of content gets */
+  }
+
+  /* The device shell goes away: on a laptop this is the app, not a phone on a table. */
+  .stage { padding: 0; align-items: stretch; background: var(--page); }
+  .frame {
+    width: 100%; height: 100vh; height: 100dvh;
+    border: 0; border-radius: 0; box-shadow: none;
+  }
+
+  /* The fake phone clock is phone furniture and goes; the wordmark stays as the
+     brand mark at the head of the rail. */
+  .statusbar { width: var(--rail-w); height: 56px; padding: 0 22px; justify-content: flex-start; }
+  .statusbar > span:first-child { display: none; }
+  .wordmark { font-size: 12px; letter-spacing: .22em; color: var(--pale); }
+
+  /* ---- 4. The tab bar becomes a left rail -------------------------------- */
+
+  .tabbar {
+    top: 0; bottom: 0; left: 0; right: auto;
+    width: var(--rail-w); height: auto;
+    grid-template-columns: 1fr; grid-auto-rows: 62px;
+    align-content: start; gap: 10px;
+    padding: 66px 16px 22px;
+    border-top: 0; border-right: 3px solid #000;
+  }
+  .tab-face { --sk: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 1px 100%); justify-items: stretch; }
+  .tab-label { text-align: left; padding: 0 0 3px 16px; font-size: 15px; }
+
+  /* A tabbed screen reserves the rail on its left instead of the bar underneath. */
+  .screen--tabbed { padding-bottom: 0; padding-left: var(--rail-w); }
+
+  .screenhead { padding: 44px var(--gutter) 14px; }
+  .scroll--tab   { padding: 10px var(--gutter) 28px; }
+  .scroll--plain { padding: 10px var(--gutter) 40px; }
+
+  /* The solve flow keeps the full width but its content stays in one readable
+     column, centred, never edge to edge across 1440px. */
+  #screen-solve .scroll--flow,
+  #screen-check .scroll--flow,
+  #screen-result .scroll--flow,
+  #screen-complete .scroll--flow {
+    padding-left: max(var(--gutter), calc((100% - var(--flow-max)) / 2));
+    padding-right: max(var(--gutter), calc((100% - var(--flow-max)) / 2));
+    padding-top: 18px;
+    gap: 20px;
+  }
+
+  /* An anchored footer stays a full-width bar; the button inside it does not. */
+  .flowfoot { padding: 14px var(--gutter) 20px; }
+  .tabfoot  { padding: 14px var(--gutter) 16px; }
+  .flowfoot .btn, .tabfoot .btn { max-width: 420px; margin: 0 auto; }
+
+  .banner { top: 18px; left: auto; right: 24px; width: 340px; }
+
+  /* ---- Sign up ----------------------------------------------------------- */
+
+  /* `width: 100%` and not stretch alone: these are flex items of the screen, and a
+     flex item with auto cross-axis margins is sized by its CONTENT, not stretched,
+     which shrank the gold button to the width of the word inside it. */
+  .lockup { padding-top: 96px; }
+  .onboard, .onboard-foot {
+    width: 100%; max-width: 560px; margin: 0 auto; box-sizing: border-box;
+  }
+  .onboard { gap: 26px; }
+  .onboard-foot { padding-bottom: 72px; }
+  .orb--cyan   { top: -140px; left: -100px; width: 460px; height: 460px; }
+  .orb--purple { top: 120px; right: -160px; width: 520px; height: 520px; }
+
+  /* ---- Course selection --------------------------------------------------
+     The playable card takes its own column and keeps its size; the roadmap
+     stacks beside it. The rule that separated them on the phone is a one-column
+     device and stands down. The locked cards are still divs, still carry
+     aria-disabled and are still not in the tab order: nothing here touches that. */
+
+  #screen-courses .screenhead {
+    width: 100%; max-width: 864px; margin: 0 auto; box-sizing: border-box;
+    padding-left: 0; padding-right: 0;
+  }
+  .courses {
+    display: grid; justify-content: center; align-content: start;
+    grid-template-columns: minmax(0, 430px) minmax(0, 400px);
+    gap: 16px 34px; margin-top: 4px;
+  }
+  .courses > .rule { display: none; }
+  /* `align-self: start` matters: a <button> centres its own content box, so a
+     stretched card would float its face in the middle of the column and leave the
+     corner badge, which is positioned against the card, hanging in the air above it. */
+  .courses > .coursecard:not(.coursecard--soon) {
+    grid-column: 1; grid-row: 1 / span 6; align-self: start;
+  }
+  .courses > .coursecard--soon { grid-column: 2; }
+
+  /* ---- 3. Today becomes a board ------------------------------------------ */
+
+  /* Six cards, three by two, filling the board rather than sitting in a strip
+     across the top of it. The cards stretch and the reason chip is pushed to the
+     foot of each, so the six chips line up and the board reads as a set. */
+  #screen-today .cards {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, auto));
+    /* Rows size to their content. A fixed row height left a hundred pixels of dead space inside
+       every card whose problem is one line. Grid still stretches the cards within a row to match
+       each other, so the reason chips stay on one line across the row. */
+    align-content: start;   /* top aligned: centring left a dead band under the header */
+    gap: 20px; margin-top: 0; height: 100%;
+  }
+  #screen-today .problemcard { height: 100%; }
+  #screen-today .problemcard .bev-face { height: 100%; }
+  #screen-today .problemcard-body {
+    display: flex; flex-direction: column; height: 100%;
+    box-sizing: border-box; padding: 16px 18px 18px;
+  }
+  #screen-today .problemcard-math { font-size: 21px; }
+  #screen-today .problemcard-meta { margin-top: auto; }
+  #screen-today .problemcard-n { width: 30px; height: 30px; font-size: 14px; }
+
+  /* ---- 1. Path becomes a graph -------------------------------------------
+     Stages are columns ordered by DEPTH. `path.stages` arrives target first, so
+     `row-reverse` puts the foundations on the left and the target on the right,
+     and the depth axis reads the way an arrow does. The spine that carried the
+     order on the phone is horizontal here: one rail through every stage node,
+     with a chevron at each boundary.
+
+     Prerequisite structure is readable three ways: the left-to-right depth order,
+     the `needs:` line on a node, which names the exact prerequisite the engine is
+     waiting on and which always lives to its left, and the four node states.
+     Per-edge lines are NOT drawn: `GET /api/state` sends one `needs` string per
+     node, being the first UNMET prerequisite, and never the edge list, so a drawn
+     graph would show eight of the forty edges and imply the other thirty-two do
+     not exist. See the note in app/static/README.md. */
+
+  /* The goal card becomes one band: every pixel it gives back is a pixel the graph
+     under it uses to show another node without scrolling. */
+  #screen-path .screenhead { padding: 34px var(--gutter) 10px; }
+  #screen-path .goalcard { max-width: 780px; }
+  #screen-path .goalcard-body {
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px;
+    padding: 10px 16px 13px;
+  }
+  #screen-path .goalcard-title { margin-top: 0; font-size: 21px; }
+  #screen-path .pills { margin-top: 0; }
+  #screen-path .scroll--tab { display: flex; flex-direction: column; padding-top: 4px; }
+
+  .spine-wrap { padding-left: 0; margin-top: 2px; flex: 1 1 auto; min-height: 0; display: flex; }
+  .spine-rail { display: none; }
+
+  .stages {
+    position: relative;
+    flex-direction: row-reverse; justify-content: flex-start; align-items: stretch;
+    gap: 0; width: 100%; overflow-x: auto; padding-bottom: 6px;
+  }
+
+  /* `border-box`, so the min-width is the whole column and eight stages still fit
+     across a 1280px laptop. Below that the graph scrolls sideways inside `.stages`
+     rather than pushing the page wider: the axis stays intact and the page never
+     grows a horizontal scrollbar. */
+  .stage-item {
+    flex: 1 1 0; min-width: 126px; box-sizing: border-box;
+    display: flex; flex-direction: column;
+    padding: 0 9px 10px;
+  }
+  /* The depth rail, drawn per column so it starts at the first stage node and
+     stops at the target rather than running off both ends of the graph. */
+  .stage-item::before {
+    content: ''; position: absolute; z-index: 0;
+    top: 17px; left: 0; right: 0; height: 6px; background: var(--line);
+  }
+  .stage-item:first-child::before { left: 0; right: 50%; background: var(--gold); }
+  .stage-item:last-child::before  { left: 50%; right: 0; }
+  /* One chevron per boundary, pointing at the stage this one feeds. */
+  .stage-item:not(:first-child)::after {
+    content: ''; position: absolute; z-index: 0; top: 13px; right: -6px;
+    border-left: 11px solid var(--line);
+    border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+  }
+  .stage-item:nth-child(2)::after { border-left-color: var(--gold); }
+
+  /* The target stage, anchored at the end of the axis and wearing the same gold
+     the goal card above it wears. */
+  .stage-item:first-child {
+    background: linear-gradient(180deg, rgba(239, 198, 9, .10), rgba(239, 198, 9, 0) 220px);
+  }
+  .stage-item:first-child > .stage-node { box-shadow: 0 3px 0 #000, 0 0 0 5px rgba(239, 198, 9, .30); }
+
+  /* The stage node comes out of the spine's absolute hanger and stands on the rail. */
+  .stage-item > .stage-node {
+    position: relative; left: auto; top: auto;
+    margin: 0 auto 12px; z-index: 1;
+  }
+
+  .stage-btn { filter: drop-shadow(0 3px 0 #000) drop-shadow(0 5px 0 rgba(0, 0, 0, .42)); }
+  .stage-body { padding: 8px 10px 10px; }
+  .stage-row { align-items: flex-start; gap: 7px; }
+  .stage-name { font-size: 13.5px; line-height: 1.12; -webkit-text-stroke-width: 3px; }
+  .stage-count { font-size: 11px; padding: 1px 6px 3px; }
+  .stage-state { margin-top: 5px; font-size: 9.5px; letter-spacing: .08em; }
+
+  /* Every node in the stage, always. `display` is restored by an id-qualified
+     selector so the phone's `.skills:not(.skills--open)` rule keeps its meaning. */
+  #screen-path .skills { display: block; margin-top: 10px; flex: 1 1 auto; animation: none; }
+  #screen-path .skills-body { gap: 6px; padding: 7px 7px 9px; }
+
+  /* One node of the graph. A card, not a list row: the bevel and border are the
+     ones every other card in the app uses. */
+  #screen-path .skill {
+    align-items: flex-start; gap: 6px;
+    border: 2px solid #000; box-shadow: 0 2px 0 #000;
+    background: var(--dim); padding: 6px 7px 7px;
+  }
+  #screen-path .skill .dot { margin-top: 2px; }
+  #screen-path .skill-body { gap: 3px; }
+  #screen-path .skill-name { font-size: 11px; line-height: 1.2; }
+  #screen-path .skill-tags { gap: 4px; }
+  #screen-path .skill-needs {
+    font-size: 9.5px; line-height: 1.22; padding: 1px 5px 3px; background: var(--sunk);
+  }
+  /* At 37 nodes the state WORD on every one of them is noise: the shape carries
+     the state and the legend at the foot of the screen names all four. It stays on
+     the frontier, which is the one state worth spelling out. */
+  #screen-path .skill-state { display: none; }
+  #screen-path .skill:has(.dot--now) .skill-state {
+    display: block; font-size: 9px; letter-spacing: .05em;
+  }
+  /* The prerequisite always lives in a column to the left, so the pointer points
+     there. It is a glyph, not a word: nothing here needs translating. */
+  #screen-path .skill-needs::before { content: '\2190\00a0'; color: var(--faint); }
+
+  /* State on the node itself, read from the dot the renderer already sets, so no
+     new class and no JS change. The frontier is the loud one. */
+  #screen-path .skill:has(.dot--now) {
+    background: var(--card); box-shadow: 0 2px 0 #000, inset 0 0 0 2px var(--cyan);
+  }
+  #screen-path .skill:has(.dot--mastered) { background: rgba(252, 188, 33, .12); }
+  #screen-path .skill:has(.dot--locked) { opacity: .8; }
+  /* Nothing is collapsed here, so the open stage is only the column the student
+     last touched: a lip under its header and no more. A whole tinted column read
+     as "this one matters", which is a claim the accordion state cannot make. */
+  .stage-btn.is-open .bev-face { --lip: inset 0 -6px 0 var(--cyan-under); }
+
+  /* SHAPE as well as colour, the accessibility rule from docs/ui-spec.md, on the
+     small dot too: at this size the graph is read at a glance and four discs in
+     four colours is not a distinction. The legend below draws the same four. */
+  .dot { width: 13px; height: 13px; }
+  .dot--mastered {
+    border: 0; background: var(--amber);
+    clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+  .dot--now { border-radius: 50%; box-shadow: 0 0 0 3px rgba(104, 193, 224, .30); }
+  .dot--locked { border-radius: 2px; background: var(--chip-review); }
+
+  .legend { flex: none; gap: 18px; margin-top: 14px; padding-top: 12px; }
+  .legend-item { font-size: 11px; }
+
+  /* ---- Blockers, both cards in view at once ------------------------------ */
+
+  /* Two fixed columns rather than auto-fit: with one open blocker an auto-fit grid
+     stretches the single card across the whole screen, which makes one misconception
+     look like a wall. */
+  .blockers {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px; max-width: 920px; align-items: start; margin-top: 4px;
+  }
+
+  /* ---- You --------------------------------------------------------------- */
+
+  #screen-you .statrow, #screen-you .settings { max-width: 620px; }
+
+  /* ---- Solve: the problem over the answer, the hint ladder beside it ------ */
+
+  /* The problem across the top, the answer under it and the hint ladder beside it,
+     so a revealed rung lands next to the answer box rather than pushing it down the
+     screen. Top aligned, not centred: the ladder grows as rungs are revealed, and a
+     centred column would slide the "Show next hint" button out from under the cursor
+     that just pressed it. */
+  /* One column: problem, then answer, then hints, each clearly separated.
+     Side by side put a 700px answer field next to a squeezed hint ladder, and left the
+     problem sitting straight on top of the input with nothing between them. Reading
+     order is also the order of use, so stacking matches what the student does: read it,
+     answer it, ask for a hint only if stuck. Top aligned rather than centred, because
+     the ladder grows as rungs are revealed and a centred column would slide the button
+     out from under the cursor that just pressed it. The column is narrower than the
+     other flow screens: an answer field the width of a 1440px display is unusable. */
+
+  #screen-solve .scroll--flow {
+    --flow-max: 780px;
+    flex-direction: column; align-items: stretch; align-content: flex-start;
+    padding-top: 44px; gap: 28px;
+  }
+  #screen-solve .solvecard {
+    flex: none;
+  }
+  #screen-solve .solvecard-body { padding: 20px 22px 24px; }
+  #screen-solve .problem { font-size: 30px; }
+  /* Set apart from the problem: they are two different acts, and with no gap the input
+     read as part of the question card. */
+
+  #screen-solve .answerblock {
+    flex: none; margin-top: 4px;
+  }
+  #screen-solve .answerinput { font-size: 22px; padding: 20px 18px 22px; }
+  /* Hints last, and set apart again. Asking for one is a deliberate step and should not
+     sit shoulder to shoulder with the answer box as though it were the same action. */
+
+  #screen-solve .hintblock {
+    flex: none; margin-top: 8px;
+  }
+
+  /* ---- Check ------------------------------------------------------------- */
+
+  #screen-check .scroll--flow { --flow-max: 900px; }
+  #screen-check .tline-text { font-size: 19px; }
+
+  /* ---- 2. Result: the working and the diagnosis, side by side -------------
+     The most important moment in the product. On the phone the diagnosis replaces
+     the working; here it arrives NEXT TO it, with the blamed line lit in place, so
+     the error and the explanation are read together.
+
+     A wrapping flex row rather than a fixed grid, because the working only exists
+     on the photo path: when `#resWork` is hidden the diagnosis is alone on its row
+     and takes the middle of the screen instead of leaving a column-shaped hole. */
+
+  #screen-result .scroll--flow {
+    flex-flow: row wrap; align-items: flex-start; align-content: flex-start;
+    justify-content: center; gap: 20px 22px;
+  }
+  #screen-result .verdictcard { flex: 1 1 100%; }
+  #screen-result .verdictcard-body { padding: 18px 22px 20px; }
+  #resWork { flex: 1 1 42%; max-width: 560px; align-self: stretch; padding: 16px 16px; }
+  #resWaiting { flex: 1 1 48%; max-width: 660px; }
+  #resDiag { flex: 1 1 50%; max-width: 660px; }
+  #resDiag .diag-body { padding: 20px 22px 22px; }
+  /* Prose, and prose is never stroked. This is the line the whole readability rule
+     at the top of this file exists for; it computes to 0px at every width. */
+  #screen-result .diag-prose { font-size: 20px; }
+
+  /* Correct, and there is nothing beside it: one card, centred. */
+  #screen-result.is-lean .scroll--flow { align-content: center; }
+  #screen-result.is-lean .verdictcard { max-width: 680px; margin: 0 auto; }
+
+  /* ---- Complete ---------------------------------------------------------- */
+
+  #screen-complete .scroll--flow { --flow-max: 720px; }
+  #screen-complete .scroll--complete { padding-top: 40px; padding-bottom: 40px; }
+}
+
