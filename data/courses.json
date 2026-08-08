@@ -1,0 +1,27 @@
+{
+  "note": "Course manifest. Exactly one course is playable; the rest are declared so the shape of the platform is visible without pretending they exist. `state` is the only thing that gates selection.",
+  "courses": [
+    {
+      "id": "calculus-for-ai",
+      "title": "Calculus for AI",
+      "subtitle": "From algebra to gradient descent",
+      "ends_at": "The gradient descent update step",
+      "state": "active",
+      "graph": "data/graph/nodes.json",
+      "skills": 37,
+      "hours": "about 18 days at 15 min a day"
+    },
+    { "id": "linear-algebra-for-ai", "title": "Linear Algebra for AI",
+      "subtitle": "Vectors to eigenvalues", "ends_at": "Principal component analysis",
+      "state": "coming_soon", "skills": 41 },
+    { "id": "jee-calculus", "title": "JEE Mains Calculus",
+      "subtitle": "The full calculus syllabus", "ends_at": "Definite integrals and areas",
+      "state": "coming_soon", "skills": 63 },
+    { "id": "class-12-calculus", "title": "Class 12 Calculus",
+      "subtitle": "CBSE board, in your language", "ends_at": "Applications of integrals",
+      "state": "coming_soon", "skills": 58 },
+    { "id": "probability-for-ml", "title": "Probability for ML",
+      "subtitle": "Counting to Bayes", "ends_at": "Maximum likelihood estimation",
+      "state": "coming_soon", "skills": 34 }
+  ]
+}

@@ -17,6 +17,13 @@ test time-dependent.
 log and say so loudly, both in a log line and in `Session.history_source`. We deliberately do not
 invent a plausible-looking history: a fabricated one would be indistinguishable from the real seed
 on screen and would silently ship wrong numbers.
+
+Alongside the log the session holds the three facts the onboarding flow turns on: whether anyone
+has signed up, what they asked to be called, and which course they picked. That is the whole of
+"who is using this", and `Session.flow` folds it into the one answer the frontend asks for. It is
+kept here rather than derived in the API layer for the same reason `NodeState` is: two readers of
+the same rule drift, and the flow rule changes under the frontend on `POST /api/reset?full=1`,
+which is a call the frontend did not make.
 """
 
 from __future__ import annotations
@@ -52,7 +59,14 @@ HISTORY_PATH = "data/demo/history.json"
 GRAPH_PATH = "data/graph/nodes.json"
 ITEMS_PATH = "data/items/items.json"
 DIAGNOSIS_CACHE_PATH = "data/demo/diagnosis_cache.json"
+COURSES_PATH = "data/courses.json"
 I18N_DIR = "data/i18n"
+
+#: The ONE thing that gates course selection. A course is playable when its manifest `state` says
+#: so, and nothing else in the process is allowed to have an opinion: `GET /api/courses` reports
+#: `selectable` from this predicate and `POST /api/courses/{id}/select` refuses on the same one, so
+#: the card and the endpoint can never disagree.
+COURSE_ACTIVE = "active"
 
 #: How many days back "this week" reaches, for blocker frequency and accuracy.
 WEEK_DAYS = 7
@@ -268,6 +282,50 @@ def load_history(
     return attempts, extras, f"{p} ({len(attempts)} attempts, anchored to {DEMO_YESTERDAY.date()})"
 
 
+# --------------------------------------------------------------------------- the course manifest
+
+def load_courses(path: str | Path = COURSES_PATH) -> list[dict]:
+    """The course manifest, or `[]` if it is missing or unreadable.
+
+    Same degradation rule as the seeded history: content that is not there produces an empty list
+    and a loud log line, never an exception inside a request. An empty manifest means the course
+    screen has nothing to offer, which is visible and honest; a fabricated course is neither.
+    """
+    p = resolve(path)
+    if not p.exists():
+        log.warning("COURSE MANIFEST MISSING: %s does not exist. No course is selectable.", p)
+        return []
+    try:
+        raw = json.loads(p.read_text(encoding="utf-8"))
+    except Exception as e:                                        # noqa: BLE001
+        log.warning("COURSE MANIFEST UNREADABLE: %s (%s). No course is selectable.", p, e)
+        return []
+    rows = raw.get("courses", []) if isinstance(raw, dict) else raw
+    return [row for row in rows if isinstance(row, dict) and row.get("id")]
+
+
+def is_selectable(course: dict) -> bool:
+    """Is this course playable? THE definition, and the only one in the process.
+
+    Deliberately a function over the manifest record rather than a field the frontend derives from
+    `state`. Two readers of the same rule drift the first time the rule changes, and the one that
+    drifts is always the one that is not enforcing anything.
+    """
+    return course.get("state") == COURSE_ACTIVE
+
+
+def default_course_id(path: str | Path = COURSES_PATH) -> Optional[str]:
+    """The course `POST /api/reset` lands on: the first selectable one in the manifest.
+
+    Read from the manifest rather than hardcoded, so the same predicate that makes exactly one card
+    tappable also decides what a demo rehearsal starts in.
+    """
+    for course in load_courses(path):
+        if is_selectable(course):
+            return str(course["id"])
+    return None
+
+
 # --------------------------------------------------------------------------- the session
 
 class Session:
@@ -277,8 +335,10 @@ class Session:
     log plus the pending attempts, and every derived number is recomputed from the log on demand.
     """
 
-    def __init__(self, history_path: str | Path = HISTORY_PATH) -> None:
+    def __init__(self, history_path: str | Path = HISTORY_PATH,
+                 courses_path: str | Path = COURSES_PATH) -> None:
         self.history_path = history_path
+        self.courses_path = courses_path
         self.graph: Graph = load_graph(GRAPH_PATH)
         self.items_by_node: dict[str, list[Item]] = load_items(ITEMS_PATH)
         self.item_bank: dict[str, Item] = load_item_bank(ITEMS_PATH)
@@ -287,13 +347,44 @@ class Session:
 
     # ------------------------------------------------------------------ lifecycle
 
-    def reset(self) -> None:
-        """Back to the seeded history exactly. The seed file is re-read so a history.json that
-        lands while the server is running is picked up by one POST /api/reset."""
+    def reset(self, *, full: bool = False) -> None:
+        """Back to the demo's starting position.
+
+        The DEFAULT (`full=False`) is the seeded student **with the course already selected**, so a
+        demo rehearsal lands straight on Today and does not walk the three onboarding screens
+        again. The seed file is re-read, so a history.json that lands while the server is running
+        is picked up by one POST /api/reset.
+
+        `full=True` clears the session itself: no sign up, no course, and an EMPTY attempt log, so
+        the next screen is Welcome. The log has to go with it. A cleared session that still carried
+        a five-day history would put the seeded student's blockers behind a sign-up form belonging
+        to nobody, and `POST /api/courses/{id}/select` is the thing that installs a history, so
+        leaving one in place would make that installation a no-op you could not see.
+        """
+        if full:
+            self._seeded: list[Attempt] = []
+            self._extras: dict[str, dict] = {}
+            self.history_source = "empty (no course selected)"
+        else:
+            self._reload_seeded()
+        self._clear_runtime()
+        # Identity is reset alongside, in both directions: `reset()` is the seeded student and
+        # `reset(full=True)` is nobody. A display name that survived either would belong to a
+        # session that no longer exists.
+        self.student_name: Optional[str] = None
+        self.signed_up: bool = not full
+        self.selected_course: Optional[str] = None if full else default_course_id(
+            self.courses_path)
+
+    def _reload_seeded(self) -> None:
+        """Re-read the seed file into the log. The only place the seeded history is installed."""
         seeded, extras, source = load_history(self.history_path, self.item_bank)
-        self._seeded: list[Attempt] = seeded
-        self._extras: dict[str, dict] = dict(extras)
+        self._seeded = seeded
+        self._extras = dict(extras)
         self.history_source = source
+
+    def _clear_runtime(self) -> None:
+        """Everything this process accumulated on top of the seed."""
         self._live: list[Attempt] = []
         self.pending: dict[str, Pending] = {}
         self.commits: list[CommitRecord] = []
@@ -309,6 +400,47 @@ class Session:
         # a permanent extra drill that skews the item pool for that node.
         self.twins: dict[str, Item] = {}
         self.twin_seeds: dict[str, int] = {}
+
+    # ------------------------------------------------------------------ onboarding
+
+    def sign_up(self, name: Optional[str] = None) -> None:
+        """The placeholder sign up: a display name, and deliberately nothing else.
+
+        **No credential is taken, so none is asked for.** No password field, no email, not even a
+        fake one. A form that looks like it takes a credential and does not is a worse lie than an
+        honest placeholder, and this screen is shown to judges.
+
+        Creates or resets the session, which means the log is emptied and any course selection is
+        dropped: the next screen is Course selection, and the history arrives with the course.
+        """
+        self.reset(full=True)
+        self.signed_up = True
+        self.student_name = (name or "").strip() or None
+
+    def install_course(self, course_id: str) -> None:
+        """Select a course and install its seeded history, keeping who the student is.
+
+        Deliberately NOT `reset()`: that is the demo's rewind and clears the display name, which
+        the student typed one screen ago.
+        """
+        self._reload_seeded()
+        self._clear_runtime()
+        self.signed_up = True
+        self.selected_course = course_id
+
+    @property
+    def flow(self) -> str:
+        """Which screen the frontend lands on: `welcome`, `courses` or `ready`.
+
+        Decided here so it is decided once. The frontend asking "am I signed up, and do I have a
+        course?" would be a second implementation of this rule living in a place that cannot see
+        `POST /api/reset?full=1` change the answer underneath it.
+        """
+        if not self.signed_up:
+            return "welcome"
+        if not self.selected_course:
+            return "courses"
+        return "ready"
 
     # ------------------------------------------------------------------ the log
 

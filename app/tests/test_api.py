@@ -42,7 +42,14 @@ from app.server import (                                                      # 
     _default_tag_for_node,
     app,
 )
-from app.state import DEMO_TODAY, DEMO_YESTERDAY, Session, get_session        # noqa: E402
+from app.state import (                                                       # noqa: E402
+    DEMO_TODAY,
+    DEMO_YESTERDAY,
+    Session,
+    get_session,
+    is_selectable,
+    load_courses,
+)
 from engine.mastery import p_eff, status                                      # noqa: E402
 from engine.replay import replay                                              # noqa: E402
 from engine.selection import goal_ancestors                                   # noqa: E402
@@ -653,6 +660,287 @@ def test_reset_restores_the_seeded_state_exactly(client, monkeypatch):
     assert list(get_session().attempts) == list(get_session().seeded_attempts)
 
 
+# --------------------------------------------------------------------------- onboarding
+
+ACTIVE_COURSE = "calculus-for-ai"
+SOON_COURSE = "jee-calculus"
+
+_COURSE_FIELDS = {"id", "title", "subtitle", "ends_at", "state", "skills", "skills_line",
+                  "detail", "selectable"}
+
+
+def test_courses_returns_every_card_field_with_the_right_types(client):
+    body = client.get("/api/courses").json()
+    assert set(body) == {"courses", "selected"}
+    assert body["courses"], "the course screen must never come back empty"
+    assert body["selected"] == ACTIVE_COURSE, "a plain reset keeps the course selected"
+
+    for course in body["courses"]:
+        assert set(course) == _COURSE_FIELDS
+        assert isinstance(course["id"], str) and course["id"]
+        assert isinstance(course["title"], str) and course["title"]
+        assert isinstance(course["subtitle"], str) and course["subtitle"]
+        assert isinstance(course["ends_at"], str) and course["ends_at"]
+        assert course["state"] in {"active", "coming_soon"}
+        assert isinstance(course["skills"], int) and course["skills"] > 0
+        assert str(course["skills"]) in course["skills_line"]
+        assert isinstance(course["selectable"], bool)
+        assert course["detail"], "every card carries a second line"
+
+
+def test_exactly_one_course_is_selectable_and_it_is_the_playable_one(client):
+    """One course is real. The other four are declared so the shape of the platform is visible,
+    and a second tappable card would be a promise the item bank cannot keep."""
+    courses = client.get("/api/courses").json()["courses"]
+    selectable = [c for c in courses if c["selectable"]]
+    assert len(selectable) == 1
+    assert selectable[0]["id"] == ACTIVE_COURSE
+    assert selectable[0]["state"] == "active"
+    assert all(c["state"] == "coming_soon" for c in courses if not c["selectable"])
+
+
+def test_selectable_is_computed_server_side_and_not_read_off_state(client, monkeypatch):
+    """`selectable` must be the SERVER's answer, not `state == "active"` recomputed downstream.
+
+    Proved by moving the predicate: swap `is_selectable` for one that says the opposite, and both
+    the payload and the select endpoint have to follow it while `state` stays exactly as authored.
+    A handler that had inlined the comparison would keep reporting the old answer, and so would a
+    frontend that inferred it, which is the whole reason the field exists.
+    """
+    inverted = client.get("/api/courses").json()
+    assert [c["selectable"] for c in inverted["courses"]] == [True, False, False, False, False]
+
+    monkeypatch.setattr(server, "is_selectable", lambda course: not is_selectable(course))
+    flipped = client.get("/api/courses").json()["courses"]
+    assert [c["selectable"] for c in flipped] == [False, True, True, True, True]
+    assert [c["state"] for c in flipped] == [c["state"] for c in inverted["courses"]], \
+        "the manifest's own field must be reported untouched"
+
+    # And the endpoint refuses on the same predicate, so a card and its handler cannot disagree.
+    assert client.post(f"/api/courses/{ACTIVE_COURSE}/select").json()["error"]
+    assert "error" not in client.post(f"/api/courses/{SOON_COURSE}/select").json()
+
+
+def test_a_coming_soon_course_says_coming_soon_rather_than_inventing_a_duration(client):
+    """The manifest carries no duration for a course nobody has built. A plausible "about 20 days"
+    on that card is a number we made up, on the screen that is claiming to be honest."""
+    for lang, expected in (("en", "Coming soon"), ("hi", "जल्द आ रहा है")):
+        courses = client.get(f"/api/courses?lang={lang}").json()["courses"]
+        for course in courses:
+            if course["selectable"]:
+                assert course["detail"] != expected
+                assert any(ch.isdigit() for ch in course["detail"])
+            else:
+                assert course["detail"] == expected
+
+    manifest = {c["id"]: c for c in load_courses()}
+    assert all(not is_selectable(c) or c.get("hours") for c in manifest.values())
+    assert all(is_selectable(c) or "hours" not in c for c in manifest.values()), \
+        "a coming_soon course must not carry an authored duration either"
+
+
+def test_signup_records_a_name_and_asks_for_no_credential(client):
+    """**The placeholder is honest on purpose.** No password field, no email field, not even a
+    decorative one: a form that appears to take a credential and quietly discards it is a worse
+    lie than an admitted placeholder, and this screen is shown to judges."""
+    assert set(server.SignupRequest.model_fields) == {"name"}, \
+        "sign up takes a display name and nothing else"
+
+    body = client.post("/api/session/signup", json={"name": "Avinash"}).json()
+    assert body == {"student_id": "demo", "name": "Avinash", "next": "courses"}
+    assert get_session().student_name == "Avinash"
+
+    # A credential sent anyway is not stored, not echoed and not an error.
+    sneaky = client.post("/api/session/signup",
+                         json={"name": "Avinash", "password": "hunter2",
+                               "email": "a@example.com"})
+    assert sneaky.status_code == 200
+    assert set(sneaky.json()) == {"student_id", "name", "next"}
+    assert not hasattr(get_session(), "password")
+
+
+def test_signup_without_a_name_falls_back_to_a_translated_placeholder(client):
+    """The name field is optional, so the screen after it still needs something to say."""
+    for body in ({}, {"name": ""}, {"name": "   "}, None):
+        named = client.post("/api/session/signup",
+                            **({"json": body} if body is not None else {})).json()
+        assert named["name"] == "Student"
+        assert named["next"] == "courses"
+        assert get_session().student_name is None
+
+    hindi = client.post("/api/session/signup?lang=hi", json={}).json()
+    assert DEVANAGARI.search(hindi["name"])
+
+
+def test_signup_creates_or_resets_the_session_and_lands_on_courses(client):
+    session = get_session()
+    assert session.attempts, "the fixture starts from the seeded student"
+
+    client.post("/api/session/signup", json={"name": "Avinash"})
+    assert session.attempts == (), "a new session starts with no history of its own"
+    assert session.selected_course is None
+    assert client.get("/api/state").json()["flow"] == "courses"
+
+
+def test_selecting_a_course_installs_its_history_and_returns_the_whole_state(client):
+    """One call, not two. The frontend goes from the card straight to Today."""
+    client.post("/api/reset?full=1")
+    client.post("/api/session/signup", json={"name": "Avinash"})
+    session = get_session()
+    assert session.attempts == ()
+
+    selected = client.post(f"/api/courses/{ACTIVE_COURSE}/select").json()
+
+    assert "error" not in selected
+    assert selected["flow"] == "ready"
+    assert session.selected_course == ACTIVE_COURSE
+    assert session.attempts == session.seeded_attempts and session.attempts, \
+        "selecting the course is what installs the seeded history"
+    assert session.student_name == "Avinash", "selection must not forget who signed up"
+
+    # It really is the whole GET /api/state body, field for field.
+    assert selected == client.get("/api/state").json()
+    assert selected["today"]["problems"] and selected["path"]["stages"]
+    assert selected["blockers"], "the seeded history arrived with its blockers"
+
+
+def test_selecting_a_coming_soon_course_changes_nothing_and_says_so(client):
+    """HTTP 200 with an error, per the contract: the demo degrades, it never blanks. The card is
+    already non-interactive, so this is the backstop and not the gate."""
+    client.post("/api/reset?full=1")
+    client.post("/api/session/signup", json={"name": "Avinash"})
+    before = client.get("/api/state").json()
+
+    response = client.post(f"/api/courses/{SOON_COURSE}/select")
+    assert response.status_code == 200
+    body = response.json()
+    assert body == {"error": "not available yet", "selected": None}
+
+    assert get_session().selected_course is None
+    assert get_session().attempts == (), "a refused selection installs no history"
+    assert client.get("/api/state").json() == before
+    assert client.get("/api/courses").json()["selected"] is None
+
+    # And from a session that already HAS a course, a refusal leaves that one in place.
+    client.post(f"/api/courses/{ACTIVE_COURSE}/select")
+    refused = client.post(f"/api/courses/{SOON_COURSE}/select").json()
+    assert refused == {"error": "not available yet", "selected": ACTIVE_COURSE}
+    assert client.get("/api/state").json()["flow"] == "ready"
+
+
+def test_selecting_an_unknown_course_degrades(client):
+    body = client.post("/api/courses/not-a-course/select").json()
+    assert body["error"]
+    assert body["selected"] == ACTIVE_COURSE, "the selection is unchanged"
+
+
+def test_flow_walks_welcome_then_courses_then_ready(client):
+    """The frontend asks the server which screen it is on. It must not track this itself: the
+    answer changes under it on `POST /api/reset?full=1`, which is a call it did not make."""
+    assert client.post("/api/reset?full=1").json()["flow"] == "welcome"
+    assert client.get("/api/state").json()["flow"] == "welcome"
+
+    client.post("/api/session/signup", json={"name": "Avinash"})
+    assert client.get("/api/state").json()["flow"] == "courses"
+
+    # A refused course does not advance the flow.
+    client.post(f"/api/courses/{SOON_COURSE}/select")
+    assert client.get("/api/state").json()["flow"] == "courses"
+
+    assert client.post(f"/api/courses/{ACTIVE_COURSE}/select").json()["flow"] == "ready"
+    assert client.get("/api/state").json()["flow"] == "ready"
+
+    for lang in ("en", "hi"):
+        assert client.get(f"/api/state?lang={lang}").json()["flow"] == "ready", \
+            "flow is a state name, never a translated string"
+
+
+def test_reset_keeps_the_course_and_full_reset_returns_to_welcome(client):
+    """Two different buttons. The plain one is what you press between demo takes; the `full` one is
+    what you press when the flow itself is the thing being shown."""
+    plain = client.post("/api/reset").json()
+    assert plain["flow"] == "ready"
+    assert get_session().selected_course == ACTIVE_COURSE
+    assert get_session().attempts == get_session().seeded_attempts
+    assert get_session().attempts, "a rehearsal reset still has the seeded 5-day history"
+    assert client.get("/api/courses").json()["selected"] == ACTIVE_COURSE
+
+    full = client.post("/api/reset?full=1").json()
+    assert full["flow"] == "welcome"
+    assert get_session().selected_course is None
+    assert get_session().student_name is None
+    assert get_session().attempts == (), "a cleared session carries nobody's history"
+    assert client.get("/api/courses").json()["selected"] is None
+
+    # Both are still a renderable GET /api/state, which is what the contract promises. A welcome
+    # screen that cannot fall back to a drawn Today tab is a blank screen waiting to happen.
+    for body in (plain, full):
+        assert body["today"]["headline"] and body["path"]["stages"] and body["ui"]
+
+    assert client.post("/api/reset").json()["flow"] == "ready", "and it comes back"
+    assert get_session().attempts == get_session().seeded_attempts
+
+
+def test_course_strings_are_localised_in_both_languages(client):
+    english = client.get("/api/courses?lang=en").json()["courses"]
+    hindi = client.get("/api/courses?lang=hi").json()["courses"]
+
+    assert [c["id"] for c in hindi] == [c["id"] for c in english]
+    for hi_course, en_course in zip(hindi, english):
+        for field in ("title", "subtitle", "ends_at", "detail", "skills_line"):
+            assert DEVANAGARI.search(hi_course[field]), \
+                f'{hi_course["id"]}.{field} is still English: {hi_course[field]!r}'
+            assert hi_course[field] != en_course[field]
+            assert "{{" not in hi_course[field] and not hi_course[field].startswith("ui:")
+        # Machine-readable fields are NOT translated: they are ids and enum values.
+        assert hi_course["id"] == en_course["id"]
+        assert hi_course["state"] == en_course["state"]
+        assert hi_course["skills"] == en_course["skills"]
+        assert hi_course["selectable"] == en_course["selectable"]
+
+
+#: The onboarding chrome, and where each string is meant to appear. Named rather than derived,
+#: because the point is that the three new screens can be drawn entirely out of `state["ui"]`
+#: without the frontend holding a single English literal of its own.
+_ONBOARDING_CHROME = (
+    "welcome.subtitle", "action.get_started",
+    "signup.title", "signup.subtitle", "signup.name_label", "signup.name_placeholder",
+    "signup.default_name", "action.continue",
+    "screen.courses", "courses.subtitle", "course.coming_soon", "course.ends_at",
+    "action.start_course",
+)
+
+
+def test_every_onboarding_string_resolves_in_both_languages(client):
+    english = client.get("/api/state?lang=en").json()["ui"]
+    hindi = client.get("/api/state?lang=hi").json()["ui"]
+
+    for key in _ONBOARDING_CHROME:
+        assert english.get(key), f"no English string for {key}"
+        assert hindi.get(key), f"no Hindi string for {key}"
+        assert english[key] != hindi[key], f"{key} is not translated, only echoed"
+        assert DEVANAGARI.search(hindi[key]), f"{key} is still English: {hindi[key]!r}"
+        assert not _ASCII_LETTERS.search(hindi[key]), f"{key} leaks English: {hindi[key]!r}"
+        for value in (english[key], hindi[key]):
+            assert not TOKEN.search(value) and not value.startswith("ui:")
+
+    # The counted string is deliberately NOT chrome. It is a sentence template, so it is rendered
+    # server-side with the number already in it and never handed over for interpolation.
+    assert "course.skills" not in english and "course.skills" not in hindi
+
+    # Nor is per-course content: every catalogue string is already in its own card, translated,
+    # and one string in two places is one string that gets read from the wrong one.
+    for chrome in (english, hindi):
+        assert not [k for k in chrome if k.startswith("catalogue.")]
+    titles = {c["title"] for c in client.get("/api/courses?lang=hi").json()["courses"]}
+    assert titles and not (titles & set(hindi.values())), \
+        "a course title reached the chrome map as well as its card"
+    for lang in ("en", "hi"):
+        for course in client.get(f"/api/courses?lang={lang}").json()["courses"]:
+            assert not TOKEN.search(course["skills_line"])
+            assert str(course["skills"]) in course["skills_line"]
+
+
 # --------------------------------------------------------------------------- solve/start, photo
 
 def test_solve_start_returns_the_problem_its_position_and_four_hints(client):
@@ -838,6 +1126,19 @@ def test_no_response_field_in_either_language_leaks_a_placeholder(client, monkey
             "transcribe": client.post(f"/api/solve/transcribe?lang={lang}",
                                       data={"item_id": SIGN_ITEM}).json(),
         }
+        # The onboarding endpoints go LAST, because sign up resets the session and the payloads
+        # above have to be collected against the seeded one. Adding them here rather than writing
+        # a second walker is the point of this test: the next leak will be in whichever field
+        # nobody thought to assert on, and the only defence is that every endpoint is in here.
+        payloads["courses"] = client.get(f"/api/courses?lang={lang}").json()
+        payloads["signup"] = client.post(f"/api/session/signup?lang={lang}",
+                                         json={"name": "Avinash"}).json()
+        payloads["select_refused"] = client.post(
+            f"/api/courses/{SOON_COURSE}/select?lang={lang}").json()
+        payloads["select"] = client.post(
+            f"/api/courses/{ACTIVE_COURSE}/select?lang={lang}").json()
+        payloads["reset_full"] = client.post(f"/api/reset?lang={lang}&full=1").json()
+
         for name, payload in payloads.items():
             for path, text in _strings(payload, name):
                 # The precise token, not a bare brace pair: LaTeX is full of `}}` and
@@ -1166,6 +1467,7 @@ def test_no_english_literal_survives_in_the_hindi_payload(client, monkeypatch):
 #: is not a crash: `_fmt` drops the token and the sentence quietly loses a word.
 _SERVER_TEMPLATES = {
     "ui:blocker.freq": {"n"},
+    "ui:course.skills": {"n"},
     "ui:diagnosis.consequence": {"node", "before", "after"},
     "ui:diagnosis.consequence_stays": {"node"},
     "ui:diagnosis.recurrence": {"when"},

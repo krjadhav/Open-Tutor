@@ -53,6 +53,8 @@ from app.state import (                                                     # no
     Session,
     CommitRecord,
     get_session,
+    is_selectable,
+    load_courses,
     resolve,
 )
 from engine.mastery import is_due, p_eff, status                             # noqa: E402
@@ -118,6 +120,15 @@ HINTS_PATH = "data/content/hints.json"
 #: bank's `gen-der.quotient-rule-1` (identical stem and identical answer key, verified). The photo
 #: path maps one to the other so a demo run against the real bank item still hits the cache.
 PHOTO_ALIASES = {"gen-der.quotient-rule-1": DEMO_ITEM.item_id}
+
+#: Per-course strings live under this prefix in `data/i18n/<lang>.json` rather than beside the
+#: manifest, because `pipeline/tests/test_translate.py` pins hi.json to `node_title:`, `item_stem:`
+#: and `ui:` and checks every entry against an English source it can find. A `course_title:` family
+#: would have had no source table and no coverage check; under `ui:` each string is pinned to its
+#: en.json twin like every other translated string in the app.
+#:
+#: They are excluded from the `ui` chrome map by `_ui_strings`: see that docstring.
+CATALOGUE_PREFIX = "ui:catalogue."
 
 MINUTES_PER_PROBLEM = 2.5
 
@@ -493,15 +504,21 @@ def _ui_strings(tr: I18n) -> dict[str, str]:
     template is not chrome: it is rendered server-side with its numbers already in it, because the
     count sits in a different place in each language. Shipping the raw template here would invite
     the frontend to interpolate it and reintroduce exactly the bug this all exists to fix.
+
+    `ui:catalogue.*` is excluded for the second reason: it is per-course CONTENT, not chrome. Each
+    of those strings is already delivered, translated, inside its own card by `GET /api/courses`,
+    and a second copy in a flat map is a second place for a title to be read from and a way for the
+    two to be used inconsistently.
     """
-    strings = {
-        key[len("ui:"):]: value
-        for key, value in tr.entries.items()
-        if key.startswith("ui:") and isinstance(value, str) and not _TOKEN.search(value)
-    }
+    def is_chrome(key: str, value: str) -> bool:
+        return (key.startswith("ui:") and isinstance(value, str)
+                and not key.startswith(CATALOGUE_PREFIX) and not _TOKEN.search(value))
+
+    strings = {key[len("ui:"):]: value for key, value in tr.entries.items()
+               if is_chrome(key, value)}
     for key, value in _entries("en").items():                # English backfill for missing keys
-        short = key[len("ui:"):] if key.startswith("ui:") else None
-        if short and short not in strings and not _TOKEN.search(value):
+        short = key[len("ui:"):] if is_chrome(key, value) else None
+        if short and short not in strings:
             strings[short] = value
     for tab_id, key, english in TABS:
         strings[f"tab.{tab_id}"] = tr.t(key, default=english)
@@ -684,6 +701,9 @@ def _state_payload(session: Session, tr: I18n) -> dict:
     return {
         "student_id": STUDENT_ID,
         "lang": tr.lang,
+        # Which of the three onboarding screens to land on, decided server-side like everything
+        # else. See `Session.flow`: no session -> welcome, no course -> courses, both -> ready.
+        "flow": session.flow,
         "goal": _goal_payload(session, states, tr, now),
         "today": _today_payload(session, states, tr),
         "path": {
@@ -694,6 +714,56 @@ def _state_payload(session: Session, tr: I18n) -> dict:
         "you": _you_payload(session, states, tr, now),
         "ui": _ui_strings(tr),
     }
+
+
+# --------------------------------------------------------------------------- courses
+
+def _course_card(course: dict, tr: I18n) -> dict:
+    """One course card, every string already translated and `selectable` already decided.
+
+    `selectable` comes from `app.state.is_selectable` and is NOT `state == "active"` recomputed
+    here, which is the same rule the select endpoint refuses on. The frontend is handed the answer
+    rather than the input, so a change to what "playable" means moves one predicate and not three.
+
+    `detail` is the one line under the card. A `coming_soon` course gets the localised "Coming
+    soon" and NOT an invented duration: the manifest carries no `hours` for those courses because
+    nobody has estimated one, and a plausible "about 20 days" on a course that does not exist is a
+    number we would be making up on a screen that is claiming to be honest about what is built.
+    """
+    course_id = str(course["id"])
+    selectable = is_selectable(course)
+    skills = int(course.get("skills") or 0)
+    return {
+        "id": course_id,
+        "title": tr.t(f"{CATALOGUE_PREFIX}title.{course_id}",
+                      default=course.get("title") or course_id),
+        "subtitle": tr.t(f"{CATALOGUE_PREFIX}subtitle.{course_id}",
+                         default=course.get("subtitle") or ""),
+        "ends_at": tr.t(f"{CATALOGUE_PREFIX}ends_at.{course_id}",
+                        default=course.get("ends_at") or ""),
+        "state": str(course.get("state") or ""),
+        "skills": skills,
+        # The sentence beside the number, rendered here for the same reason `skills_away_line` is:
+        # Hindi does not put the count where English does, and a frontend concatenating "37" onto
+        # a translated word is the bug this whole layer exists to prevent.
+        "skills_line": tr.t("ui:course.skills", default="{{n}} skills", n=skills),
+        "detail": (tr.t(f"{CATALOGUE_PREFIX}detail.{course_id}",
+                        default=course.get("hours") or "")
+                   if selectable else tr.t("ui:course.coming_soon", default="Coming soon")),
+        "selectable": selectable,
+    }
+
+
+def _courses_payload(session: Session, tr: I18n) -> dict:
+    return {
+        "courses": [_course_card(c, tr) for c in load_courses(session.courses_path)],
+        "selected": session.selected_course,
+    }
+
+
+def _find_course(session: Session, course_id: str) -> Optional[dict]:
+    return next((c for c in load_courses(session.courses_path)
+                 if str(c["id"]) == course_id), None)
 
 
 # --------------------------------------------------------------------------- answers and maths
@@ -810,12 +880,75 @@ class CommitRequest(BaseModel):
     blame_confirmed: Optional[bool] = None
 
 
+class SignupRequest(BaseModel):
+    """The whole sign up form. One optional display name.
+
+    **There is no password field and no email field, and neither is ever to be added here.** We are
+    not building auth for a hackathon; a form that renders a credential input and then ignores what
+    is typed into it is a lie told to the person using it, and worse on a stage than an admitted
+    placeholder. If a real account system ever lands, it lands as a real one.
+    """
+    name: str = ""
+
+
 # --------------------------------------------------------------------------- endpoints
 
 @app.get("/api/state")
 def get_state(lang: str = Query("en")) -> dict:
     session = get_session()
     return _state_payload(session, _tr(session, lang))
+
+
+# --------------------------------------------------------------------------- onboarding
+
+@app.get("/api/courses")
+def get_courses(lang: str = Query("en")) -> dict:
+    """The course manifest, localised, with `selectable` already computed."""
+    session = get_session()
+    return _courses_payload(session, _tr(session, lang))
+
+
+@app.post("/api/session/signup")
+def session_signup(body: Optional[SignupRequest] = None, lang: str = Query("en")) -> dict:
+    """The placeholder sign up. Creates or resets the session and records a display name.
+
+    No password, no email, no persistence beyond this process. See `SignupRequest` for why that is
+    a decision rather than an omission.
+    """
+    session = get_session()
+    tr = _tr(session, lang)
+    session.sign_up(body.name if body else None)
+    return {
+        "student_id": STUDENT_ID,
+        # A student who skipped the optional field still needs something to be called on screen,
+        # and it has to be translated: rendering the fallback here rather than in the frontend
+        # keeps "" and "Avinash" the same shape as far as the caller is concerned.
+        "name": session.student_name or tr.t("ui:signup.default_name", default="Student"),
+        "next": "courses",
+    }
+
+
+@app.post("/api/courses/{course_id}/select")
+def select_course(course_id: str, lang: str = Query("en")) -> dict:
+    """Install a course's seeded history and hand back the whole `GET /api/state` body.
+
+    One call, not two: the frontend goes straight from the course card to Today without a second
+    round trip that could half-fail and leave a selected course with no state on screen.
+
+    An unknown or `coming_soon` id is HTTP 200 with an `error` and the selection UNCHANGED, per the
+    contract's degrade-never-blank rule. The card is already non-interactive, so this refusal is
+    the backstop rather than the gate, and it refuses on `is_selectable`, the same predicate that
+    made the card non-interactive in the first place.
+    """
+    session = get_session()
+    tr = _tr(session, lang)
+    course = _find_course(session, course_id)
+    if course is None:
+        return {"error": f"unknown course {course_id}", "selected": session.selected_course}
+    if not is_selectable(course):
+        return {"error": "not available yet", "selected": session.selected_course}
+    session.install_course(course_id)
+    return _state_payload(session, tr)
 
 
 def _position_of(session: Session, item_id: str) -> tuple[int, int]:
@@ -1380,10 +1513,18 @@ def session_complete(lang: str = Query("en")) -> dict:
 
 
 @app.post("/api/reset")
-def reset(lang: str = Query("en")) -> dict:
-    """Back to the seeded 5-day history. Returns exactly what GET /api/state returns."""
+def reset(lang: str = Query("en"), full: int = Query(0)) -> dict:
+    """Back to the seeded 5-day history. Returns exactly what GET /api/state returns.
+
+    The DEFAULT keeps the course already selected, so `flow` comes back `ready` and a demo
+    rehearsal does not walk the three onboarding screens on every run. That is the button you press
+    between takes.
+
+    `?full=1` clears the session instead: no sign up, no course, an empty log, and `flow` comes
+    back `welcome`. That is the button you press when the flow itself is the thing being shown.
+    """
     session = get_session()
-    session.reset()
+    session.reset(full=bool(full))
     return _state_payload(session, _tr(session, lang))
 
 
