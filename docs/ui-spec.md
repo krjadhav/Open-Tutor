@@ -38,13 +38,17 @@ Animations to keep: `pulse` (the frontier node), `arrive` (diagnosis reveal, 0.7
 ## 2. Flow
 
 ```
-Onboard ─→ [Today] ⇄ [Path] ⇄ [Blockers] ⇄ [You]          tab bar, always visible
-              │                    │
-              │                    └─ "Fix this" starts a targeted set
-              │
-              └─→ Solve ─┬─ typed answer ─────────────→ Result ─→ next problem, or Complete
-                         └─ photo → Check ────────────→ Result
+Sign up ─→ Course selection ─→ [Today] ⇄ [Path] ⇄ [Blockers] ⇄ [You]   tab bar, always visible
+                                  │                    │
+                                  │                    └─ "Fix this" starts a targeted set
+                                  │
+                                  └─→ Solve ─┬─ typed answer ──→ Result ─→ next problem, or Complete
+                                             └─ photo → Check ─→ Result
 ```
+
+The tab bar is hidden on Sign up and Course selection. Which of the two you land on is decided by
+`flow` on `GET /api/state` (`signup`, `courses`, `ready`), never computed in the frontend; an
+unknown or missing value lands on Sign up.
 
 The solve flow is full screen, hides the tab bar, and has exactly one exit. **The step indicator is
 2 dots for the typed path and 3 for the photo path**, not a fixed 3 as in the mock.
@@ -53,9 +57,26 @@ The solve flow is full screen, hides the tab bar, and has exactly one exit. **Th
 
 ## 3. Screens and their real data contracts
 
-### Onboarding
-One question, prefilled `How neural networks learn`, one button. Nothing else.
-Data: none. The goal maps to `graph.target_node` (hardcoded for the demo).
+### Sign up
+The entry point. One question ("What should we call you?"), one optional name field, one button,
+and one line admitting no account is created. **No password field and no email field, not even a
+disabled one**: a form that looks like it takes a credential and does not is worse than an honest
+placeholder, and this screen is shown to judges.
+Data: `POST /api/session/signup`, which takes the name and nothing else.
+
+**The Welcome screen that used to come first is deleted.** It asked "What do you want to
+understand?" with `How neural networks learn` prefilled, and it had two problems. It duplicated the
+course choice on the very next screen, and the goal the student typed was never sent anywhere: the
+goal on Path is derived from `graph.target_node`, which the selected course determines. A field
+that implies it shapes the experience while something else actually determines it is worse than one
+screen fewer.
+
+### Course selection
+Every course in `data/courses.json` as a card. Exactly one is playable and is the only tab stop on
+the screen; the rest are `<div>`s carrying `aria-disabled` and a "Coming soon" pill.
+Data: `GET /api/courses`. Playability is read from `selectable`, computed server-side, never
+inferred from `state`. `POST /api/courses/{id}/select` installs the course's history and returns
+the whole `GET /api/state` body, so Today is drawn from that one reply.
 
 ### Tab 1, Today
 Header `6 problems · 15 min`. Six cards, each one line of maths plus a reason chip.
@@ -168,7 +189,7 @@ through a translator) holds by construction rather than by verification.
 | content | Hindi coverage |
 |---|---|
 | node titles (37) | complete |
-| UI strings (50) | complete |
+| UI strings (117) | complete |
 | generated item stems (194) | complete, by template |
 | misconception names and chip shorts (38) | complete |
 | hint prose rungs (111) | **37 of 111**, covering 3 of 37 nodes fully |

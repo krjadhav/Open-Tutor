@@ -150,17 +150,25 @@ shows the last good state.
 
 # Addendum: onboarding, sign up, course selection
 
-Added 2026-08-08. The flow before the tabs is now three screens, not one.
+Added 2026-08-08. Revised the same day: the Welcome screen is gone, so the flow before the tabs is
+two screens, not three.
 
 ```
-Welcome ──→ Sign up ──→ Course selection ──→ [Today]
-(the goal   (placeholder,  (one playable,
- question)   no real auth)  the rest disabled)
+Sign up ──→ Course selection ──→ [Today]
+(placeholder,  (one playable,
+ no real auth)  the rest disabled)
 ```
 
-The goal question stays as the first screen because it is the strongest thing we say, and it now
-frames the choice that follows rather than standing alone. Sign up is deliberately a placeholder:
-we are not building auth for a hackathon, and pretending to would be worse than admitting it.
+**Why the goal question went.** It asked "What do you want to understand?" and then the very next
+screen asked the student to choose a course, which is the same decision twice. Worse, the goal they
+typed was never sent anywhere: no endpoint accepted it, and `goal` on `GET /api/state` is derived
+from `graph.target_node`, which the selected course determines. A field that implies it shapes the
+experience while something else actually determines it is worse than one screen fewer, so the
+screen and its four i18n strings (`ui:welcome.subtitle`, `ui:goal.prompt`, `ui:goal.example`,
+`ui:action.get_started`) were removed together rather than left as translated copy nothing renders.
+
+Sign up is deliberately a placeholder: we are not building auth for a hackathon, and pretending to
+would be worse than admitting it.
 
 ## GET /api/courses
 
@@ -202,9 +210,24 @@ The card should already be non-interactive; the endpoint refusing is the backsto
 
 ## Flow rules
 
-- A student with no session lands on Welcome. A student with a session and no course lands on
-  Course selection. A student with both lands on Today. The frontend asks the server which, it does
-  not track this itself.
+`GET /api/state` carries `flow`, one of exactly three values. They are **facts about the student,
+not screen names**, so renaming a screen is not a change to this contract:
+
+| `flow` | means |
+|---|---|
+| `signup` | the student has not signed up |
+| `courses` | the student has signed up but has chosen no course |
+| `ready` | the student has both, so there is a course to work in |
+
+There is no `welcome` value and no back-compatible alias for one. One name, one meaning.
+
+- The frontend asks the server how far the student has got; it does not track this itself, because
+  the answer changes under it on calls it did not make.
+- An unknown or missing `flow` must land the frontend on **Sign up**, never on nothing: a value it
+  cannot read is a student it knows nothing about, and a blank frame behind a lifted veil is the
+  one outcome the degrade-never-blank rule forbids.
+- `POST /api/session/signout` clears the session and returns
+  `{ "ok": true, "next": "signup", "flow": "signup" }`.
 - `POST /api/reset` returns to the seeded demo student WITH its course already selected, so demo
-  rehearsals do not walk the onboarding every time. Add `?full=1` to clear the session entirely and
-  land back on Welcome, which is what you want when showing the flow itself.
+  rehearsals do not walk the onboarding every time. Add `?full=1` to clear the session entirely, so
+  `flow` comes back `signup`, which is what you want when showing the flow itself.
