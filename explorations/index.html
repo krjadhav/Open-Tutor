@@ -1424,14 +1424,14 @@ const RQ=[
  {q:'$\\dfrac{d}{dx}\\bigl[\\sin x\\bigr]=\\;?$',o:['$\\cos x$','$-\\cos x$','$-\\sin x$','$\\sec^{2}x$'],a:0,
   e:'The derivative of $\\sin x$ is $\\cos x$ — a cornerstone rule you reuse everywhere.'},
 ];
-const rqState={i:0};
+const rqState={i:0,phase:'q'};
 /* Review = handwritten, photographed on the phone (one question at a time) */
 R.review = {
   desktop(){return `<div class="pad-lg col center" style="justify-content:center;height:100%">
     <div class="card" style="max-width:520px;width:100%" id="rqDesk">${rvDesktop()}</div>
   </div>`;},
   phone(){return `<div class="pad col" id="rqHost">${rvCamera()}</div>`;},
-  after(){ dragCrop(); typeset($('phoneScreen')); typeset($('desktopScreen')); }
+  after(){ if(rqState.phase==='cam')dragCrop(); typeset($('phoneScreen')); typeset($('desktopScreen')); }
 };
 function rvDesktop(){
   const q=RQ[rqState.i%RQ.length];
@@ -1451,13 +1451,25 @@ function rvDesktop(){
 }
 function rvCamera(){
   const q=RQ[rqState.i%RQ.length];
-  return `<div class="row" style="justify-content:space-between;align-items:center">
+  const head=`<div class="row" style="justify-content:space-between;align-items:center">
       <span class="pill cyan tiny">📘 Review</span><span class="pill gold tiny">Q ${rqState.i+1}/5</span></div>
-    <div class="bar" style="height:12px;border-width:2px"><i style="width:${(rqState.i/5)*100}%"></i></div>
+    <div class="bar" style="height:12px;border-width:2px"><i style="width:${(rqState.i/5)*100}%"></i></div>`;
+  if(rqState.phase!=='cam'){
+    return head+`
+    <div class="qcard" style="padding:16px">
+      <div class="qnum">QUESTION ${rqState.i+1}</div>
+      <div style="font-weight:600;margin:10px 0 14px;font-size:19px;line-height:1.5">${q.q}</div>
+      <div style="text-align:center;font-size:38px;margin:6px 0">✍️</div>
+      <div class="small" style="text-align:center;color:#555;margin-bottom:14px">Solve it on paper, then upload a photo of your working.</div>
+      <button class="btn blue" style="width:100%" onclick="rvOpenCam()">📷 Open camera</button>
+      <button class="btn ghost sm" style="width:100%;margin-top:8px" onclick="rvOpenCam()">🖼️ Upload image</button>
+    </div>`;
+  }
+  return head+`
     <div class="qcard" style="padding:10px">
-      <div class="qnum">SOLVE, THEN PHOTOGRAPH YOUR WORK</div>
-      <div style="font-weight:600;margin:6px 0;font-size:15px">${q.q}</div>
-      <div class="camera" id="cam" style="margin-top:4px">
+      <div class="qnum">📷 PHOTOGRAPH · Q ${rqState.i+1}</div>
+      <div style="font-weight:600;margin:4px 0 6px;font-size:13px">${q.q}</div>
+      <div class="camera" id="cam">
         <div class="viewfind">
           <div class="hw" style="top:20px;left:18px;font-size:18px">my working…</div>
           <div class="hw" style="top:62px;left:24px;font-size:16px">step 1 …</div>
@@ -1469,9 +1481,14 @@ function rvCamera(){
         </div>
       </div>
       <div class="tiny muted center" style="margin:8px 0">Drag the gold box to crop just your working</div>
-      <div id="camActions"><div class="shutter" onclick="rvShot()"></div></div>
+      <div id="camActions">
+        <div class="shutter" onclick="rvShot()"></div>
+        <button class="btn ghost sm" style="width:100%;margin-top:8px" onclick="rvBack()">◀ Back to question</button>
+      </div>
     </div>`;
 }
+function rvOpenCam(){ rqState.phase='cam'; $('rqHost').innerHTML=rvCamera(); dragCrop(); typeset($('rqHost')); }
+function rvBack(){ rqState.phase='q'; $('rqHost').innerHTML=rvCamera(); typeset($('rqHost')); }
 function rvShot(){
   const cam=$('cam'); if(cam){cam.style.transition='.15s';cam.style.filter='brightness(2)';setTimeout(()=>cam.style.filter='',150);}
   $('camActions').innerHTML=`<div class="fadeup center">
@@ -1488,7 +1505,7 @@ function rvSubmit(){
     state.reviewDone[0]=true; state.xp+=150; setXP();
     toast('Review complete! +150 XP'); go(9); return;
   }
-  rqState.i++; $('rqHost').innerHTML=rvCamera(); dragCrop(); typeset($('rqHost'));
+  rqState.i++; rqState.phase='q'; $('rqHost').innerHTML=rvCamera(); typeset($('rqHost'));
   const d=$('rqDesk'); if(d){d.innerHTML=rvDesktop(); typeset(d);}
 }
 
