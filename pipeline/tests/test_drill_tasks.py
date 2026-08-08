@@ -252,18 +252,29 @@ def test_limit_indeterminate_refuses_anything_substitution_already_answers(expr,
 # Rendering: the whole bank, every stem and every answer
 # --------------------------------------------------------------------------------------
 
-def test_the_allow_list_is_the_one_the_renderer_implements():
-    """A cross-check against app/static/app.js, so this list cannot quietly drift from the code
-    it is a model of. Anything the renderer does not name is printed as a bare word."""
-    js = (ROOT / "app" / "static" / "app.js").read_text(encoding="utf-8")
-    for symbol in ("cdot", "nabla", "partial", "pi", "alpha", "to", "infty", "times", "div"):
-        assert re.search(rf"\b{symbol}:", js), f"{symbol} is not in the renderer's symbol table"
-    for macro in ("frac", "sqrt", "text", "left", "right"):
-        assert macro in js, f"the renderer does not handle \\{macro}"
-    # `\sin`, `\cos`, `\lim` and friends are not special-cased: they fall through to the rule that
-    # drops the backslash and prints the word, which reads correctly. That fallback is also what
-    # turns `\mathbf` into "mathbf", which is why the allow-list exists at all.
-    assert "return word;" in js
+def test_the_app_renders_mathematics_with_a_real_latex_engine():
+    """The allow-list used to be a model of a hand-rolled renderer in `app/static/app.js`, and this
+    was the cross-check that kept the two from drifting. That renderer is gone: the app draws
+    mathematics with KaTeX, vendored locally so the page still makes no external request.
+
+    So what this now guards is the reason the allow-list stopped being a hard limit. If KaTeX is
+    ever taken back out, `RENDERABLE_COMMANDS` becomes a real constraint again and this fails,
+    which is the moment to reopen it rather than letting `\\mathbf{u}` reach a card as "mathbfu".
+    """
+    static = ROOT / "app" / "static"
+    html = (static / "index.html").read_text(encoding="utf-8")
+    js = (static / "app.js").read_text(encoding="utf-8")
+
+    assert (static / "vendor" / "katex" / "katex.min.js").exists()
+    assert (static / "vendor" / "katex" / "katex.min.css").exists()
+    assert "vendor/katex/katex.min.js" in html and "vendor/katex/katex.min.css" in html
+    assert "cdn." not in html and "https://" not in html, "the page must fetch nothing remotely"
+
+    # Rendered through KaTeX, and an unparseable stem must not take the screen down with it.
+    assert "window.katex.renderToString" in js
+    assert "throwOnError: false" in js
+    # A missing library degrades to plain text, and says so rather than failing silently.
+    assert "plainMath" in js and "console.error" in js
 
 
 @pytest.mark.parametrize("item", GENERATED, ids=[i["item_id"] for i in GENERATED])

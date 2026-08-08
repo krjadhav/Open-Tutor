@@ -77,12 +77,16 @@ def _same(a, b):
 _FUNCS_TEX = ("arcsin", "arccos", "arctan", "sinh", "cosh", "tanh",
               "sin", "cos", "tan", "sec", "csc", "cot", "log", "exp", "sqrt")
 
-#: Every LaTeX command the app's renderer (`app/static/app.js`, section 3) actually draws. There
-#: is no LaTeX library on the page: unknown commands lose their backslash and print as a literal
-#: word. `\mathbf{u}` prints "mathbfu" and a sympy Matrix prints "beginmatrix ... endmatrix", and
-#: both of those have reached a card. So this list is a hard constraint on what a task may emit,
-#: not a style preference, and `unsupported_commands` is asserted over the whole generated bank in
-#: pipeline/tests/test_drill_tasks.py.
+#: The LaTeX commands a generated task may emit. This began as a hard constraint: the app had no
+#: LaTeX library, so an unknown command lost its backslash and printed as a literal word.
+#: `\mathbf{u}` printed "mathbfu" and a sympy Matrix printed "beginmatrix ... endmatrix", and both
+#: of those reached a card. The app now draws mathematics with KaTeX, which renders all of it, so
+#: the list is no longer what stands between the bank and a visible bug.
+#:
+#: It is kept, and kept narrow, because the generated bank is checked in and regenerating it is a
+#: content change, not a rendering one. `unsupported_commands` is still asserted over the whole
+#: bank in pipeline/tests/test_drill_tasks.py; widening this list is now a deliberate decision
+#: about the maths, not a workaround for the renderer.
 #:
 #: Vectors are written as tuples by `_row` and a norm as ||u||, which need no command at all.
 RENDERABLE_COMMANDS = frozenset({
@@ -547,11 +551,42 @@ def _fmt_answer(ans):
     return sp.latex(ans)
 
 
+# Tasks whose answer should be presented in SIMPLEST form. Excluded deliberately: factor, expand,
+# simplify, evaluate and solve, where the task itself defines the target form and simplifying would
+# undo the exercise (simplify of a factored quadratic expands it straight back).
+_SIMPLIFY_ANSWER = {
+    "differentiate", "derivative_at", "partial", "gradient", "nth_derivative",
+    "chain_rule", "implicit_dydx", "chain_rule_multivar", "directional_derivative",
+    "derivative_from_definition", "limit", "compose", "local_min_x", "critical_points",
+    "gd_step", "dot_product", "scalar_multiple", "vector_magnitude", "vector_update",
+}
+
+
+def _simplified(task, answer):
+    """A derivative left as sympy emits it is not the answer a student writes.
+
+    The quotient rule drill for (2x+1)/(x-3) stored 2/(x-3) - (2x+1)/(x-3)**2, while the diagnosis
+    written against the same problem says "-5 instead of -7". The Expected line would have
+    contradicted the explanation directly under it.
+    """
+    if task not in _SIMPLIFY_ANSWER:
+        return answer
+    try:
+        import sympy as _sp
+        if isinstance(answer, _sp.MatrixBase):
+            return answer.applyfunc(_sp.simplify)
+        simp = _sp.simplify(answer)
+        return simp if _sp.count_ops(simp) <= _sp.count_ops(answer) else answer
+    except Exception:                                    # noqa: BLE001
+        return answer
+
+
 def build(task, params):
     """Returns (stem_latex, answer_latex, answer_sympy) or raises."""
     if task not in TASKS:
         raise ValueError(f"unknown task {task}")
     stem, answer = TASKS[task](params)
+    answer = _simplified(task, answer)
     ok, why = _nontrivial(task, params, answer)
     if not ok:
         raise ValueError(why)

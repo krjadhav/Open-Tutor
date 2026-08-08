@@ -75,10 +75,32 @@
         "student_message_hi": "आपने भागफल नियम सही लगाया, लेकिन ऋण चिह्न खोलते समय आपने -(2x+1) को -2x-1 के बजाय -2x+1 बना दिया, जिससे -7 के बजाय -5 आ गया।"
       },
       "item_id_note": "was demo-quotient-sign; repointed at the real bank item"
+    },
+    "4675097120fb457b": {
+      "label": "demo, quotient rule with a dropped negative, second item",
+      "item_id": "gen-der.quotient-rule-5",
+      "item_node": "der.quotient-rule",
+      "problem": "Differentiate f(x) = (3x)/(2x-5).",
+      "student_work": "f'(x) = [ (3)(2x-5) - (3x)(2) ] / (2x-5)^2\n= [ 6x - 15 + 6x ] / (2x-5)^2\n= (12x - 15) / (2x-5)^2",
+      "expected_answer": "-15/(2x-5)^2",
+      "expect_node": "alg.sign-distribution",
+      "provenance": "HAND WRITTEN, not a model output. The Sarvam account returned 402 no credits, so this could not be generated live like the other entry. It is written to match what the model produced on the equivalent problem, and it must be regenerated and re-measured before it is claimed as a model result.",
+      "diagnosis": {
+        "correct": false,
+        "failed_step": "= [ 6x - 15 + 6x ] / (2x-5)^2",
+        "blamed_node": "alg.sign-distribution",
+        "misconception_tag": "sign-distribution",
+        "student_message": "You applied the quotient rule correctly, but the second term is subtracted, so -(3x)(2) is -6x, not +6x. That is why 6x - 15 - 6x collapses to -15.",
+        "student_message_hi": "आपने भागफल नियम सही लगाया, लेकिन दूसरा पद घटाया जाता है, इसलिए -(3x)(2) का मान -6x है, +6x नहीं। इसी कारण 6x - 15 - 6x सिमटकर -15 रह जाता है।",
+        "confidence": 0.95,
+        "latency_s": 0.0,
+        "error": null
+      }
     }
   },
   "by_work": {
-    "3e96f3454cc3b588": "15052f7c4b9c151e"
+    "3e96f3454cc3b588": "15052f7c4b9c151e",
+    "72ae488ab2bf0270": "4675097120fb457b"
   },
   "note": "Pre-computed diagnoses for the demo. learning-design.md section 16: `seed` does NOT pin the model's output, so anything shown on stage is served from here rather than from a live call. `stability` records what the live model actually did across runs; read it before trusting the cached answer to reproduce."
 }
