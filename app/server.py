@@ -82,6 +82,40 @@ app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
 )
 
+
+#: Vendored KaTeX and the fonts: 996 KB that changes only when we re-vendor it, and the one thing
+#: worth caching hard on venue wifi. Served from its own directory so this is a path test, not a
+#: guess from the extension.
+_IMMUTABLE_PREFIX = "/vendor/"
+
+#: The app shell. Everything here is rewritten between demo runs.
+_SHELL_SUFFIXES = (".html", ".js", ".css")
+
+
+@app.middleware("http")
+async def _cache_headers(request: Request, call_next):
+    """Say out loud how long each static file may be reused for. Silence is not "do not cache".
+
+    `StaticFiles` sends `ETag` and `Last-Modified` and NO `Cache-Control`, and a response with no
+    explicit freshness may be assigned a HEURISTIC lifetime by the client (RFC 9111 section 4.2.2),
+    conventionally a tenth of its age. Desktop browsers revalidate often enough to hide this;
+    phones do not. The observed symptom was a phone running the previous build of `app.js` after
+    the new one had shipped: the camera went straight to upload because the crop screen did not
+    exist in the copy the phone had kept, and no amount of pulling to refresh dislodged it.
+
+    A demo is exactly the case this hurts most, because the whole point is that the laptop and the
+    phone agree about what the app is.
+    """
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/api/"):
+        return response
+    if path.startswith(_IMMUTABLE_PREFIX):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    elif path == "/" or path.endswith(_SHELL_SUFFIXES):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
 # --------------------------------------------------------------------------- vocabulary
 
 #: Engine status -> the four dot states the UI draws. `frontier` is called `now` on screen because
@@ -1205,13 +1239,28 @@ def _image_dimensions(raw: bytes) -> Optional[tuple[int, int]]:
 
 
 def _cached_transcription(item_id: str) -> Optional[list[str]]:
+    """The working to show on the Check screen for this problem, or None if we have none.
+
+    `entries` is consulted FIRST and deliberately: it holds the wrong-answer transcript that the
+    diagnosis is cached against, and a correct transcript from `transcriptions` shadowing it would
+    silently retire the demo climax. Only `gen-der.quotient-rule-5` is in both, and it must resolve
+    to the one with the sign error.
+    """
     cache = load_cache(DIAGNOSIS_CACHE_PATH)
     wanted = {item_id, PHOTO_ALIASES.get(item_id, item_id)}
     for entry in cache.get("entries", {}).values():
         if entry.get("item_id") in wanted:
-            return [line.strip() for line in (entry.get("student_work") or "").splitlines()
-                    if line.strip()]
+            return _work_lines(entry.get("student_work"))
+
+    for candidate in wanted:
+        work = cache.get("transcriptions", {}).get(candidate)
+        if work:
+            return _work_lines(work)
     return None
+
+
+def _work_lines(work: Optional[str]) -> list[str]:
+    return [line.strip() for line in (work or "").splitlines() if line.strip()]
 
 
 class RevealRequest(BaseModel):

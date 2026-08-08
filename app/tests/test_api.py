@@ -1063,6 +1063,77 @@ def test_transcribe_serves_the_cached_demo_working_without_vision(client):
     assert miss["error"]
 
 
+def test_every_problem_offered_today_has_a_working_photo_path(client):
+    """The camera is on every problem, so every problem needs something to read.
+
+    Five of the six had no cached transcription, so tapping the camera returned `lines: []` and the
+    UI said "We could not read that photo", which is what a broken camera looks like rather than
+    what an unseeded problem looks like. The offer and the capability have to match: if the button
+    is on the screen it has to work. Asserted over the SERVED set rather than a hardcoded list,
+    because selection is what decides which six problems this is, and it is free to change.
+    """
+    problems = client.get("/api/state").json()["today"]["problems"]
+    assert problems, "no problems to check"
+
+    dead = []
+    for problem in problems:
+        lines = client.post("/api/solve/transcribe",
+                            data={"item_id": problem["item_id"]}).json()["lines"]
+        if not lines:
+            dead.append(problem["item_id"])
+    assert not dead, f"camera dead-ends on {dead}"
+
+
+def test_the_demo_transcript_is_the_one_with_the_sign_error(client):
+    """`entries` must win over `transcriptions` for the item the demo turns on.
+
+    Both hold working for `gen-der.quotient-rule-5`: the entry has the dropped negative the whole
+    diagnosis is cached against, and a correct transcript would grade correct, skip the diagnosis
+    and quietly delete the climax. Lookup order is the only thing keeping them apart.
+    """
+    lines = client.post("/api/solve/transcribe",
+                        data={"item_id": "gen-der.quotient-rule-5"}).json()["lines"]
+    assert any("+ 6x" in line for line in lines), \
+        f"the demo item lost its sign error: {lines}"
+
+    start = client.post("/api/solve/start", json={"item_id": "gen-der.quotient-rule-5"}).json()
+    assert start
+    graded = client.post("/api/solve/grade", json={
+        "item_id": "gen-der.quotient-rule-5",
+        "typed_answer": lines[-1].strip().lstrip("=").strip(),
+        "hint_level": 0, "channel": "photo", "work_lines": lines,
+    }).json()
+    assert graded["correct"] is False
+    assert graded["needs_diagnosis"] is True
+
+
+@pytest.mark.parametrize("path,expected", [
+    ("/", "no-store"),
+    ("/app.js", "no-store"),
+    ("/styles.css", "no-store"),
+    ("/vendor/katex/katex.min.css", "public, max-age=31536000, immutable"),
+    ("/vendor/display-fonts.css", "public, max-age=31536000, immutable"),
+])
+def test_static_assets_say_how_long_they_may_be_cached(client, path, expected):
+    """Silence let a phone keep yesterday's `app.js` and skip a screen that had already shipped.
+
+    `StaticFiles` sends `ETag` and `Last-Modified` and no `Cache-Control`, which permits a client
+    to invent its own freshness lifetime. The shell must never be reused without asking; the
+    vendored fonts, which are most of the bytes and change only when we re-vendor them, should be.
+    """
+    response = client.get(path)
+    assert response.status_code == 200, path
+    assert response.headers.get("cache-control") == expected
+
+
+def test_api_responses_are_not_given_static_cache_headers(client):
+    """The middleware matches on path, and `/api/` is checked before anything else.
+
+    An API response marked `immutable` would be a much worse bug than the one this fixes.
+    """
+    assert "cache-control" not in client.get("/api/state").headers
+
+
 # --------------------------------------------------------------------------- what phones send
 
 def _jpeg_header(width: int, height: int) -> bytes:

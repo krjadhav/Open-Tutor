@@ -23,6 +23,22 @@ With it, a cache miss silently becomes a live call, which is the one thing we do
 devtools, toggle device toolbar (cmd+shift+M) and pick iPhone 14 Pro. That is what a judge should
 see over your shoulder.
 
+**On a real phone**, for the camera. `run.sh` already binds `0.0.0.0`, so put the laptop and the
+phone on the same wifi and open `http://<laptop-ip>:8000`:
+
+```bash
+ipconfig getifaddr en0        # wifi address to type into the phone
+```
+
+Plain HTTP is deliberate and sufficient: the camera is the phone's own, reached through
+`capture="environment"` on a file input, which needs no permission prompt and no secure context.
+`getUserMedia` would need HTTPS and buy nothing here.
+
+**If the phone shows an older build**, it is holding a cached `app.js`. The server now sends
+`Cache-Control: no-store` on the shell, so this should not recur, but a copy cached before that
+shipped will survive until the tab is closed. Close the tab and reopen it; a pull-to-refresh is not
+always enough.
+
 ---
 
 ## The 90 second path
@@ -31,15 +47,20 @@ see over your shoulder.
 2. **Today.** Six problems, each with its reason chip: `Blocker · fractions`, `Blocker · signs`, `On your path`, `Review`, `New · Vector notation`, `Review`. Point out that the app is telling the student *why* each problem is there.
 3. **Path tab.** Gradient descent pinned at the top, `18 skills away`, `about 16 days at your pace`. Expand a stage. Note the four node shapes and the `needs:` chips, all generated from the graph.
 4. **Blockers tab.** Two open misconceptions, each showing the student's own wrong line struck through above the corrected one. This is the tab to linger on.
-5. **Back to Today, tap the quotient rule problem.** Photograph or use the camera button; the transcription is served from cache.
-6. **Check.** "Here's what we read." Confirm.
-7. **Result.** Verdict lands instantly from the CAS. About three seconds later the diagnosis arrives:
-   > **Your quotient rule is correct.** You dropped the negative when distributing across -(2x+1), so -2x-1 became -2x+1.
+5. **Back to Today, tap the quotient rule problem**, the fourth one, `Review`. Camera button.
+6. **Crop.** "Keep just this working." The box starts at 80% of the photo; drag it onto the one problem. The readout under it shows what the upload actually costs, `Original: 227 KB -> Will upload: 19 KB`. Worth one sentence: one problem per image is why the transcription is reliable, and the saving is a side effect.
+7. **Check.** "Here's what we read." Confirm.
+8. **Result.** Verdict lands instantly from the CAS. Just under a second later the diagnosis arrives:
+   > **Your quotient rule is correct.** You applied the quotient rule correctly, but the second term is subtracted, so -(3x)(2) is -6x, not +6x. That is why 6x - 15 - 6x collapses to -15.
 
    Line 2 of the working highlights. This is the moment the product exists for.
-8. **Language toggle in the You tab.** Same screens in Hindi, mathematics unchanged:
+
+   The engine serves `gen-der.quotient-rule-5` here, not `-1`. They are the same misconception on
+   different numbers, and the wording above is `-5`'s, read out of the cache. If you rehearse
+   against `-1`'s wording you will quote a sentence the judge is not looking at.
+9. **Language toggle in the You tab.** Same screens in Hindi, mathematics unchanged:
    > आपका भागफल नियम सही है।
-9. **Complete.** Spine rises, nodes light, tomorrow's focus named.
+10. **Complete.** Spine rises, nodes light, tomorrow's focus named.
 
 ---
 
