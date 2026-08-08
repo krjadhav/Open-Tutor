@@ -513,6 +513,11 @@ function MOCK_COURSES() {
   };
 }
 
+function mockReveal(itemId) {
+  var it = (MOCK_STATE().today.problems || []).filter(function (p) { return p.item_id === itemId; })[0];
+  return { correct: (it && it.answer) || '42', wrong: 'wrong', error: null };
+}
+
 function mockSignup(name) {
   mockSession.name = name || '';
   mockSession.flow = 'courses';
@@ -682,6 +687,11 @@ var API = {
   state: function () { return request('GET', '/state', undefined, MOCK_STATE); },
   /* full=1 clears the session and lands back on Sign up, which is what
      "Replay onboarding" means now that Sign up is the entry point. */
+  reveal: function (itemId) {
+    return request('POST', '/solve/reveal', { item_id: itemId }, function () {
+      return mockReveal(itemId);
+    });
+  },
   signOut: function () {
     // `request` prefixes /api and supplies the offline fallback; a bare fetch here would
     // bypass both, which is how this shipped calling an undefined `post`.
@@ -1832,6 +1842,40 @@ function wire() {
       routeFromFlow(payload && payload.flow);
     });
   });
+
+  // DEMO CHEAT. Triple tap the problem to fill the answer box: first tap a correct answer, tap
+  // again for a deliberately wrong one, so a presenter can reach either branch of Result without
+  // typing algebra on stage. Three taps is hard to hit by accident and invisible to anyone who has
+  // not been told. Both values come from the server, which verifies them through the real grader
+  // first, so the cheat can never fill something that then fails to behave as promised.
+  (function () {
+    var taps = 0, timer = null, cache = null, useWrong = false;
+    var el = byId('problemMath');
+    if (!el) { return; }
+    el.addEventListener('click', function () {
+      taps += 1;
+      clearTimeout(timer);
+      timer = setTimeout(function () { taps = 0; }, 600);
+      if (taps < 3) { return; }
+      taps = 0;
+      var itemId = state.flow && state.flow.itemId;
+      if (!itemId) { return; }
+      var apply = function (r) {
+        if (!r || r.error) { console.warn('[open-tutor] reveal unavailable', r && r.error); return; }
+        var value = useWrong ? (r.wrong || r.correct) : r.correct;
+        useWrong = !useWrong;
+        var input = byId('answerInput');
+        input.value = value || '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.focus();
+        el.classList.add('is-revealed');
+        setTimeout(function () { el.classList.remove('is-revealed'); }, 400);
+      };
+      if (cache && cache.itemId === itemId) { apply(cache.data); return; }
+      API.reveal(itemId).then(function (r) { cache = { itemId: itemId, data: r }; apply(r); });
+    });
+  })();
+
 }
 
 function boot() {

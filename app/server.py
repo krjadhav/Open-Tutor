@@ -1134,6 +1134,54 @@ def _cached_transcription(item_id: str) -> Optional[list[str]]:
     return None
 
 
+class RevealRequest(BaseModel):
+    item_id: str
+
+
+@app.post("/api/solve/reveal")
+def solve_reveal(body: RevealRequest) -> dict:
+    """DEMO AFFORDANCE, not a product feature.
+
+    Returns a correct and a deliberately wrong answer for an item so the presenter can skip ahead
+    without typing algebra on stage. The frontend triggers it with a triple tap on the problem,
+    which is deliberately hard to hit by accident and invisible to anyone not told about it.
+
+    Both values are VERIFIED through the real grader before being returned, so the cheat cannot
+    quietly hand back something that fails, which would be worse than no cheat at all. Where the
+    demo cache holds the student working for this item, its final line is preferred as the wrong
+    answer, so the cheat leads into the cached diagnosis rather than an unrelated miss.
+    """
+    session = get_session()
+    item = session.item_bank.get(body.item_id)
+    if item is None:
+        return {"error": "unknown item", "correct": None, "wrong": None}
+
+    correct = item.answer_sympy or item.answer_latex or ""
+    if not correct or not grade(item, correct).correct:
+        return {"error": "no verifiable answer", "correct": None, "wrong": None}
+
+    wrong = _cached_wrong_answer(body.item_id)
+    if not (wrong and not grade(item, wrong).correct):
+        wrong = None
+        for candidate in (f"({correct}) + 1", f"-({correct})", f"2*({correct})"):
+            if not grade(item, candidate).correct:
+                wrong = candidate
+                break
+    return {"correct": correct, "wrong": wrong, "error": None}
+
+
+def _cached_wrong_answer(item_id: str) -> Optional[str]:
+    """The last line of the cached working, which is the answer that working arrives at."""
+    cache = load_cache(DIAGNOSIS_CACHE_PATH)
+    for entry in cache.get("entries", {}).values():
+        if entry.get("item_id") != item_id:
+            continue
+        lines = [ln.strip() for ln in (entry.get("student_work") or "").splitlines() if ln.strip()]
+        if lines:
+            return lines[-1].lstrip("=").strip()
+    return None
+
+
 @app.post("/api/solve/grade")
 def solve_grade(body: GradeRequest, lang: str = Query("en")) -> dict:
     """The CAS verdict. `needs_diagnosis` is FALSE for every correct answer, always."""

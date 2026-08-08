@@ -1043,3 +1043,8 @@ button.coursecard:active { transform: translateY(4px); filter: drop-shadow(0 2px
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001s !important; transition-duration: .001s !important; }
 }
+
+/* Demo cheat feedback: a brief flash so the presenter can see the triple tap registered. Nothing
+   about it is discoverable, which is the point. */
+.problem.is-revealed { outline: 3px solid var(--cyan); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { .problem.is-revealed { outline-width: 2px; } }
