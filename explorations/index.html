@@ -374,6 +374,26 @@ body{
 .bp-lvlrow{display:flex;align-items:center;gap:10px;margin-top:8px}
 .bp-cta{flex:0 0 auto;display:flex;flex-direction:column;align-items:center}
 @media(max-width:1100px){.bp-hero{flex-wrap:wrap}.bp-cta{width:100%}}
+.bp-cols{display:flex;gap:14px;flex:1;min-height:0}
+.bp-left{flex:0 0 254px;display:flex;flex-direction:column;gap:12px;overflow:auto}
+.bp-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;overflow:auto}
+@media(max-width:1050px){.bp-cols{flex-direction:column}.bp-left{flex:0 0 auto}}
+.sess-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:1250px){.sess-grid{grid-template-columns:1fr}}
+.sess-card{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#3a2c82,#241a52);
+  border:4px solid #0a0f1e;border-radius:14px;padding:11px 12px;box-shadow:0 5px 0 rgba(0,0,0,.35);cursor:pointer;transition:.1s}
+.sess-card:hover{transform:translateY(-3px);filter:brightness(1.06)}
+.sess-ic{width:46px;height:46px;flex:0 0 46px;border-radius:12px;display:grid;place-items:center;font-size:23px;border:3px solid #0a0f1e}
+.sess-main{flex:1;min-width:0}
+.sess-name{font-family:var(--f-head);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sess-meta{font-size:12px;color:#cbbdff}
+.sess-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
+.sess-xp{font-family:var(--f-head);font-size:14px;color:#ffd23f}
+.lb-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;font-size:13px;margin-bottom:3px}
+.lb-row.me{background:rgba(255,210,63,.16);border:2px solid #ffd23f}
+.lb-rank{width:22px;height:22px;flex:0 0 22px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;font-family:var(--f-head);font-size:11px}
+.lb-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-xp{font-family:var(--f-head);color:#ffd23f}
 .bp-track{display:flex;gap:10px;overflow-x:auto;padding:12px 8px 16px;
   background:rgba(0,0,0,.22);border:3px solid rgba(10,15,30,.5);border-radius:14px}
 .bp-track::-webkit-scrollbar{height:8px}.bp-track::-webkit-scrollbar-thumb{background:#ffd23f;border-radius:8px}
@@ -1227,11 +1247,11 @@ R.battlepass = {
       <div class="ev-iconbtn" onclick="go(0)">🏠</div>
     </div>
     <div class="bp-body">
-      <div class="bp-hero">
-        <div class="bp-art">🌌</div>
+      <div class="bp-hero" style="padding:12px 16px">
+        <div class="bp-art" style="font-size:56px">🌌</div>
         <div class="bp-info">
           <div class="tiny up" style="letter-spacing:2px;color:#ffe9a8">SEASON 3 · COSMIC</div>
-          <div class="bp-season">COSMIC CALCULUS</div>
+          <div class="bp-season" style="font-size:26px">COSMIC CALCULUS</div>
           <div class="bp-lvlrow">
             <span class="pill gold">LVL ${lvl}</span>
             <div class="bar xp big" style="flex:1"><i style="width:${xpPctInLevel()}%"></i></div>
@@ -1239,48 +1259,67 @@ R.battlepass = {
           </div>
           <div class="tiny" style="margin-top:5px;color:#fff">${state.xp.toLocaleString()} XP · ${xpToNext()} XP to the next tier</div>
         </div>
-        <div class="bp-cta">
-          <div class="tiny" style="color:#ffe9a8;margin-bottom:6px">Earn XP now</div>
-          ${playBtn('START SESSION','go(5)')}
-        </div>
       </div>
-      <div class="ev-h">REWARD TRACK</div>
-      ${bpTrack(lvl)}
-      <div class="grid2">
-        <div class="card"><h4 class="sec">🎯 Missions</h4>
-          ${mission('Complete 3 reviews','2/3',66)}
-          ${mission('Perfect score on any quiz','0/1',0)}
-          ${mission('7-day study streak','4/7',57)}
-        </div>
-        <div class="card"><h4 class="sec">🏆 Badges & Milestones</h4>
-          <div class="row" style="flex-wrap:wrap">
-            <div class="badge" style="background:#FEC513">🔥</div>
-            <div class="badge" style="background:#18ABEF">⚡</div>
-            <div class="badge" style="background:#3fd971">🧠</div>
-            <div class="badge" style="background:#333;filter:grayscale(1)">🔒</div>
-            <div class="badge" style="background:#333;filter:grayscale(1)">🔒</div>
+      <div class="bp-cols">
+        <div class="bp-left">
+          <div class="card"><h4 class="sec">🏅 Milestones</h4>
+            ${mission('Complete 3 reviews','2/3',66)}
+            ${mission('Perfect score on a quiz','0/1',0)}
+            ${mission('7-day study streak','4/7',57)}
           </div>
-          <div class="tiny muted" style="margin-top:8px">Streak Master · Quick Thinker · Concept King unlocked</div>
+          <div class="card"><h4 class="sec">📊 Leaderboard</h4>
+            ${LB.map(r=>lbRow(r)).join('')}
+          </div>
+          <div class="card"><h4 class="sec">🏆 Badges</h4>
+            <div class="row" style="flex-wrap:wrap;gap:8px">
+              <div class="badge" style="background:#FEC513">🔥</div>
+              <div class="badge" style="background:#18ABEF">⚡</div>
+              <div class="badge" style="background:#3fd971">🧠</div>
+              <div class="badge" style="background:#333;filter:grayscale(1)">🔒</div>
+            </div>
+            <div class="tiny muted" style="margin-top:8px">Streak Master · Quick Thinker · Concept King</div>
+          </div>
+        </div>
+        <div class="bp-main">
+          <div class="ev-h">CHOOSE A SESSION · earn XP</div>
+          <div class="sess-grid">${SESSIONS.map(sessCard).join('')}</div>
+          <div class="ev-h">REWARD TRACK</div>
+          ${bpTrack(lvl)}
         </div>
       </div>
     </div>
   </div>`;},
   phone(){const lvl=state.level;return `<div class="pad col">
     <div class="bp-hero" style="flex-direction:column;text-align:center;gap:8px">
-      <div class="bp-art" style="font-size:46px">🌌</div>
+      <div class="bp-art" style="font-size:40px">🌌</div>
       <div><div class="tiny up" style="letter-spacing:2px;color:#ffe9a8">SEASON 3</div>
-        <div class="bp-season" style="font-size:20px">COSMIC CALCULUS</div></div>
+        <div class="bp-season" style="font-size:19px">COSMIC CALCULUS</div></div>
       <span class="pill gold">LVL ${lvl}</span>
       <div class="bar xp" style="width:100%"><i style="width:${xpPctInLevel()}%"></i></div>
       <div class="tiny">${xpToNext()} XP to LVL ${lvl+1}</div>
-      ${playBtn('START SESSION','go(5)')}
     </div>
+    <div class="ev-h">CHOOSE A SESSION · earn XP</div>
+    <div class="col">${SESSIONS.map(sessCard).join('')}</div>
     <div class="ev-h">REWARD TRACK</div>
     ${bpTrack(lvl,true)}
-    <div class="card"><h4 class="sec">🎯 Daily missions</h4>
-      ${mission('Do 1 review','0/1',0)}${mission('Keep your streak','✓',100)}</div>
+    <div class="card"><h4 class="sec">📊 Leaderboard</h4>${LB.slice(0,4).map(r=>lbRow(r)).join('')}</div>
   </div>`;}
 };
+const SESSIONS=[
+  {ic:'📘',name:'Review · Limits',meta:'5 Q · untimed',xp:150,color:'#0a6bc0',go:'go(6)'},
+  {ic:'📗',name:'Review · Continuity',meta:'5 Q · untimed',xp:150,color:'#0a6bc0',go:'go(6)'},
+  {ic:'⚡',name:'Quick Practice',meta:'3 Q · ~2 min',xp:80,color:'#8a4bff',go:'go(6)'},
+  {ic:'🎯',name:'Daily Challenge',meta:'5 Q · mixed',xp:200,color:'#e07a00',go:'go(6)'},
+  {ic:'🔁',name:'Mixed Review',meta:'8 Q · untimed',xp:260,color:'#12a99b',go:'go(6)'},
+  {ic:'⚔️',name:'Assessment · Unit 1',meta:'10 Q · ⏱ timed',xp:500,color:'#9f0113',go:'go(7)'},
+];
+const LB=[['1','Ava R.','4,820'],['2','Leo M.','3,205'],['3','You','2,450',true],['4','Kai T.','2,110'],['5','Mia P.','1,980']];
+function sessCard(o){return `<div class="sess-card" onclick="${o.go}">
+  <div class="sess-ic" style="background:${o.color}">${o.ic}</div>
+  <div class="sess-main"><div class="sess-name">${o.name}</div><div class="sess-meta">${o.meta}</div></div>
+  <div class="sess-right"><span class="sess-xp">+${o.xp} XP</span><span class="btn gold sm" style="padding:5px 12px">START ▶</span></div>
+</div>`;}
+function lbRow(r){return `<div class="lb-row ${r[3]?'me':''}"><span class="lb-rank">${r[0]}</span><span class="lb-name">${r[1]}</span><span class="lb-xp">${r[2]}</span></div>`;}
 function bpTrack(lvl,mobile){
   const T=[{f:'🎟️',p:'⭐'},{f:'🔥',p:'🎨'},{f:'⚡',p:'🧪'},{f:'🎨',p:'💎'},{f:'🥈',p:'🚀'},
     {f:'🏅',p:'🌟'},{f:'💎',p:'🦸'},{f:'🥇',p:'👑'},{f:'👑',p:'🏆'},{f:'🏆',p:'🎁'}];
@@ -1385,7 +1424,8 @@ const RQ=[
  {q:'$\\dfrac{d}{dx}\\bigl[\\sin x\\bigr]=\\;?$',o:['$\\cos x$','$-\\cos x$','$-\\sin x$','$\\sec^{2}x$'],a:0,
   e:'The derivative of $\\sin x$ is $\\cos x$ — a cornerstone rule you reuse everywhere.'},
 ];
-const rqState={i:0,answered:false,picked:null,correct:0};
+const rqState={i:0};
+/* Review = handwritten, photographed on the phone (one question at a time) */
 R.review = {
   desktop(){return `<div class="pad-lg col center" style="justify-content:center;height:100%">
     <div class="card" style="max-width:460px;width:100%">
@@ -1394,101 +1434,109 @@ R.review = {
         <span class="pill gold">Q ${rqState.i+1} / 5</span></div>
       <div class="bar" style="margin:10px 0"><i style="width:${((rqState.i)/5)*100}%"></i></div>
       <div class="mobile-only-note" style="margin-top:6px">
-        <div style="font-size:30px">📱➡️</div>
-        <b>Answer on your phone</b>
-        <div class="tiny muted">Desktop mirrors progress. Handwrite + snap each solution on mobile.</div>
+        <div style="font-size:30px">✍️📷</div>
+        <b>Handwrite &amp; photograph each solution on your phone</b>
+        <div class="tiny muted">Every review answer is your own written work — snap it and move on. Desktop mirrors progress.</div>
       </div>
     </div></div>`;},
-  phone(){return `<div class="pad col" id="rqHost">${rqRender()}</div>`;},
-  after(){ /* handled inline */ }
+  phone(){return `<div class="pad col" id="rqHost">${rvCamera()}</div>`;},
+  after(){ dragCrop(); typeset($('phoneScreen')); }
 };
-function rqRender(){
+function rvCamera(){
   const q=RQ[rqState.i%RQ.length];
   return `<div class="row" style="justify-content:space-between;align-items:center">
       <span class="pill cyan tiny">📘 Review</span><span class="pill gold tiny">Q ${rqState.i+1}/5</span></div>
     <div class="bar" style="height:12px;border-width:2px"><i style="width:${(rqState.i/5)*100}%"></i></div>
-    <div class="qcard">
-      <div class="qnum">QUESTION ${rqState.i+1}</div>
-      <div style="font-weight:600;margin:6px 0 4px;font-size:15px">${q.q}</div>
-      ${q.o.map((o,k)=>`<button class="opt" data-k="${k}" onclick="rqPick(${k})">${o}</button>`).join('')}
-      <div id="rqEx"></div>
+    <div class="qcard" style="padding:10px">
+      <div class="qnum">SOLVE, THEN PHOTOGRAPH YOUR WORK</div>
+      <div style="font-weight:600;margin:6px 0;font-size:15px">${q.q}</div>
+      <div class="camera" id="cam" style="margin-top:4px">
+        <div class="viewfind">
+          <div class="hw" style="top:20px;left:18px;font-size:18px">my working…</div>
+          <div class="hw" style="top:62px;left:24px;font-size:16px">step 1 …</div>
+          <div class="hw" style="top:102px;left:30px;font-size:16px">step 2 …</div>
+          <div class="hw" style="top:146px;left:40px;font-size:18px;color:#c62828">answer ✓</div>
+        </div>
+        <div class="crop" id="crop" style="left:8%;top:8%;width:74%;height:54%">
+          <span class="h tl"></span><span class="h tr"></span><span class="h bl"></span><span class="h br"></span>
+        </div>
+      </div>
+      <div class="tiny muted center" style="margin:8px 0">Drag the gold box to crop just your working</div>
+      <div id="camActions"><div class="shutter" onclick="rvShot()"></div></div>
     </div>`;
 }
-function rqPick(k){
-  if(rqState.answered)return;
-  rqState.answered=true;rqState.picked=k;
-  const q=RQ[rqState.i%RQ.length];
-  if(k===q.a)rqState.correct++;
-  document.querySelectorAll('#rqHost .opt').forEach(o=>{
-    const kk=+o.dataset.k;
-    if(kk===q.a)o.classList.add('correct');
-    if(kk===k&&k!==q.a)o.classList.add('wrong');
-    o.style.pointerEvents='none';
-  });
-  const nextTxt = rqState.i>=4 ? 'Finish review ✅' : 'Next question ▶';
-  $('rqEx').innerHTML=`<div class="explain fadeup"><b>${k===q.a?'✅ Correct!':'❌ Not quite.'}</b> ${q.e}</div>
-    <button class="btn green sm" style="margin-top:10px;width:100%" onclick="rqNext()">${nextTxt}</button>`;
-  typeset($('rqEx'));
+function rvShot(){
+  const cam=$('cam'); if(cam){cam.style.transition='.15s';cam.style.filter='brightness(2)';setTimeout(()=>cam.style.filter='',150);}
+  $('camActions').innerHTML=`<div class="fadeup center">
+    <div class="pill green" style="margin:6px auto">✂️ Cropped &amp; recognized</div>
+    <div class="small muted tiny" style="margin:6px 0">Handwriting captured ✓</div>
+    <div class="row" style="gap:8px">
+      <button class="btn ghost sm" style="flex:1" onclick="rvRetake()">Retake</button>
+      <button class="btn green sm" style="flex:1" onclick="rvSubmit()">${rqState.i>=4?'Finish ✅':'Submit ▶'}</button>
+    </div></div>`;
 }
-function rqNext(){
-  if(rqState.i>=4){ // finished
-    state.reviewDone[0]=true;
-    const bonus=rqState.correct>=5?100:0;
-    state.xp+=150+bonus; setXP();
-    toast('Review complete! +150 XP'+(bonus?' +100 perfect bonus':''));
-    go(9); return;
+function rvRetake(){ $('rqHost').innerHTML=rvCamera(); dragCrop(); typeset($('rqHost')); }
+function rvSubmit(){
+  if(rqState.i>=4){
+    state.reviewDone[0]=true; state.xp+=150; setXP();
+    toast('Review complete! +150 XP'); go(9); return;
   }
-  rqState.i++;rqState.answered=false;rqState.picked=null;
-  $('rqHost').innerHTML=rqRender();
-  typeset($('rqHost'));
+  rqState.i++; $('rqHost').innerHTML=rvCamera(); dragCrop(); typeset($('rqHost'));
 }
 
 /* ---- 8. ASSESSMENT ---- */
-const asState={time:600,started:false,answered:{},timer:null};
+const asState={time:600,started:false,answers:{},answered:{},timer:null,_target:3};
+/* Assessment = all 10 questions shown at once, option-based, answered on mobile */
 R.assessment = {
   desktop(){return `<div class="pad-lg col">
     <div class="row" style="justify-content:space-between;align-items:center">
       <h3 class="sec">⚔️ Assessment · Unit 1</h3>
       <span class="timer ${asState.time>120?'':'calm'}" id="deskTimer">⏱ ${fmt(asState.time)}</span>
     </div>
-    <div class="small muted">10 questions · solve in any order · timer keeps running once started · answer each on mobile.</div>
-    <div class="card">
-      <h4 class="sec">Question board</h4>
-      <div class="qgrid" style="grid-template-columns:repeat(5,1fr)" id="asBoard">${asBoard()}</div>
-      <div class="row" style="margin-top:12px;justify-content:space-between;align-items:center">
-        <span class="small muted"><b id="asCount">0</b>/10 answered</span>
-        <button class="btn red" onclick="asStart()">${asState.started?'Submit test':'Start timer'}</button>
-      </div>
+    <div class="small muted">All 10 questions are shown at once on the phone — answer in any order. Timer keeps running.</div>
+    <div class="card"><h4 class="sec">Progress</h4>
+      <div class="bar big"><i id="asBar" style="width:${Object.keys(asState.answers).length/10*100}%"></i></div>
+      <div class="small muted" style="margin-top:6px"><b id="asCount">${Object.keys(asState.answers).length}</b>/10 answered</div>
     </div>
     <div class="card"><h4 class="sec">XP model</h4>
       <div class="small muted">100% → <b style="color:#3fd971">+500 XP</b> · 70% → +250 · 50% → +50 · &lt;40% → <b style="color:#FB1A24">−120 penalty</b> (worse score → bigger penalty).</div>
     </div>
+    <div class="mobile-only-note">📱 The full question list lives on your phone — scroll and answer them all there.</div>
   </div>`;},
   phone(){return `<div class="pad col">
     <div class="row" style="justify-content:space-between;align-items:center">
-      <span class="pill red tiny">⚔️ Timed</span>
+      <span class="pill red tiny">⚔️ Assessment · all 10</span>
       <span class="timer ${asState.time>120?'':'calm'}" id="phoneTimer" style="font-size:14px">⏱ ${fmt(asState.time)}</span></div>
-    <div class="qcard">
-      <div class="qnum">PICK ANY QUESTION</div>
-      <div class="qgrid" id="asBoardM">${asBoard(true)}</div>
-    </div>
-    <button class="btn red sm" onclick="asStart()" style="width:100%">${asState.started?'Submit test':'▶ Start timer'}</button>
+    <div class="tiny muted">Every question is shown — answer in any order. Timer runs.</div>
+    <div id="asHost">${asList()}</div>
+    <button class="btn red" onclick="asSubmit()" style="width:100%">Submit test ▶</button>
   </div>`;},
-  after(){ if(asState.started) asTick(); }
+  after(){ if(!asState.started)asState.started=true; asTick(); typeset($('phoneScreen')); }
 };
-function asBoard(mobile){let h='';for(let i=1;i<=10;i++){const a=asState.answered[i];
-  h+=`<div class="qtile ${a?'answered':''}" onclick="asAnswer(${i})"><span class="qn">${a?'✓':i}</span>
-    <span class="tiny">${a?'done':'Q'+i}</span></div>`;}return h;}
-function asStart(){
-  if(!asState.started){asState.started=true;asTick();render();toast('⏱ Timer started — it will not pause');}
-  else{ // submit
-    const correct=Object.keys(asState.answered).length;
-    let xp=correct>=10?500:correct>=7?250:correct>=5?50:-120;
-    state.xp=Math.max(0,state.xp+xp); setXP();
-    clearInterval(asState.timer);
-    toast((xp>=0?'+':'')+xp+' XP · '+correct+'/10 correct');
-    go(9);
-  }
+function asList(){
+  let h='';
+  for(let i=1;i<=10;i++){const q=RQ[(i-1)%RQ.length];const sel=asState.answers[i];
+    h+=`<div class="qcard" style="margin-bottom:10px;padding:12px">
+      <div class="qnum">QUESTION ${i} ${sel!=null?'· ✓':''}</div>
+      <div style="font-weight:600;margin:6px 0;font-size:14px">${q.q}</div>
+      ${q.o.map((o,k)=>`<button class="opt ${sel===k?'sel':''}" onclick="asPick(${i},${k})">${o}</button>`).join('')}
+    </div>`;}
+  return h;
+}
+function asPick(i,k){
+  asState.answers[i]=k;
+  const host=$('asHost'); if(host){host.innerHTML=asList();typeset(host);}
+  const n=Object.keys(asState.answers).length;
+  const c=$('asCount'); if(c)c.textContent=n;
+  const b=$('asBar'); if(b)b.style.width=(n/10*100)+'%';
+}
+function asSubmit(){
+  let correct=0; for(let i=1;i<=10;i++){const q=RQ[(i-1)%RQ.length]; if(asState.answers[i]===q.a)correct++;}
+  const answered=Object.keys(asState.answers).length;
+  let xp=correct>=10?500:correct>=7?250:correct>=5?50:-120;
+  state.xp=Math.max(0,state.xp+xp); setXP(); clearInterval(asState.timer);
+  toast((xp>=0?'+':'')+xp+' XP · '+correct+'/10 correct');
+  go(9);
 }
 function asTick(){
   clearInterval(asState.timer);
@@ -1496,12 +1544,8 @@ function asTick(){
     if(state.stage!==7){clearInterval(asState.timer);return;}
     asState.time--; if(asState.time<=0){asState.time=0;clearInterval(asState.timer);}
     const t=fmt(asState.time);
-    ['deskTimer','phoneTimer'].forEach(id=>{const el=$(id);if(el){el.textContent='⏱ '+t;el.classList.toggle('calm',asState.time>120?false:false);}});
+    ['deskTimer','phoneTimer'].forEach(id=>{const el=$(id);if(el){el.textContent='⏱ '+t;el.classList.toggle('calm',asState.time<=120);}});
   },1000);
-}
-function asAnswer(i){
-  if(!asState.started){toast('Hit “Start timer” first');return;}
-  asState._target=i; go(8); // jump to camera to "answer"
 }
 function fmt(s){const m=Math.floor(s/60),ss=s%60;return m+':'+(ss<10?'0':'')+ss;}
 
