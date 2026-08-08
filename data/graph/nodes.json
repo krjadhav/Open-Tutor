@@ -2,7 +2,7 @@
   "course_id": "calculus-for-ai",
   "title": "Calculus for AI",
   "target_node": "ai.gradient-descent-step",
-  "notes": "Hand-authored demo slice. prereqs.weight = how load-bearing (0..1). encompasses.credit = implicit repetition credit (0.2..0.4) per FIRe. Must remain a DAG. goal_tags marks the goal paths a node lies on; ['gradient-descent'] means the node is the target or an ancestor of it. blame_hint is prompt-only disambiguation for the diagnosis call, not user-facing; broad titles attract blame that belongs to other nodes.",
+  "notes": "Hand-authored demo slice. prereqs.weight = how load-bearing (0..1). encompasses.credit = implicit repetition credit (0.2..0.4) per FIRe. Must remain a DAG. goal_tags marks the goal paths a node lies on; ['gradient-descent'] means the node is the target or an ancestor of it. blame_hint is prompt-only disambiguation for the diagnosis call, not user-facing; broad titles attract blame that belongs to other nodes. Every invariant this file must satisfy is enforced by `python3 -m engine.graph_validate`; run it after any edit. Two things it will tell you that look like defects and are not: (1) six prereq edges are shortcuts, also implied by a longer path, and are KEPT deliberately because engine/mastery.py `status` checks DIRECT prerequisites only against a decaying p_eff, so removing one lets a node unlock over a still-weak ancestor. Do not transitively reduce this graph. (2) difficulty_b must increase strictly along every prereq edge. The field is not read by selection, which targets item difficulty; the validator is the only thing that reads it, and that check is the reason it is allowed to stay. See docs/audits/graph-invariants.md.",
   "nodes": [
     {
       "id": "alg.sign-distribution",
@@ -56,7 +56,7 @@
       "id": "alg.solving-equations",
       "title": "Solving linear and quadratic equations",
       "kind": "skill",
-      "difficulty_b": -1.0,
+      "difficulty_b": -0.7,
       "goal_tags": [
         "gradient-descent"
       ],
@@ -295,7 +295,7 @@
       "id": "der.slope-interpretation",
       "title": "Derivative as slope of the tangent line",
       "kind": "concept",
-      "difficulty_b": 0.1,
+      "difficulty_b": 0.6,
       "goal_tags": [
         "gradient-descent"
       ],
@@ -339,7 +339,7 @@
       "id": "der.constant-multiple-sum",
       "title": "Constant multiple and sum rules",
       "kind": "skill",
-      "difficulty_b": -0.3,
+      "difficulty_b": -0.1,
       "goal_tags": [
         "gradient-descent"
       ],
