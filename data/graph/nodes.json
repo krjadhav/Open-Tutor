@@ -2,13 +2,16 @@
   "course_id": "calculus-for-ai",
   "title": "Calculus for AI",
   "target_node": "ai.gradient-descent-step",
-  "notes": "Hand-authored demo slice. prereqs.weight = how load-bearing (0..1). encompasses.credit = implicit repetition credit (0.2..0.4) per FIRe. Must remain a DAG. blame_hint is prompt-only disambiguation for the diagnosis call, not user-facing; broad titles attract blame that belongs to other nodes.",
+  "notes": "Hand-authored demo slice. prereqs.weight = how load-bearing (0..1). encompasses.credit = implicit repetition credit (0.2..0.4) per FIRe. Must remain a DAG. goal_tags marks the goal paths a node lies on; ['gradient-descent'] means the node is the target or an ancestor of it. blame_hint is prompt-only disambiguation for the diagnosis call, not user-facing; broad titles attract blame that belongs to other nodes.",
   "nodes": [
     {
       "id": "alg.sign-distribution",
       "title": "Distributing a negative across a sum or difference",
       "kind": "skill",
       "difficulty_b": -1.2,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [],
       "encompasses": [],
       "blame_hint": "ONLY for distributing a negative across a bracket, as in -(3x-2) = -3x+2. Not for sign errors in general."
@@ -18,48 +21,84 @@
       "title": "Adding and simplifying rational expressions",
       "kind": "skill",
       "difficulty_b": -0.9,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [],
       "encompasses": [],
-      "blame_hint": "Combining, subtracting or simplifying fractions. Not for arithmetic slips inside them."
+      "blame_hint": "Combining, subtracting or simplifying rational expressions. A pure numeric slip inside one is not this node: blame the topic the problem is tagged to."
     },
     {
       "id": "alg.exponent-rules",
       "title": "Laws of exponents, including negative and fractional",
       "kind": "skill",
       "difficulty_b": -1.0,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [],
       "encompasses": [],
-      "blame_hint": "Arithmetic and laws of exponents, including getting -3-1 wrong. Not for misapplying the power rule itself."
+      "blame_hint": "Arithmetic and laws of exponents, including computing a decremented exponent wrongly, such as -3 - 1 = -4. Not for misapplying the power rule itself, which is der.power-rule."
     },
     {
       "id": "alg.factoring",
       "title": "Factoring polynomials",
       "kind": "skill",
       "difficulty_b": -0.8,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [],
-      "encompasses": []
+      "encompasses": [],
+      "blame_hint": "ONLY for failing to factor a polynomial correctly. Factoring in order to resolve a 0/0 limit belongs to lim.indeterminate-factoring."
     },
     {
       "id": "alg.solving-equations",
       "title": "Solving linear and quadratic equations",
       "kind": "skill",
       "difficulty_b": -1.0,
-      "prereqs": [],
-      "encompasses": []
+      "goal_tags": [
+        "gradient-descent"
+      ],
+      "prereqs": [
+        {
+          "id": "alg.factoring",
+          "weight": 0.6
+        }
+      ],
+      "encompasses": [],
+      "blame_hint": "ONLY for solving a given equation wrongly. Setting up the WRONG equation, including writing the wrong f'(x) = 0, belongs to the topic that produced it."
     },
     {
       "id": "alg.function-composition",
       "title": "Recognizing and decomposing f(g(x))",
       "kind": "concept",
       "difficulty_b": -0.5,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [],
-      "encompasses": []
+      "encompasses": [],
+      "blame_hint": "ONLY for failing to see or decompose f(g(x)) outside of differentiation. Misidentifying inner and outer WHILE differentiating belongs to der.chain-rule."
+    },
+    {
+      "id": "alg.vectors",
+      "title": "Vector notation, scalar multiples and the dot product",
+      "kind": "skill",
+      "difficulty_b": -0.4,
+      "goal_tags": [
+        "gradient-descent"
+      ],
+      "prereqs": [],
+      "encompasses": [],
+      "blame_hint": "ONLY for vector mechanics: components, scalar multiples, subtraction, and the dot product. The direction the gradient points belongs to mv.gradient, and the descent update to ai.gradient-descent-step."
     },
     {
       "id": "alg.radicals",
       "title": "Converting between radicals and rational exponents",
       "kind": "skill",
       "difficulty_b": -0.6,
+      "goal_tags": [],
       "prereqs": [
         {
           "id": "alg.exponent-rules",
@@ -71,21 +110,25 @@
           "id": "alg.exponent-rules",
           "credit": 0.3
         }
-      ]
+      ],
+      "blame_hint": "ONLY for converting between radical and rational-exponent form. Exponent arithmetic itself belongs to alg.exponent-rules."
     },
     {
       "id": "trig.unit-circle",
       "title": "Exact values of sine and cosine at standard angles",
       "kind": "skill",
       "difficulty_b": -0.7,
+      "goal_tags": [],
       "prereqs": [],
-      "encompasses": []
+      "encompasses": [],
+      "blame_hint": "ONLY for wrong exact values of sine or cosine at standard angles. The derivative formulas belong to der.trig-derivatives."
     },
     {
       "id": "trig.identities",
       "title": "Pythagorean and double-angle identities",
       "kind": "skill",
       "difficulty_b": -0.2,
+      "goal_tags": [],
       "prereqs": [
         {
           "id": "trig.unit-circle",
@@ -95,15 +138,19 @@
       "encompasses": [
         {
           "id": "trig.unit-circle",
-          "credit": 0.25
+          "credit": 0.2
         }
-      ]
+      ],
+      "blame_hint": "ONLY for misusing a Pythagorean or double-angle identity. A wrong angle VALUE belongs to trig.unit-circle."
     },
     {
       "id": "explog.rules",
       "title": "Properties of exponentials and logarithms",
       "kind": "skill",
       "difficulty_b": -0.5,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "alg.exponent-rules",
@@ -115,13 +162,17 @@
           "id": "alg.exponent-rules",
           "credit": 0.3
         }
-      ]
+      ],
+      "blame_hint": "ONLY for log and exponential algebra, such as ln(ab) or e^(a+b). The derivative formulas for e^x and ln x belong to der.exp-log-derivatives."
     },
     {
       "id": "lim.concept",
       "title": "Informal idea of a limit",
       "kind": "concept",
       "difficulty_b": -0.4,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [],
       "encompasses": [],
       "blame_hint": "ONLY for not understanding what a limit is. Not for failing to evaluate one."
@@ -131,6 +182,9 @@
       "title": "Evaluating limits by direct substitution",
       "kind": "skill",
       "difficulty_b": -0.3,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "lim.concept",
@@ -142,13 +196,17 @@
           "id": "lim.concept",
           "credit": 0.3
         }
-      ]
+      ],
+      "blame_hint": "ONLY for substituting incorrectly, or substituting into an undefined expression and stopping there. Reaching 0/0 and not knowing to factor belongs to lim.indeterminate-factoring, and not knowing what a limit is belongs to lim.concept."
     },
     {
       "id": "lim.indeterminate-factoring",
       "title": "Resolving 0/0 limits by factoring and cancelling",
       "kind": "skill",
       "difficulty_b": 0.2,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "lim.direct-substitution",
@@ -180,6 +238,7 @@
       "title": "Continuity at a point",
       "kind": "concept",
       "difficulty_b": 0.0,
+      "goal_tags": [],
       "prereqs": [
         {
           "id": "lim.direct-substitution",
@@ -191,13 +250,17 @@
           "id": "lim.direct-substitution",
           "credit": 0.3
         }
-      ]
+      ],
+      "blame_hint": "ONLY for the continuity test at a point and its three conditions. Evaluating the limit belongs to lim.direct-substitution and the meaning of a limit to lim.concept."
     },
     {
       "id": "der.definition",
       "title": "The derivative as a limit of the difference quotient",
       "kind": "concept",
       "difficulty_b": 0.5,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "lim.indeterminate-factoring",
@@ -206,6 +269,10 @@
         {
           "id": "alg.fraction-arithmetic",
           "weight": 0.9
+        },
+        {
+          "id": "alg.sign-distribution",
+          "weight": 0.6
         }
       ],
       "encompasses": [
@@ -216,32 +283,45 @@
         {
           "id": "lim.indeterminate-factoring",
           "credit": 0.3
+        },
+        {
+          "id": "alg.sign-distribution",
+          "credit": 0.25
         }
-      ]
+      ],
+      "blame_hint": "ONLY for the difference-quotient limit itself: a malformed quotient, a dropped limit, or failing to cancel h. If the student used a shortcut rule and applied it wrongly, blame that rule's node, not this one."
     },
     {
       "id": "der.slope-interpretation",
       "title": "Derivative as slope of the tangent line",
       "kind": "concept",
       "difficulty_b": 0.1,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "der.definition",
           "weight": 0.9
         }
       ],
-      "encompasses": []
+      "encompasses": [
+        {
+          "id": "der.definition",
+          "credit": 0.25
+        }
+      ],
+      "blame_hint": "ONLY for the MEANING of f'(a) as a tangent slope, including reporting f(a) when f'(a) was asked for. Computing the derivative belongs to the rule used."
     },
     {
       "id": "der.power-rule",
       "title": "Power rule",
       "kind": "skill",
       "difficulty_b": -0.2,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
-        {
-          "id": "der.definition",
-          "weight": 0.6
-        },
         {
           "id": "alg.exponent-rules",
           "weight": 0.9
@@ -260,6 +340,9 @@
       "title": "Constant multiple and sum rules",
       "kind": "skill",
       "difficulty_b": -0.3,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "der.power-rule",
@@ -271,29 +354,22 @@
           "id": "der.power-rule",
           "credit": 0.3
         }
-      ]
+      ],
+      "blame_hint": "ONLY for the sum and constant-multiple rules: a dropped coefficient, or a constant differentiated to something other than zero. Products belong to der.product-rule and quotients to der.quotient-rule."
     },
     {
       "id": "der.trig-derivatives",
       "title": "Derivatives of sine, cosine and tangent",
       "kind": "skill",
       "difficulty_b": 0.1,
+      "goal_tags": [],
       "prereqs": [
-        {
-          "id": "der.definition",
-          "weight": 0.5
-        },
         {
           "id": "trig.unit-circle",
           "weight": 0.8
         }
       ],
-      "encompasses": [
-        {
-          "id": "trig.unit-circle",
-          "credit": 0.25
-        }
-      ],
+      "encompasses": [],
       "blame_hint": "The derivative formulas for sin, cos, tan. Wrong VALUES at standard angles belong to trig.unit-circle."
     },
     {
@@ -301,11 +377,10 @@
       "title": "Derivatives of e^x and ln x",
       "kind": "skill",
       "difficulty_b": 0.2,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
-        {
-          "id": "der.definition",
-          "weight": 0.5
-        },
         {
           "id": "explog.rules",
           "weight": 0.8
@@ -314,15 +389,17 @@
       "encompasses": [
         {
           "id": "explog.rules",
-          "credit": 0.25
+          "credit": 0.2
         }
-      ]
+      ],
+      "blame_hint": "ONLY for the derivative formulas of e^x and ln x. Log and exponent algebra belongs to explog.rules, and a missing inner derivative to der.chain-rule."
     },
     {
       "id": "der.product-rule",
       "title": "Product rule",
       "kind": "skill",
       "difficulty_b": 0.3,
+      "goal_tags": [],
       "prereqs": [
         {
           "id": "der.constant-multiple-sum",
@@ -333,10 +410,6 @@
         {
           "id": "der.power-rule",
           "credit": 0.3
-        },
-        {
-          "id": "der.constant-multiple-sum",
-          "credit": 0.25
         }
       ],
       "blame_hint": "Misapplying the product rule, including treating d(uv) as (du)(dv)."
@@ -346,17 +419,18 @@
       "title": "Quotient rule",
       "kind": "skill",
       "difficulty_b": 0.5,
+      "goal_tags": [],
       "prereqs": [
-        {
-          "id": "der.product-rule",
-          "weight": 0.7
-        },
         {
           "id": "alg.fraction-arithmetic",
           "weight": 0.8
         },
         {
           "id": "alg.sign-distribution",
+          "weight": 0.9
+        },
+        {
+          "id": "der.power-rule",
           "weight": 0.9
         }
       ],
@@ -381,14 +455,17 @@
       "title": "Chain rule",
       "kind": "skill",
       "difficulty_b": 0.6,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
-        {
-          "id": "der.product-rule",
-          "weight": 0.6
-        },
         {
           "id": "alg.function-composition",
           "weight": 1.0
+        },
+        {
+          "id": "der.power-rule",
+          "weight": 0.9
         }
       ],
       "encompasses": [
@@ -408,28 +485,53 @@
       "title": "Implicit differentiation",
       "kind": "skill",
       "difficulty_b": 0.9,
+      "goal_tags": [],
       "prereqs": [
         {
           "id": "der.chain-rule",
           "weight": 1.0
+        },
+        {
+          "id": "der.product-rule",
+          "weight": 0.8
+        },
+        {
+          "id": "alg.solving-equations",
+          "weight": 0.7
         }
       ],
       "encompasses": [
         {
           "id": "der.chain-rule",
           "credit": 0.4
+        },
+        {
+          "id": "der.product-rule",
+          "credit": 0.3
+        },
+        {
+          "id": "alg.solving-equations",
+          "credit": 0.25
         }
-      ]
+      ],
+      "blame_hint": "ONLY for implicit differentiation as such, above all omitting dy/dx on a y term. A plain chain rule error belongs to der.chain-rule and the final rearrangement to alg.solving-equations."
     },
     {
       "id": "der.higher-order",
       "title": "Second and higher derivatives",
       "kind": "skill",
       "difficulty_b": 0.3,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "der.power-rule",
           "weight": 0.8
+        },
+        {
+          "id": "der.constant-multiple-sum",
+          "weight": 0.7
         }
       ],
       "encompasses": [
@@ -437,26 +539,34 @@
           "id": "der.power-rule",
           "credit": 0.35
         }
-      ]
+      ],
+      "blame_hint": "ONLY for taking the further derivative: stopping at the first, or misreading the order asked for. An error inside any single differentiation belongs to that rule's node."
     },
     {
       "id": "mv.functions-several-vars",
       "title": "Functions of several variables",
       "kind": "concept",
       "difficulty_b": 0.6,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
-          "id": "der.slope-interpretation",
-          "weight": 0.6
+          "id": "alg.function-composition",
+          "weight": 0.7
         }
       ],
-      "encompasses": []
+      "encompasses": [],
+      "blame_hint": "ONLY for reading or evaluating f(x,y), including confusing a variable with a parameter. Differentiating it belongs to mv.partial-derivative."
     },
     {
       "id": "mv.partial-derivative",
       "title": "Partial derivatives",
       "kind": "skill",
       "difficulty_b": 0.8,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "mv.functions-several-vars",
@@ -464,6 +574,10 @@
         },
         {
           "id": "der.chain-rule",
+          "weight": 0.7
+        },
+        {
+          "id": "der.constant-multiple-sum",
           "weight": 0.7
         }
       ],
@@ -475,15 +589,20 @@
         {
           "id": "der.constant-multiple-sum",
           "credit": 0.25
+        },
+        {
+          "id": "mv.functions-several-vars",
+          "credit": 0.3
         }
       ],
-      "blame_hint": "Taking a partial derivative, including holding the other variables constant."
+      "blame_hint": "ONLY for the partial derivative itself, above all differentiating with respect to BOTH variables instead of holding the others constant. An error inside the single-variable differentiation belongs to the rule used, not here."
     },
     {
       "id": "mv.chain-rule-multivar",
       "title": "Multivariable chain rule",
       "kind": "skill",
       "difficulty_b": 1.1,
+      "goal_tags": [],
       "prereqs": [
         {
           "id": "mv.partial-derivative",
@@ -503,17 +622,25 @@
           "id": "mv.partial-derivative",
           "credit": 0.35
         }
-      ]
+      ],
+      "blame_hint": "ONLY for the multivariable chain rule, such as omitting one path in df/dt = sum over variables of partial times derivative. A single-variable chain rule error belongs to der.chain-rule."
     },
     {
       "id": "mv.gradient",
       "title": "The gradient vector",
       "kind": "concept",
       "difficulty_b": 1.0,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "mv.partial-derivative",
           "weight": 1.0
+        },
+        {
+          "id": "alg.vectors",
+          "weight": 0.8
         }
       ],
       "encompasses": [
@@ -521,16 +648,24 @@
           "id": "mv.partial-derivative",
           "credit": 0.4
         }
-      ]
+      ],
+      "blame_hint": "ONLY for assembling the gradient vector from its partials: wrong ordering, missing component, or returning a scalar. One partial computed wrongly belongs to mv.partial-derivative; the update that consumes the gradient belongs to ai.gradient-descent-step."
     },
     {
       "id": "mv.directional-derivative",
       "title": "Directional derivatives and steepest descent",
       "kind": "concept",
       "difficulty_b": 1.2,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "mv.gradient",
+          "weight": 1.0
+        },
+        {
+          "id": "alg.vectors",
           "weight": 1.0
         }
       ],
@@ -539,13 +674,17 @@
           "id": "mv.gradient",
           "credit": 0.35
         }
-      ]
+      ],
+      "blame_hint": "ONLY for the directional derivative as the gradient dotted with a unit direction, including forgetting to normalise the direction. The SIGN or form of the gradient descent update belongs to ai.gradient-descent-step, never here, despite the words 'steepest descent' in the title."
     },
     {
       "id": "opt.critical-points",
       "title": "Finding critical points",
       "kind": "skill",
       "difficulty_b": 0.7,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "der.slope-interpretation",
@@ -554,6 +693,14 @@
         {
           "id": "alg.solving-equations",
           "weight": 0.9
+        },
+        {
+          "id": "der.power-rule",
+          "weight": 0.9
+        },
+        {
+          "id": "alg.factoring",
+          "weight": 0.7
         }
       ],
       "encompasses": [
@@ -565,13 +712,17 @@
           "id": "der.power-rule",
           "credit": 0.25
         }
-      ]
+      ],
+      "blame_hint": "ONLY for the procedure of setting f'(x) = 0 and locating the points. An algebra slip while solving belongs to alg.solving-equations; a differentiation slip belongs to the rule used."
     },
     {
       "id": "opt.local-extrema",
       "title": "Classifying local minima and maxima",
       "kind": "skill",
       "difficulty_b": 0.9,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "opt.critical-points",
@@ -591,26 +742,39 @@
           "id": "opt.critical-points",
           "credit": 0.35
         }
-      ]
+      ],
+      "blame_hint": "ONLY for classifying an already-found critical point as a minimum, maximum or neither. Moving in the wrong direction during a parameter update belongs to ai.gradient-descent-step."
     },
     {
       "id": "ai.loss-function",
       "title": "Loss as a function of parameters",
       "kind": "concept",
       "difficulty_b": 1.0,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "mv.functions-several-vars",
           "weight": 1.0
         }
       ],
-      "encompasses": []
+      "encompasses": [
+        {
+          "id": "mv.functions-several-vars",
+          "credit": 0.3
+        }
+      ],
+      "blame_hint": "ONLY for treating the loss as a function of the PARAMETERS rather than of the data. Not a general bucket for anything machine-learning flavoured."
     },
     {
       "id": "ai.gradient-of-loss",
       "title": "Gradient of a loss with respect to parameters",
       "kind": "skill",
       "difficulty_b": 1.3,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "mv.gradient",
@@ -619,6 +783,10 @@
         {
           "id": "ai.loss-function",
           "weight": 1.0
+        },
+        {
+          "id": "der.exp-log-derivatives",
+          "weight": 0.5
         }
       ],
       "encompasses": [
@@ -629,14 +797,22 @@
         {
           "id": "mv.partial-derivative",
           "credit": 0.3
+        },
+        {
+          "id": "der.chain-rule",
+          "credit": 0.3
         }
-      ]
+      ],
+      "blame_hint": "ONLY for computing dL/dw itself: a missing parameter, a dropped chain rule factor, or differentiating with respect to the data instead of the parameters. The update rule that consumes the gradient belongs to ai.gradient-descent-step."
     },
     {
       "id": "ai.gradient-descent-step",
       "title": "The gradient descent update step",
       "kind": "skill",
       "difficulty_b": 1.4,
+      "goal_tags": [
+        "gradient-descent"
+      ],
       "prereqs": [
         {
           "id": "ai.gradient-of-loss",
@@ -645,16 +821,20 @@
         {
           "id": "mv.directional-derivative",
           "weight": 0.8
+        },
+        {
+          "id": "alg.vectors",
+          "weight": 0.8
+        },
+        {
+          "id": "opt.local-extrema",
+          "weight": 0.6
         }
       ],
       "encompasses": [
         {
           "id": "ai.gradient-of-loss",
           "credit": 0.4
-        },
-        {
-          "id": "mv.directional-derivative",
-          "credit": 0.3
         }
       ],
       "blame_hint": "The update rule, including that it SUBTRACTS the learning rate times the gradient in order to descend."
@@ -664,13 +844,14 @@
       "title": "Backpropagation as repeated chain rule",
       "kind": "concept",
       "difficulty_b": 1.6,
+      "goal_tags": [],
       "prereqs": [
         {
           "id": "mv.chain-rule-multivar",
           "weight": 1.0
         },
         {
-          "id": "ai.gradient-descent-step",
+          "id": "ai.gradient-of-loss",
           "weight": 0.9
         }
       ],
@@ -678,8 +859,13 @@
         {
           "id": "mv.chain-rule-multivar",
           "credit": 0.4
+        },
+        {
+          "id": "ai.gradient-of-loss",
+          "credit": 0.35
         }
-      ]
+      ],
+      "blame_hint": "ONLY for propagating gradients layer by layer, such as skipping a layer's local derivative. The multivariable chain rule itself belongs to mv.chain-rule-multivar."
     }
   ]
 }

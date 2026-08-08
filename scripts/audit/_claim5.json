@@ -1,0 +1,450 @@
+{
+ "sympy-code-in-stem": [
+  [
+   "gen-ai.backprop-chain-1",
+   "Two-layer network: output = (w2*(w1*3))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = 9 w_{1}^{2} w_{2}^{2}$."
+  ],
+  [
+   "gen-ai.backprop-chain-2",
+   "Two-layer network: output = (1 - (w2*(w1*3 + w2)))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- w_{2} \\left(3 w_{1} + w_{2}\\right) + 1\\right)^{2}$."
+  ],
+  [
+   "gen-ai.backprop-chain-3",
+   "Two-layer network: output = ((w1*2 + w2)**3 - w1)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- w_{1} + \\left(2 w_{1} + w_{2}\\right)^{3}\\right)^{2}$."
+  ],
+  [
+   "gen-ai.backprop-chain-4",
+   "Two-layer network: output = sqrt((w2*(w1*3))**2 + 1). Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\sqrt{9 w_{1}^{2} w_{2}^{2} + 1}$."
+  ],
+  [
+   "gen-ai.backprop-chain-5",
+   "Two-layer network: output = sin(w2*(w1*3))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\sin^{2}{\\left(3 w_{1} w_{2} \\right)}$."
+  ],
+  [
+   "gen-ai.backprop-chain-6",
+   "Two-layer network: output = log(w2*(w1*3) + 1)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\log{\\left(3 w_{1} w_{2} + 1 \\right)}^{2}$."
+  ],
+  [
+   "gen-ai.backprop-chain-7",
+   "Two-layer network: output = (1 - (w2*(w1*3 + w2*2)))**3 * (w1 + w2)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(w_{1} + w_{2}\\right)^{2} \\left(- w_{2} \\left("
+  ],
+  [
+   "gen-ai.backprop-chain-8",
+   "Two-layer network: output = ((w1*2 + w2)**2 - (w2*(w1*3 + w2*4)))**3. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- w_{2} \\left(3 w_{1} + 4 w_{2}\\right) + \\left("
+  ],
+  [
+   "gen-ai.gradient-of-loss-2",
+   "Linear regression with two weights and a bias; compute the gradient w.r.t. the first weight. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- b - 3 w_{1} - 2 w_{2} "
+  ],
+  [
+   "gen-ai.gradient-of-loss-3",
+   "Same linear regression; now differentiate with respect to the second weight. Find $\\frac{\\partial f}{\\partial w2}$ for $f = \\left(- b - 3 w_{1} - 2 w_{2} + 5\\right)^{2}$."
+  ],
+  [
+   "gen-ai.gradient-of-loss-5",
+   "Loss depends on a product of two parameters; compute the partial derivative w.r.t. w2. Find $\\frac{\\partial f}{\\partial w2}$ for $f = \\left(- w_{1} w_{2} - 3 w_{1} + 7\\ri"
+  ],
+  [
+   "gen-ai.gradient-of-loss-8",
+   "Two non\u2011linear features; obtain the partial derivative of the loss with respect to the first weight. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- b - w_{1} e^{x"
+  ],
+  [
+   "gen-ai.loss-function-2",
+   "Loss L = (a*x - 7)^2 for a model parameter a. Find $\\frac{\\partial f}{\\partial x}$ for $f = \\left(a x - 7\\right)^{2}$."
+  ],
+  [
+   "gen-ai.loss-function-4",
+   "Loss L = (a*x + b - 10)^2, find \u2202L/\u2202b. Find $\\frac{\\partial f}{\\partial x}$ for $f = \\left(a x + b - 10\\right)^{2}$."
+  ],
+  [
+   "gen-ai.loss-function-6",
+   "Weighted loss L = w*(a*y - y_true)^2 with w=2, y_true=5. Find $\\frac{\\partial f}{\\partial x}$ for $f = 2 \\left(a y - 5\\right)^{2}$."
+  ]
+ ],
+ "very-long-answer": [
+  [
+   "gen-ai.backprop-chain-7",
+   "- 9 w_{2} \\left(w_{1} + w_{2}\\right)^{2} \\left(- w_{2} \\left(3 w_{1} + 2 w_{2}\\right) + 1\\right)^{2} + \\left(2 w_{1} + 2..."
+  ],
+  [
+   "os-fs-id1170571652136",
+   "a. $\\text{lim}_{x\\to 2^{-}}\\frac{1}{{(x-2)}^{3}}=\\text{-}\\infty ;$ b. $\\text{lim}_{x\\to 2^{+}}\\frac{1}{{(x-2)}^{3}}=\\tex..."
+  ],
+  [
+   "os-fs-id1170571599593",
+   "a. \u221237.931934; b. \u22123377.9264; c. \u2212333,777.93; d. \u221233,337,778; e. \u221229.032258; f. \u22123289.0365; g. \u2212332,889.04; h. \u221233,328,8..."
+  ],
+  [
+   "os-fs-id1170572174644",
+   "a. 0.13495277; b. 0.12594300; c. 0.12509381; d. 0.12500938; e. 0.11614402; f. 0.12406794; g. 0.12490631; h. 0.12499063; ..."
+  ],
+  [
+   "os-fs-id1170572480427",
+   "a. 10.00000; b. 100.00000; c. 1000.0000; d. 10,000.000; Guess: $\\text{lim}_{\\alpha \\to 0^{+}}\\frac{1}{\\alpha } \\text{cos..."
+  ],
+  [
+   "os-fs-id1167794077062",
+   "$\\frac{\\partial f}{\\partial x} = (3x^{2}-6xy^{2}) {\\text{sec}}^{2} (x^{3}-3x^{2}y^{2}+2y^{4}) \\frac{\\partial f}{\\partial..."
+  ],
+  [
+   "os-fs-id1167793589668",
+   "$\\frac{\\partial f}{\\partial x} = 2 x y \\text{sec} (x^{2}y) \\text{tan} (x^{2}y) - 3 x^{2} y z^{2} {\\text{sec}}^{2} (x^{3}..."
+  ],
+  [
+   "os-fs-id1167794327634",
+   "$\\frac{{\\partia l}^{2}f}{\\partia lx^{2}} = -9 \\text{sin} (3x-2y) - \\text{cos} (x+4y) \\frac{{\\partia l}^{2}f}{\\partia lx\\..."
+  ],
+  [
+   "os-fs-id1167794290552",
+   "$\\frac{dz}{dt} = \\frac{\\partia lf}{\\partia lx} \\frac{dx}{dt} + \\frac{\\partia lf}{\\partia ly} \\frac{dy}{dt} = (2x-3y) (6 ..."
+  ],
+  [
+   "os-fs-id1167793630197",
+   "$\\frac{\\partia lw}{\\partia lt} = \\frac{\\partia lw}{\\partia lx} \\frac{\\partia lx}{\\partia lt} + \\frac{\\partia lw}{\\partia..."
+  ],
+  [
+   "os-fs-id1167793607615",
+   "$\\frac{\\partial z}{\\partial u}=\\frac{-2 \\text{sin} u}{3 \\text{sin} v}$ and $\\frac{\\partial z}{\\partial v}=\\frac{-2 \\text..."
+  ],
+  [
+   "os-fs-id1167793262534",
+   "$D_{u} f (x,y) = \\frac{(6xy-4y^{3}-4)(1)}{2} + \\frac{(3x^{2}-12xy^{2}+6y)\\sqrt{3}}{2} D_{u} f (3,4) = \\frac{72-256-4}{2}..."
+  ],
+  [
+   "os-fs-id1167794293307",
+   "The gradient of $g$ at $(-2,3)$ is $\u2207g(-2,3)=i+14j.$ The unit vector that points in the same direction as $\u2207g(-2,3)$ is ..."
+  ],
+  [
+   "os-fs-id1167794296106",
+   "$\u2207 f (x,y,z) = \\frac{2x^{2}+2xy+6y^{2}-8xz-2z^{2}}{{(2x+y-4z)}^{2}} i - \\frac{x^{2}+12xy+3y^{2}-24yz+z^{2}}{{(2x+y-4z)}^..."
+  ]
+ ],
+ "nonascii-symbols": [
+  [
+   "gen-ai.gradient-descent-step-4",
+   "\u2011 || Higher\u2011order convex loss. The loss is $L(w) = w^{4}$. Using a learning rate of $\\alpha = 0.05$ and s"
+  ],
+  [
+   "gen-ai.gradient-of-loss-8",
+   "\u2011 || Two non\u2011linear features; obtain the partial derivative of the loss with respect to the first weight."
+  ],
+  [
+   "gen-ai.loss-function-4",
+   "\u2202 || Loss L = (a*x + b - 10)^2, find \u2202L/\u2202b. Find $\\frac{\\partial f}{\\partial x}$ for $f = \\left(a x + b -"
+  ],
+  [
+   "os-fs-id1170572232003",
+   "\u2212 || For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. $\\text{lim}_{x\\to 1"
+  ],
+  [
+   "os-fs-id1170571599593",
+   "\u2212 || For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. $\\text{lim}_{z\\to 0"
+  ],
+  [
+   "os-fs-id1170572174644",
+   "\u2234 || For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. $\\text{lim}_{x\\to 2"
+  ],
+  [
+   "os-fs-id1170572372780",
+   "\u2212 || For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. $\\text{lim}_{x\\to 0"
+  ],
+  [
+   "os-fs-id1170571675273",
+   "\u2212 || Evaluate $\\text{lim}_{x\\to -2}(3x^{3}-2x+7).$"
+  ],
+  [
+   "os-fs-id1170572394356",
+   "\u2212 || Evaluate $\\text{lim}_{x\\to -3}\\frac{\\frac{1}{x+2}+1}{x+3}.$"
+  ],
+  [
+   "os-fs-id1170571650521",
+   "\u221e || Evaluate $\\text{lim}_{x\\to 1}\\frac{x+2}{{(x-1)}^{2}}.$"
+  ],
+  [
+   "os-fs-id1170573361738",
+   "\u2026 || For the following exercises, determine the point(s), if any, at which each function is discontinuous"
+  ],
+  [
+   "os-fs-id1170573438919",
+   "\u2212 || Instead of making the force 0 at R , instead we let the force be 10 \u221220 for $r\\geq R.$ Assume two pr"
+  ],
+  [
+   "os-fs-id1167794137106",
+   "\u2329\u232a || For the following exercises, find the directional derivative of the function at point $P$ in the dir"
+  ],
+  [
+   "os-fs-id1167793241201",
+   "\u2207 || Find the gradient $\u2207f(x,y)$ of $f(x,y)=(x^{2}-3y^{2})\\text{/}(2x+y).$"
+  ],
+  [
+   "os-fs-id1167794293307",
+   "\u2016\u2207\u2248 || Find the direction for which the directional derivative of $g(x,y)=4x-xy+2y^{2}$ at $(-2,3)$ is a ma"
+  ],
+  [
+   "os-fs-id1167794296106",
+   "\u2207 || Find the gradient $\u2207f(x,y,z)$ of $f(x,y,z)=\\frac{x^{2}-3y^{2}+z^{2}}{2x+y-4z}.$"
+  ],
+  [
+   "os-fs-id1167793957299",
+   "\u2329\u232a || For the following exercises, find the directional derivative of the function at point $P$ in the dir"
+  ],
+  [
+   "os-fs-id1167793504938",
+   "\u2329\u232a || For the following exercises, find the directional derivative of the function at point $P$ in the dir"
+  ],
+  [
+   "os-fs-id1167793629442",
+   "\u2329\u232a || For the following exercises, find the directional derivative of the function at point $P$ in the dir"
+  ],
+  [
+   "os-fs-id1167793628292",
+   "\u2329\u232a || Find the gradient of $f(x,y,z)=xy+yz+xz$ at point $P(1,2,3).$"
+  ],
+  [
+   "os-fs-id1167793929056",
+   "\u2329\u232a || For the following exercises, find the maximum rate of change of $f$ at the given point and the direc"
+  ],
+  [
+   "os-fs-id1167794293188",
+   "\u2329\u232a || For the following exercises, find the maximum rate of change of $f$ at the given point and the direc"
+  ],
+  [
+   "os-fs-id1167793433537",
+   "\u2329\u232a || The electrical potential (voltage) in a certain region of space is given by the function $V(x,y,z)=5"
+  ],
+  [
+   "os-fs-id1167793992374",
+   "\u2207\u2329\u232a || In two dimensions, the motion of an ideal fluid is governed by a velocity potential $\u03c6.$ The velocit"
+  ]
+ ],
+ "multipart-stem": [
+  [
+   "gen-ai.loss-function-2",
+   "Loss L = (a*x - 7)^2 for a model parameter a. Find $\\frac{\\partial f}{\\partial x}$ for $f = \\left(a x - 7\\right)^{2}$."
+  ],
+  [
+   "gen-ai.loss-function-4",
+   "Loss L = (a*x + b - 10)^2, find \u2202L/\u2202b. Find $\\frac{\\partial f}{\\partial x}$ for $f = \\left(a x + b - 10\\right)^{2}$."
+  ],
+  [
+   "os-fs-id1170572232003",
+   "For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. $\\text{lim}_{x\\to 1}(1-2x)$ x $1-2x$ x $1-2x$ 0.9 a. 1.1 e. 0.99 b. 1.01 f. 0.9"
+  ],
+  [
+   "os-fs-id1170571599593",
+   "For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. $\\text{lim}_{z\\to 0}\\frac{z-1}{z^{2}(z+3)}$ z $\\frac{z-1}{z^{2}(z+3)}$ z $\\frac"
+  ],
+  [
+   "os-fs-id1170572174644",
+   "For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. $\\text{lim}_{x\\to 2}\\frac{1-\\frac{2}{x}}{x^{2}-4}$ x $\\frac{1-\\frac{2}{x}}{x^{2"
+  ],
+  [
+   "os-fs-id1170572480427",
+   "For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. $\\text{lim}_{\\alpha \\to 0^{+}}\\frac{1}{\\alpha } \\text{cos} (\\frac{\\pi }{\\alpha "
+  ],
+  [
+   "os-fs-id1169736662054",
+   "For the following exercises, use the information in the following table to find $h^{'}(a)$ at the given value for $a.$. $h(x)={(x^{4}+g(x))}^{-2};a=1$"
+  ],
+  [
+   "os-fs-id1169736662220",
+   "For the following exercises, use the information in the following table to find $h^{'}(a)$ at the given value for $a.$. $h(x)=f(x+f(x));a=1$"
+  ],
+  [
+   "os-fs-id1169736608305",
+   "For the following exercises, use the information in the following table to find $h^{'}(a)$ at the given value for $a.$. $h(x)=g(2+f(x^{2}));a=1$"
+  ]
+ ],
+ "unreduced-literal-arithmetic": [
+  [
+   "gen-ai.loss-function-7",
+   "Evaluate $\\left(\\left(-1\\right) 12 - 1 + 2 \\cdot 1^{2} + 5\\right)^{2}$, giving an exact value."
+  ]
+ ],
+ "mixed-number-ambiguity": [
+  [
+   "gen-alg.fraction-arithmetic-1",
+   "Simplify $1 \\frac{1}{h + x} - 1 \\frac{1}{x}$."
+  ],
+  [
+   "gen-alg.fraction-arithmetic-3",
+   "Simplify $\\frac{- \\frac{1}{3} + 1 \\frac{1}{x}}{x - 3}$."
+  ],
+  [
+   "gen-alg.fraction-arithmetic-5",
+   "Simplify $\\frac{x}{x - 2} - 1 \\frac{1}{x - 2}$."
+  ],
+  [
+   "gen-alg.fraction-arithmetic-6",
+   "Simplify $1 \\frac{1}{x^{2} - 1} + 1 \\frac{1}{x - 1}$."
+  ],
+  [
+   "gen-alg.fraction-arithmetic-8",
+   "Simplify $\\left(x^{2} - 1\\right) \\left(- \\frac{1}{x - 1} + 1 \\frac{1}{x + 1}\\right)$."
+  ]
+ ],
+ "figure-or-crossref": [
+  [
+   "os-fs-id1170571654941",
+   "For the following exercises, consider the function $f(x)={(1+x)}^{1\\text{/}x}.$. What does the table of values in the preceding exercise indicate about the func"
+  ],
+  [
+   "os-fs-id1169739220843",
+   "A rock is dropped from a height of $64$ feet. Its height above ground at time $t$ seconds later is given by $s(t)=-16t^{2}+64,0\\leq t\\leq 2.$ Find its instantan"
+  ],
+  [
+   "os-fs-id1169736662054",
+   "For the following exercises, use the information in the following table to find $h^{'}(a)$ at the given value for $a.$. $h(x)={(x^{4}+g(x))}^{-2};a=1$"
+  ],
+  [
+   "os-fs-id1169736662220",
+   "For the following exercises, use the information in the following table to find $h^{'}(a)$ at the given value for $a.$. $h(x)=f(x+f(x));a=1$"
+  ],
+  [
+   "os-fs-id1169736608305",
+   "For the following exercises, use the information in the following table to find $h^{'}(a)$ at the given value for $a.$. $h(x)=g(2+f(x^{2}));a=1$"
+  ],
+  [
+   "os-fs-id1167793515331",
+   "For the following exercises, calculate the sign of the partial derivative using the graph of the surface. $f_{x}(-1,1)$"
+  ],
+  [
+   "os-fs-id1167793941283",
+   "For the following exercises, calculate the sign of the partial derivative using the graph of the surface. $f_{x}(0,0)$"
+  ],
+  [
+   "os-fs-id1167793630197",
+   "Create a tree diagram for the case when $w=f(x,y),x=x(t,u,v),y=y(t,u,v)$ and write out the formulas for the three partial derivatives of $w.$"
+  ]
+ ],
+ "multipart-answer": [
+  [
+   "os-fs-id1170572232003",
+   "a. \u22120.80000000; b. \u22120.98000000; c. \u22120.99800000; d. \u22120.99980000; e. \u22121.2000000; f. \u22121.0200000; g. \u22121.0020000; h. \u22121.0002000; $\\text{lim}_{x\\to 1}(1-2x)=-1$"
+  ],
+  [
+   "os-fs-id1170571599593",
+   "a. \u221237.931934; b. \u22123377.9264; c. \u2212333,777.93; d. \u221233,337,778; e. \u221229.032258; f. \u22123289.0365; g. \u2212332,889.04; h. \u221233,328,889 $\\text{lim}_{x\\to 0}\\frac{z-1}{z^{2}("
+  ],
+  [
+   "os-fs-id1170572174644",
+   "a. 0.13495277; b. 0.12594300; c. 0.12509381; d. 0.12500938; e. 0.11614402; f. 0.12406794; g. 0.12490631; h. 0.12499063; $\u2234\\text{lim}_{x\\to 2}\\frac{1-\\frac{2}{x}"
+  ],
+  [
+   "os-fs-id1170572480427",
+   "a. 10.00000; b. 100.00000; c. 1000.0000; d. 10,000.000; Guess: $\\text{lim}_{\\alpha \\to 0^{+}}\\frac{1}{\\alpha } \\text{cos} (\\frac{\\pi }{\\alpha })=\\infty ,$ actua"
+  ],
+  [
+   "os-fs-id1170570998828",
+   "Discontinuous at 1; removable"
+  ],
+  [
+   "os-fs-id1169736616568",
+   "a. $\\frac{1}{3};$ b. $\\text{(i)} 0.3^{-}$ m/s, $\\text{(ii)} 0.3^{-}$ m/s, $\\text{(iii)} 0.3^{-}$ m/s, $\\text{(iv)} 0.3^{-}$ m/s; c. $0.3^{-}=\\frac{1}{3}$ m/s"
+  ],
+  [
+   "os-fs-id1169736593509",
+   "a. $2,$ b. does not exist, c. $2.5$"
+  ],
+  [
+   "os-fs-id1165042238074",
+   "The absolute minimum was in 1848, when no gold was produced."
+  ],
+  [
+   "os-fs-id1167794046971",
+   "$\\frac{\\partial f}{\\partial x}=8x+2y+3, \\frac{\\partial f}{\\partial y}=2x-2y-2$"
+  ],
+  [
+   "os-fs-id1167793830458",
+   "$\\frac{\\partial f}{\\partial x}=4x-8xy+5z^{2}-6, \\frac{\\partial f}{\\partial y}=-4x^{2}+4y, \\frac{\\partial f}{\\partial z}=10xz+3$"
+  ],
+  [
+   "os-fs-id1167793618212",
+   "$f_{x}=0, f_{y}=0, f_{z}=0$"
+  ],
+  [
+   "os-fs-id1167794003174",
+   "$\\frac{\\partial z}{\\partial u}=0, \\frac{\\partial z}{\\partial v}=\\frac{-21}{{(3 \\text{sin} 3v+\\text{cos} 3v)}^{2}}$"
+  ]
+ ],
+ "prose-answer": [
+  [
+   "os-fs-id1170572590126",
+   "Answers may vary."
+  ],
+  [
+   "os-fs-id1170570998828",
+   "Discontinuous at 1; removable"
+  ],
+  [
+   "os-fs-id1170573581616",
+   "Infinite discontinuity at $x=\\text{ln} 2$"
+  ],
+  [
+   "os-fs-id1170573361738",
+   "Infinite discontinuities at $x=\\frac{(2k+1)\\p i}{4},$ for $k=0,\u00b11,\u00b12,\u00b13\\text{,\u2026}$"
+  ],
+  [
+   "os-fs-id1170573580625",
+   "Yes. It is continuous."
+  ],
+  [
+   "os-fs-id1170571120812",
+   "Yes. It is continuous."
+  ],
+  [
+   "os-fs-id1169736593509",
+   "a. $2,$ b. does not exist, c. $2.5$"
+  ],
+  [
+   "os-fs-id1169739353376",
+   "$y^{'}=5 \\text{cos} (x),$ increasing on $(0,\\frac{\\p i}{2}),(\\frac{3\\p i}{2},\\frac{5\\p i}{2}),$ and $(\\frac{7\\p i}{2},12)$"
+  ]
+ ],
+ "latex-unbalanced-brace": [
+  [
+   "os-fs-id1170570998828",
+   "For $f(x)={x^{2} \\text{if} x \\neq 1 3 \\text{if} x = 1,$ decide whether f is continuous at 1. If f is not continuous at 1, classify the discontinuity a"
+  ],
+  [
+   "os-fs-id1170573580625",
+   "For the following exercises, decide if the function continuous at the given point. If it is discontinuous, what type of discontinuity is it?. $g(u)={\\"
+  ],
+  [
+   "os-fs-id1170571120812",
+   "For the following exercises, decide if the function continuous at the given point. If it is discontinuous, what type of discontinuity is it?. $f(x)={x"
+  ],
+  [
+   "os-fs-id1170573449551",
+   "For the following exercises, decide if the function continuous at the given point. If it is discontinuous, what type of discontinuity is it?. $f(x)={\\"
+  ],
+  [
+   "os-fs-id1170573414086",
+   "For the following exercises, decide if the function continuous at the given point. If it is discontinuous, what type of discontinuity is it?. Where is"
+  ]
+ ],
+ "latex-unbalanced-dollar": [
+  [
+   "os-fs-id1170571120812",
+   "For the following exercises, decide if the function continuous at the given point. If it is discontinuous, what type of discontinuity is it?. $f(x)={x"
+  ],
+  [
+   "os-fs-id1170573449551",
+   "For the following exercises, decide if the function continuous at the given point. If it is discontinuous, what type of discontinuity is it?. $f(x)={\\"
+  ]
+ ],
+ "stem-no-terminator": [
+  [
+   "os-fs-id1170573449551",
+   "s discontinuous, what type of discontinuity is it?. $f(x)={\\sqrt{kx}, 0\\leq x\\leq 3 x+1, 3"
+  ],
+  [
+   "os-fs-id1167793268124",
+   "ion. $f(x,y)=e^{xy}$ at point $(6,7)$ in the direction the function increases most rapidly"
+  ],
+  [
+   "os-fs-id1167793930170",
+   "n}(xy+yz+zx)$ at point $(-9,-18,-27)$ in the direction the function increases most rapidly"
+  ]
+ ]
+}
