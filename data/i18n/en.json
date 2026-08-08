@@ -4,10 +4,10 @@
   "entries": {
     "ui:action.check_answer": "Check answer",
     "ui:action.continue": "Continue",
-    "ui:action.get_started": "Get started",
     "ui:action.next_problem": "Next problem",
     "ui:action.retake_photo": "Retake the photo",
     "ui:action.show_hint": "Show hint",
+    "ui:action.sign_out": "Sign out",
     "ui:action.start_course": "Start this course",
     "ui:action.start_set": "Start today's set",
     "ui:action.take_photo": "Take a photo",
@@ -55,8 +55,6 @@
     "ui:diagnosis.recurrence": "Same mistake as {{when}}.",
     "ui:diagnosis.topic_ok": "Your {{node}} is correct.",
     "ui:error.generic": "Something went wrong. Try again.",
-    "ui:goal.example": "I want to understand how neural networks learn",
-    "ui:goal.prompt": "What do you want to be able to do?",
     "ui:hint.cost_note": "Hints are free. They only change how much this attempt counts as evidence.",
     "ui:hint.level_1": "Which idea applies here?",
     "ui:hint.level_2": "Here is the first step.",
@@ -120,7 +118,6 @@
     "ui:tab.you": "You",
     "ui:today.headline": "{{n}} problems · {{minutes}} min",
     "ui:verdict.correct": "Correct",
-    "ui:verdict.not_quite": "Not quite",
-    "ui:welcome.subtitle": "We find every step you are missing, and put them in order."
+    "ui:verdict.not_quite": "Not quite"
   }
 }

@@ -34,9 +34,6 @@ var CONFIG = {
 
 var CHROME = {
   en: {
-    goalQ: 'What do you want to understand?',
-    goalDefault: 'How neural networks learn',
-    build: 'Build my path',
     signupQ: 'What should we call you?',
     namePlaceholder: 'Your name',
     signupNote: 'No account is created; this is a placeholder.',
@@ -48,7 +45,7 @@ var CHROME = {
     blockers: 'Blockers', fix: 'Fix this →',
     you: 'You', mastered: 'skills mastered', accuracy: 'accuracy this week',
     language: 'Language', appearance: 'Appearance',
-    light: 'Light', dark: 'Dark', replay: 'Replay onboarding',
+    light: 'Light', dark: 'Dark', replay: 'Replay onboarding', signOut: 'Sign out',
     answerPlaceholder: 'Type your answer',
     photo: 'Photograph your working',
     check: 'Check answer',
@@ -77,9 +74,6 @@ var CHROME = {
     }
   },
   hi: {
-    goalQ: 'आप क्या समझना चाहते हैं?',
-    goalDefault: 'न्यूरल नेटवर्क कैसे सीखते हैं',
-    build: 'मेरा रास्ता बनाएँ',
     signupQ: 'हम आपको क्या कहें?',
     namePlaceholder: 'आपका नाम',
     signupNote: 'कोई खाता नहीं बनता; यह सिर्फ़ एक प्लेसहोल्डर है।',
@@ -93,7 +87,7 @@ var CHROME = {
     blockers: 'रुकावटें', fix: 'इसे ठीक करें →',
     you: 'आप', mastered: 'कौशल में महारत', accuracy: 'इस हफ़्ते सटीकता',
     language: 'भाषा', appearance: 'रूप',
-    light: 'हल्का', dark: 'गहरा', replay: 'शुरुआत फिर देखें',
+    light: 'हल्का', dark: 'गहरा', replay: 'शुरुआत फिर देखें', signOut: 'साइन आउट',
     answerPlaceholder: 'अपना उत्तर लिखें',
     photo: 'अपना काम फ़ोटो करें',
     check: 'उत्तर जाँचें',
@@ -130,7 +124,7 @@ function T() { return CHROME[state.lang] || CHROME.en; }
    local one is only ever the fallback for an unreachable API. The exceptions,
    and the reason for each, are listed under `LOCAL_ONLY_CHROME` below. */
 var SERVER_UI_ALIASES = {
-  // The three screens before the tabs
+  // The two screens before the tabs
   'signup.title': 'signupQ',
   'signup.subtitle': 'signupNote',
   // `signup.name_label` and not `signup.name_placeholder`: the field has no
@@ -138,6 +132,7 @@ var SERVER_UI_ALIASES = {
   // "Optional" would leave the student guessing what to type.
   'signup.name_label': 'namePlaceholder',
   'action.continue': 'continueWord',
+  'action.sign_out': 'signOut',
   'screen.courses': 'coursesHead',
   'courses.subtitle': 'coursesNote',
   'course.ends_at': 'endsAt',
@@ -188,15 +183,6 @@ var SERVER_UI_ALIASES = {
    dev-time check below can tell "no server key exists" apart from "a server key
    exists and nobody wired it up", which is the failure worth catching. */
 var LOCAL_ONLY_CHROME = {
-  // Fixed copy from the approved design. `goal.prompt` ("What do you want to be
-  // able to do?"), `goal.example` and `action.get_started` ("Get started") are
-  // different wording for these three surfaces, not translations of them, and
-  // the welcome screen's copy was signed off as written. Point these at the
-  // server the moment the two agree on the words.
-  goalQ: 'design copy: server says goal.prompt differently',
-  goalDefault: 'design copy: server says goal.example differently',
-  build: 'design copy: server says action.get_started differently',
-
   // No server key exists for these.
   coursesEyebrow: 'no server key', skillsWord: 'no server key: server sends skills_line whole',
   fix: 'no server key', mastered: 'no server key', accuracy: 'no server key',
@@ -353,9 +339,9 @@ function proseHTML(raw) {
 
 function pick(en, hi) { return state.lang === 'hi' ? hi : en; }
 
-/* The mock keeps its own three-screen session so the flow is walkable with the
-   backend down: signup moves it to `courses`, selecting a course to `ready`. */
-var mockSession = { flow: 'welcome', name: '', course: null };
+/* The mock keeps its own session so the flow is walkable with the backend down:
+   signing up moves it to `courses`, selecting a course to `ready`. */
+var mockSession = { flow: 'signup', name: '', course: null };
 
 function MOCK_STATE() {
   return {
@@ -693,11 +679,19 @@ function request(method, path, body, fallback) {
 
 var API = {
   state: function () { return request('GET', '/state', undefined, MOCK_STATE); },
-  /* full=1 clears the session and lands back on Welcome, which is what
-     "Replay onboarding" means now that there are three screens before Today. */
+  /* full=1 clears the session and lands back on Sign up, which is what
+     "Replay onboarding" means now that Sign up is the entry point. */
+  signOut: function () {
+    // `request` prefixes /api and supplies the offline fallback; a bare fetch here would
+    // bypass both, which is how this shipped calling an undefined `post`.
+    return request('POST', '/session/signout', {}, function () {
+      mockSession = { flow: 'signup', name: '', course: null };
+      return { ok: true, next: 'signup', flow: 'signup' };
+    });
+  },
   reset: function (full) {
     return request('POST', full ? '/reset?full=1' : '/reset', {}, function () {
-      if (full) { mockSession = { flow: 'welcome', name: '', course: null }; }
+      if (full) { mockSession = { flow: 'signup', name: '', course: null }; }
       return MOCK_STATE();
     });
   },
@@ -748,7 +742,7 @@ var API = {
 var state = {
   lang: 'en',
   theme: 'light',
-  screen: 'onboard',
+  screen: 'signup',
   tab: 'today',
   data: null,          // GET /api/state payload
   openStage: null,
@@ -821,7 +815,6 @@ function applyChrome() {
     var key = nodes[i].getAttribute('data-t');
     if (typeof t[key] === 'string') { nodes[i].textContent = t[key]; }
   }
-  byId('goalInput').placeholder = t.goalDefault;
   // The field has no visible label, so the placeholder is also its accessible
   // name. Setting it explicitly means a screenreader still names the field
   // once the student has typed into it and the placeholder is gone.
@@ -842,12 +835,9 @@ function applyTheme() {
 
 function setLang(lang) {
   if (state.lang === lang) { return; }
-  var prev = state.lang;
   state.lang = lang;
   try { localStorage.setItem('ot.lang', lang); } catch (e) { /* private mode */ }
   document.documentElement.lang = lang;
-  var goal = byId('goalInput');
-  if (goal.value === CHROME[prev].goalDefault) { goal.value = CHROME[lang].goalDefault; }
   applyChrome();
   // The server owns the translated content, so re-fetch rather than re-label.
   loadState().then(function () {
@@ -862,16 +852,23 @@ function setLang(lang) {
 
 var TAB_SCREENS = { today: 1, path: 1, blockers: 1, you: 1 };
 
-/* GET /api/state carries `flow`, and it decides which of the three screens
-   before the tabs the student lands on. The rule lives on the server: nothing
-   here recomputes it and nothing about it is kept in localStorage. */
-var SCREEN_FOR_FLOW = { welcome: 'onboard', courses: 'courses', ready: 'today' };
+/* GET /api/state carries `flow`, a fact about the student rather than a screen
+   name, and this table is the one place it becomes a screen. The rule lives on
+   the server: nothing here recomputes it and nothing about it is kept in
+   localStorage. */
+var SCREEN_FOR_FLOW = { signup: 'signup', courses: 'courses', ready: 'today' };
+
+/* Where an unknown or missing `flow` lands. Sign up, because a `flow` we cannot
+   read is a student we know nothing about, and the thing to do with a student we
+   know nothing about is ask who they are. It is also the screen that costs least
+   to be wrong about: the student types a name and the server answers again. */
+var FALLBACK_SCREEN = 'signup';
 
 function routeFromFlow(flowName) {
-  var screen = SCREEN_FOR_FLOW[flowName];
+  var screen = SCREEN_FOR_FLOW[flowName] || FALLBACK_SCREEN;
   if (screen === 'today') { goTab('today'); return Promise.resolve(); }
   if (screen === 'courses') { return openCourses(); }
-  showScreen('onboard');      // also the fallback if the server omits `flow`
+  openSignup();
   return Promise.resolve();
 }
 
@@ -898,9 +895,10 @@ function goTab(name) { showScreen(name); renderAll(); }
 
 /* --------------------------------------------------------------------------
    9b. Sign up and course selection
-   Sign up is a placeholder and says so on the screen: a display name, one
-   button, no password and no email field. Course selection renders whatever
-   GET /api/courses returns and gates interaction on `selectable` alone.
+   Sign up is the entry point, a placeholder, and says so on the screen: a
+   display name, one button, no password and no email field. Course selection
+   renders whatever GET /api/courses returns and gates interaction on
+   `selectable` alone.
    -------------------------------------------------------------------------- */
 
 function openSignup() {
@@ -1610,12 +1608,6 @@ function loadState() {
    -------------------------------------------------------------------------- */
 
 function wire() {
-  // Welcome now leads to sign up, not straight to the tabs.
-  byId('btnBuild').addEventListener('click', openSignup);
-  byId('goalInput').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { openSignup(); }
-  });
-
   byId('btnSignup').addEventListener('click', submitSignup);
   byId('nameInput').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { submitSignup(); }
@@ -1660,12 +1652,29 @@ function wire() {
   byId('btnLight').addEventListener('click', function () { state.theme = 'light'; applyTheme(); applyChrome(); });
   byId('btnDark').addEventListener('click', function () { state.theme = 'dark'; applyTheme(); applyChrome(); });
 
+  byId('btnSignOut').addEventListener('click', function () {
+    // Sign out returns to Sign up. It is a student action, so it clears the session; the demo
+    // reset deliberately keeps the course selected and is a different button.
+    state.doneIds = {};
+    state.flow = null;
+    state.openStage = null;
+    API.signOut().then(function () {
+      return loadState();
+    }).then(function (payload) {
+      renderAll();
+      routeFromFlow(payload && payload.flow);
+    }).catch(function (err) {
+      console.error('[open-tutor] sign out failed', err);
+      routeFromFlow('signup');
+    });
+  });
+
   byId('btnReplay').addEventListener('click', function () {
     state.doneIds = {};
     state.flow = null;
     state.openStage = null;
     // full=1 clears the session as well, which is what replaying the
-    // onboarding means: back to Welcome, then sign up, then the course.
+    // onboarding means: back to Sign up, then the course.
     API.reset(true).then(function (payload) {
       adoptState(payload);
       renderAll();
@@ -1686,9 +1695,10 @@ function boot() {
   document.documentElement.lang = state.lang;
   applyTheme();
   applyChrome();
-  byId('goalInput').value = T().goalDefault;
   wire();
-  showScreen('onboard');
+  // Sign up is the first thing painted under the veil, and it is also where an
+  // unreadable `flow` lands, so the two agree by construction.
+  showScreen(FALLBACK_SCREEN);
 
   loadState().then(function (payload) {
     renderAll();

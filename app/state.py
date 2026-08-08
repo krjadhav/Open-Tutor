@@ -351,15 +351,15 @@ class Session:
         """Back to the demo's starting position.
 
         The DEFAULT (`full=False`) is the seeded student **with the course already selected**, so a
-        demo rehearsal lands straight on Today and does not walk the three onboarding screens
-        again. The seed file is re-read, so a history.json that lands while the server is running
-        is picked up by one POST /api/reset.
+        demo rehearsal lands straight on Today and does not walk the two onboarding screens again.
+        The seed file is re-read, so a history.json that lands while the server is running is
+        picked up by one POST /api/reset.
 
         `full=True` clears the session itself: no sign up, no course, and an EMPTY attempt log, so
-        the next screen is Welcome. The log has to go with it. A cleared session that still carried
-        a five-day history would put the seeded student's blockers behind a sign-up form belonging
-        to nobody, and `POST /api/courses/{id}/select` is the thing that installs a history, so
-        leaving one in place would make that installation a no-op you could not see.
+        `flow` reads `signup` again. The log has to go with it. A cleared session that still
+        carried a five-day history would put the seeded student's blockers behind a sign-up form
+        belonging to nobody, and `POST /api/courses/{id}/select` is the thing that installs a
+        history, so leaving one in place would make that installation a no-op you could not see.
         """
         if full:
             self._seeded: list[Attempt] = []
@@ -430,14 +430,20 @@ class Session:
 
     @property
     def flow(self) -> str:
-        """Which screen the frontend lands on: `welcome`, `courses` or `ready`.
+        """How far this student has got, in three values.
 
-        Decided here so it is decided once. The frontend asking "am I signed up, and do I have a
-        course?" would be a second implementation of this rule living in a place that cannot see
-        `POST /api/reset?full=1` change the answer underneath it.
+        `signup`  the student has not signed up.
+        `courses` the student has signed up but has chosen no course.
+        `ready`   the student has both, so there is a course to work in.
+
+        A fact about the student, deliberately NOT a screen name: the frontend decides what to
+        draw for each of these, and naming them after screens would make renaming a screen a
+        change to the API. Decided here so it is decided once. The frontend asking "am I signed
+        up, and do I have a course?" would be a second implementation of this rule living in a
+        place that cannot see `POST /api/reset?full=1` change the answer underneath it.
         """
         if not self.signed_up:
-            return "welcome"
+            return "signup"
         if not self.selected_course:
             return "courses"
         return "ready"

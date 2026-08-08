@@ -25,20 +25,12 @@
     <span id="bannerText"></span>
   </div>
 
-  <!-- ============ WELCOME (the goal question) ============ -->
-  <section class="screen screen--pad-flow" id="screen-onboard">
-    <div class="onboard">
-      <h1 class="onboard-q" data-t="goalQ"></h1>
-      <label class="onboard-field">
-        <input id="goalInput" class="onboard-input" type="text" autocomplete="off" spellcheck="false">
-        <span class="caret" id="goalCaret" aria-hidden="true"></span>
-      </label>
-      <div class="spacer"></div>
-      <button class="btn btn--primary" id="btnBuild" data-t="build"></button>
-    </div>
-  </section>
-
-  <!-- ============ SIGN UP (placeholder: a name, and nothing else) ============ -->
+  <!-- ============ SIGN UP (placeholder: a name, and nothing else) ============
+       The entry point. The goal question that used to stand in front of it asked
+       the student to type what they wanted to understand, and then the very next
+       screen made them choose a course, which is the same decision made twice.
+       Only the course choice was ever sent anywhere; the typed goal went nowhere.
+       ============================================================================ -->
   <section class="screen screen--pad-flow" id="screen-signup">
     <div class="onboard">
       <h1 class="onboard-q" data-t="signupQ"></h1>
@@ -131,6 +123,7 @@
           </span>
         </div>
         <button class="setting-link" id="btnReplay" data-t="replay"></button>
+        <button class="setting-link" id="btnSignOut" data-t="signOut"></button>
       </div>
     </div>
   </section>

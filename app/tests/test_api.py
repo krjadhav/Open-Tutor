@@ -668,6 +668,10 @@ SOON_COURSE = "jee-calculus"
 _COURSE_FIELDS = {"id", "title", "subtitle", "ends_at", "state", "skills", "skills_line",
                   "detail", "selectable"}
 
+#: Every value `flow` can take. Facts about the student, not screen names: "has not signed up",
+#: "signed up with no course", "ready". The frontend decides what to draw for each.
+_FLOW_VALUES = ("signup", "courses", "ready")
+
 
 def test_courses_returns_every_card_field_with_the_right_types(client):
     body = client.get("/api/courses").json()
@@ -834,11 +838,11 @@ def test_selecting_an_unknown_course_degrades(client):
     assert body["selected"] == ACTIVE_COURSE, "the selection is unchanged"
 
 
-def test_flow_walks_welcome_then_courses_then_ready(client):
-    """The frontend asks the server which screen it is on. It must not track this itself: the
-    answer changes under it on `POST /api/reset?full=1`, which is a call it did not make."""
-    assert client.post("/api/reset?full=1").json()["flow"] == "welcome"
-    assert client.get("/api/state").json()["flow"] == "welcome"
+def test_flow_walks_signup_then_courses_then_ready(client):
+    """The frontend asks the server how far the student has got. It must not track this itself:
+    the answer changes under it on `POST /api/reset?full=1`, which is a call it did not make."""
+    assert client.post("/api/reset?full=1").json()["flow"] == "signup"
+    assert client.get("/api/state").json()["flow"] == "signup"
 
     client.post("/api/session/signup", json={"name": "Avinash"})
     assert client.get("/api/state").json()["flow"] == "courses"
@@ -854,8 +858,25 @@ def test_flow_walks_welcome_then_courses_then_ready(client):
         assert client.get(f"/api/state?lang={lang}").json()["flow"] == "ready", \
             "flow is a state name, never a translated string"
 
+    # Three values, and no fourth. There is deliberately no back-compatible `welcome` alias: one
+    # name, one meaning, and a reader that has to know two names for one state is a reader that
+    # will eventually handle only one of them.
+    assert set(_FLOW_VALUES) == {"signup", "courses", "ready"}
 
-def test_reset_keeps_the_course_and_full_reset_returns_to_welcome(client):
+
+def test_signout_clears_the_session_and_reports_signup(client):
+    """Sign out is a student action: it clears the session, so the student is signed up no longer
+    and the next thing asked of them is who they are."""
+    client.post(f"/api/courses/{ACTIVE_COURSE}/select")
+    assert client.get("/api/state").json()["flow"] == "ready"
+
+    body = client.post("/api/session/signout").json()
+    assert body == {"ok": True, "next": "signup", "flow": "signup"}
+    assert get_session().selected_course is None
+    assert client.get("/api/state").json()["flow"] == "signup"
+
+
+def test_reset_keeps_the_course_and_full_reset_returns_to_signup(client):
     """Two different buttons. The plain one is what you press between demo takes; the `full` one is
     what you press when the flow itself is the thing being shown."""
     plain = client.post("/api/reset").json()
@@ -866,13 +887,13 @@ def test_reset_keeps_the_course_and_full_reset_returns_to_welcome(client):
     assert client.get("/api/courses").json()["selected"] == ACTIVE_COURSE
 
     full = client.post("/api/reset?full=1").json()
-    assert full["flow"] == "welcome"
+    assert full["flow"] == "signup"
     assert get_session().selected_course is None
     assert get_session().student_name is None
     assert get_session().attempts == (), "a cleared session carries nobody's history"
     assert client.get("/api/courses").json()["selected"] is None
 
-    # Both are still a renderable GET /api/state, which is what the contract promises. A welcome
+    # Both are still a renderable GET /api/state, which is what the contract promises. A sign up
     # screen that cannot fall back to a drawn Today tab is a blank screen waiting to happen.
     for body in (plain, full):
         assert body["today"]["headline"] and body["path"]["stages"] and body["ui"]
@@ -900,10 +921,14 @@ def test_course_strings_are_localised_in_both_languages(client):
 
 
 #: The onboarding chrome, and where each string is meant to appear. Named rather than derived,
-#: because the point is that the three new screens can be drawn entirely out of `state["ui"]`
+#: because the point is that both onboarding screens can be drawn entirely out of `state["ui"]`
 #: without the frontend holding a single English literal of its own.
+#:
+#: `welcome.subtitle`, `goal.prompt`, `goal.example` and `action.get_started` were the goal
+#: question's own strings and left with it. The question duplicated the course choice that
+#: followed it and what the student typed was never sent anywhere, so the screen and its four
+#: strings went together rather than leaving translated copy nothing renders.
 _ONBOARDING_CHROME = (
-    "welcome.subtitle", "action.get_started",
     "signup.title", "signup.subtitle", "signup.name_label", "signup.name_placeholder",
     "signup.default_name", "action.continue",
     "screen.courses", "courses.subtitle", "course.coming_soon", "course.ends_at",
@@ -939,6 +964,72 @@ def test_every_onboarding_string_resolves_in_both_languages(client):
         for course in client.get(f"/api/courses?lang={lang}").json()["courses"]:
             assert not TOKEN.search(course["skills_line"])
             assert str(course["skills"]) in course["skills_line"]
+
+
+# --------------------------------------------------------------------------- flow routing
+
+_STATIC_DIR = _REPO_ROOT / "app" / "static"
+
+
+def _static(name: str) -> str:
+    return (_STATIC_DIR / name).read_text(encoding="utf-8")
+
+
+def _flow_routing() -> tuple[dict[str, str], str]:
+    """`SCREEN_FOR_FLOW` and `FALLBACK_SCREEN`, read out of `app.js`.
+
+    Read rather than executed because there is no JS runner in this suite, and the alternative
+    (trusting a browser pass nobody runs on every commit) is how a routing table quietly grows an
+    entry for a `flow` value the server stopped sending. Both are declared as plain literals at
+    the top of section 9 precisely so this can see them.
+    """
+    js = _static("app.js")
+    table = re.search(r"var SCREEN_FOR_FLOW = \{([^}]*)\};", js)
+    fallback = re.search(r"var FALLBACK_SCREEN = '([a-z-]+)';", js)
+    assert table and fallback, "app.js no longer declares its flow routing as readable literals"
+    return dict(re.findall(r"(\w+):\s*'([a-z-]+)'", table.group(1))), fallback.group(1)
+
+
+def test_an_unknown_or_missing_flow_falls_back_to_sign_up(client):
+    """A `flow` the frontend cannot read must land on Sign up, never on nothing.
+
+    `routeFromFlow` is handed `payload.flow` straight from the server, and a payload that omits it
+    or carries a value from a newer server is a real case: an older frontend against a newer API,
+    or the offline fallback path. Falling through to no screen at all leaves the frame blank
+    behind a lifted veil, which is the one outcome the degrade-never-blank rule forbids. Sign up
+    is the honest answer to "who is this?", and it is the cheapest screen to be wrong about: the
+    student types a name and the server answers again.
+    """
+    routes, fallback = _flow_routing()
+    screens = set(re.findall(r'id="screen-([a-z-]+)"', _static("index.html")))
+
+    assert set(routes) == set(_FLOW_VALUES), \
+        "the frontend routes exactly the flow values the server can send, and no others"
+    assert fallback == "signup"
+
+    # Every destination is a section that exists, which is what "not a blank screen" means here.
+    for destination in set(routes.values()) | {fallback}:
+        assert destination in screens, f"nothing in index.html draws screen-{destination}"
+
+    # And the fallback is genuinely reached: the last thing routeFromFlow does, once neither the
+    # Today branch nor the courses branch has returned, is open sign up.
+    body = re.search(r"function routeFromFlow\(flowName\) \{(.*?)\n\}", _static("app.js"), re.S)
+    assert body and "openSignup();" in body.group(1)
+
+    # The deleted screen leaves no trace: no `welcome` flow value, no onboard screen id.
+    for name in ("app.js", "index.html", "styles.css"):
+        source = _static(name)
+        assert "welcome" not in source.lower(), f"{name} still names the welcome screen"
+        assert "screen-onboard" not in source, f"{name} still refers to the deleted screen"
+
+    # The server never sends anything else in the first place.
+    client.post("/api/reset?full=1")
+    seen = {client.get("/api/state").json()["flow"]}
+    client.post("/api/session/signup", json={"name": "Avinash"})
+    seen.add(client.get("/api/state").json()["flow"])
+    client.post(f"/api/courses/{ACTIVE_COURSE}/select")
+    seen.add(client.get("/api/state").json()["flow"])
+    assert seen == set(_FLOW_VALUES)
 
 
 # --------------------------------------------------------------------------- solve/start, photo

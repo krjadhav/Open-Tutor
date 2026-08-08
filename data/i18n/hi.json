@@ -294,10 +294,10 @@
     "node_title:trig.unit-circle": "मानक कोणों पर साइन और कोसाइन के सटीक मान",
     "ui:action.check_answer": "उत्तर जांचें",
     "ui:action.continue": "आगे बढ़ें",
-    "ui:action.get_started": "शुरू करें",
     "ui:action.next_problem": "अगली समस्या",
     "ui:action.retake_photo": "फोटो फिर से लें",
     "ui:action.show_hint": "संकेत दिखाएँ",
+    "ui:action.sign_out": "साइन आउट",
     "ui:action.start_course": "यह पाठ्यक्रम शुरू करें",
     "ui:action.start_set": "आज का सेट शुरू करें",
     "ui:action.take_photo": "एक फोटो लें",
@@ -345,8 +345,6 @@
     "ui:diagnosis.recurrence": "{{when}} वाली वही ग़लती।",
     "ui:diagnosis.topic_ok": "आपका {{node}} सही है।",
     "ui:error.generic": "कुछ गड़बड़ हो गई। फिर से कोशिश करें।",
-    "ui:goal.example": "मैं यह समझना चाहती हूँ कि न्यूरल नेटवर्क कैसे सीखते हैं",
-    "ui:goal.prompt": "आप क्या करने में सक्षम होना चाहते हैं?",
     "ui:hint.cost_note": "संकेत मुफ़्त हैं। वे केवल इस प्रयास को सबूत के रूप में कितनी बार गिना जाता है, इसे बदलते हैं।",
     "ui:hint.level_1": "यहाँ कौन सा विचार लागू होता है?",
     "ui:hint.level_2": "पहला चरण यहाँ है।",
@@ -410,8 +408,7 @@
     "ui:tab.you": "आप",
     "ui:today.headline": "{{n}} प्रश्न · {{minutes}} मिनट",
     "ui:verdict.correct": "सही",
-    "ui:verdict.not_quite": "ठीक नहीं",
-    "ui:welcome.subtitle": "हम आपकी हर छूटी हुई कड़ी ढूँढ़ते हैं और उन्हें क्रम में रखते हैं"
+    "ui:verdict.not_quite": "ठीक नहीं"
   },
   "lang": "hi-IN"
 }

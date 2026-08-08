@@ -701,8 +701,9 @@ def _state_payload(session: Session, tr: I18n) -> dict:
     return {
         "student_id": STUDENT_ID,
         "lang": tr.lang,
-        # Which of the three onboarding screens to land on, decided server-side like everything
-        # else. See `Session.flow`: no session -> welcome, no course -> courses, both -> ready.
+        # How far this student has got, decided server-side like everything else, and it is what
+        # the frontend routes on. See `Session.flow`: not signed up -> signup, signed up with no
+        # course -> courses, both -> ready.
         "flow": session.flow,
         "goal": _goal_payload(session, states, tr, now),
         "today": _today_payload(session, states, tr),
@@ -906,6 +907,19 @@ def get_courses(lang: str = Query("en")) -> dict:
     """The course manifest, localised, with `selectable` already computed."""
     session = get_session()
     return _courses_payload(session, _tr(session, lang))
+
+
+@app.post("/api/session/signout")
+def session_signout(lang: str = "en") -> dict:
+    """Clear the session, so the student is signed up no longer and `flow` reads `signup` again.
+
+    Same effect as POST /api/reset?full=1 today, deliberately kept as its own endpoint: reset is a
+    demo affordance that KEEPS the course selected so rehearsals skip onboarding, and signing out
+    is a student action that must not. Collapsing them would make one of the two wrong the first
+    time either changes.
+    """
+    get_session().reset(full=True)
+    return {"ok": True, "next": "signup", "flow": get_session().flow}
 
 
 @app.post("/api/session/signup")
@@ -1517,11 +1531,11 @@ def reset(lang: str = Query("en"), full: int = Query(0)) -> dict:
     """Back to the seeded 5-day history. Returns exactly what GET /api/state returns.
 
     The DEFAULT keeps the course already selected, so `flow` comes back `ready` and a demo
-    rehearsal does not walk the three onboarding screens on every run. That is the button you press
+    rehearsal does not walk the two onboarding screens on every run. That is the button you press
     between takes.
 
     `?full=1` clears the session instead: no sign up, no course, an empty log, and `flow` comes
-    back `welcome`. That is the button you press when the flow itself is the thing being shown.
+    back `signup`. That is the button you press when the flow itself is the thing being shown.
     """
     session = get_session()
     session.reset(full=bool(full))

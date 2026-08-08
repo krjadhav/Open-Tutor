@@ -195,12 +195,13 @@ input { font-family: inherit; color: inherit; }
 }
 
 /* --------------------------------------------------------------------------
-   Welcome and Sign up
-   Sign up reuses the welcome layout exactly: one question, one field, one
-   button. It has no password and no email field, by design.
+   Sign up
+   The entry point, and the only screen that uses this layout: one question, one
+   field, one button. It has no password and no email field, by design. The goal
+   question that used to share these rules is gone, and with it the blinking
+   caret that stood in its empty field.
    -------------------------------------------------------------------------- */
 
-.screen#screen-onboard.is-active,
 .screen#screen-signup.is-active { padding: 120px 28px 40px; }
 .onboard { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .onboard-q {
@@ -215,12 +216,6 @@ input { font-family: inherit; color: inherit; }
   border: 0; background: transparent; outline: none;
   font-size: 20px; font-weight: 500; width: 100%; padding: 0;
 }
-.caret {
-  display: inline-block; width: 2px; height: 20px;
-  background: var(--accent); margin-left: 2px; flex: none;
-  animation: blink 1.2s steps(1) infinite;
-}
-.onboard-input:focus + .caret { display: none; }
 
 /* --------------------------------------------------------------------------
    Course selection

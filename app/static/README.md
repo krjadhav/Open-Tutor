@@ -8,7 +8,7 @@ Three files do everything:
 
 | file | holds |
 |---|---|
-| `index.html` | the markup for all eleven screens, one `<section class="screen">` each |
+| `index.html` | the markup for all ten screens, one `<section class="screen">` each |
 | `styles.css` | the design system: tokens, both palettes, the five keyframes, every component |
 | `app.js` | routing, the API layer, the maths renderer and `MOCK_STATE` |
 
@@ -41,11 +41,11 @@ The single switch in code is `CONFIG.DATA_SOURCE` at the top of `app.js`. It shi
 ## Screen map
 
 ```
-Welcome  -->  Sign up  -->  Course selection            tab bar hidden throughout
-(the goal     (a name,      (one playable card,
- question)     no auth)      the rest disabled)
-                                    |
-   +--------------------------------+
+Sign up  -->  Course selection            tab bar hidden throughout
+(a name,      (one playable card,
+ no auth)      the rest disabled)
+                     |
+   +-----------------+
    |
    +--> [ Today ] <-> [ Path ] <-> [ Blockers ] <-> [ You ]      tab bar visible
            |               |
@@ -56,21 +56,28 @@ Welcome  -->  Sign up  -->  Course selection            tab bar hidden throughou
                         +-- photo --> Check ------------+
 ```
 
-**The server decides which of the first three screens you land on.** `GET /api/state`
-returns `flow`: `welcome`, `courses` or `ready`, and `routeFromFlow` maps those to the
-onboarding, courses and Today screens. Nothing about the flow is computed in the frontend
-and nothing about it is kept in `localStorage`; only the theme and the language are
-remembered locally, as before.
+**Sign up is the entry point.** A Welcome screen used to stand in front of it asking "What do
+you want to understand?" and it is gone. It duplicated the course choice on the very next
+screen, and what the student typed into it was never sent anywhere: no endpoint accepted it and
+the goal on Path came back from `GET /api/state` already chosen. A field that implies it shapes
+the experience while the course selection actually determines it is worse than one screen fewer.
 
-`GET /api/state` is always the first call, before Welcome is painted, because these three
-screens have no chrome source of their own: `GET /api/courses` carries no `ui` block, and the
-translated copy for all three arrives in `state.ui`, which is populated even when `flow` is
-`welcome`. The loading veil covers that first call as it always has.
+**The server decides which of the first two screens you land on.** `GET /api/state` returns
+`flow`: `signup`, `courses` or `ready`. Those are facts about the student, not screen names
+("has not signed up", "signed up but no course", "ready"), and `SCREEN_FOR_FLOW` in `app.js` is
+the one place each becomes a screen. Nothing about the flow is computed in the frontend and
+nothing about it is kept in `localStorage`; only the theme and the language are remembered
+locally, as before.
 
-Welcome goes to Sign up. Sign up `POST`s `/api/session/signup` and follows the `next` field
-in the reply. Selecting a course `POST`s `/api/courses/{id}/select`, which returns the full
-`GET /api/state` body, so Today is rendered straight from that payload with no second call.
-Whether a course can be selected is read from **`selectable` only**, never from `state`.
+`GET /api/state` is always the first call, before Sign up is painted, because these two screens
+have no chrome source of their own: `GET /api/courses` carries no `ui` block, and the translated
+copy for both arrives in `state.ui`, which is populated even when `flow` is `signup`. The loading
+veil covers that first call as it always has.
+
+Sign up `POST`s `/api/session/signup` and follows the `next` field in the reply. Selecting a
+course `POST`s `/api/courses/{id}/select`, which returns the full `GET /api/state` body, so Today
+is rendered straight from that payload with no second call. Whether a course can be selected is
+read from **`selectable` only**, never from `state`.
 
 The solve flow is full screen, hides the tab bar and has one exit (the ✕, which returns to Today).
 The step indicator is **2 bars on the typed path and 3 on the photo path**, per `docs/ui-spec.md`.
@@ -103,10 +110,6 @@ diagnosis body are treated as prose and only render `$...$` spans as maths.
 
 Stated plainly, since none of this is in the contract:
 
-- **The goal typed on Welcome is not sent anywhere.** The contract has no endpoint that accepts
-  it, and the goal on Path comes back from `GET /api/state` already chosen. The field is the
-  question the product asks, not an input the engine reads. It has always been this way; it is
-  written down here now that a second screen follows it.
 - **Sign up is a placeholder and says so on the screen.** One name field, one button, and one line
   admitting it: the server's `signup.subtitle` ("No password and no email. This is a demo and we
   are not pretending otherwise."), or "No account is created; this is a placeholder." if the server
@@ -125,17 +128,20 @@ Stated plainly, since none of this is in the contract:
   local word is kept as the fallback. The string is rendered verbatim with one typographic
   exception: a leading run of digits is set in the maths face, which is how every other number in
   the app is set. The characters are unchanged.
-- **A `GET /api/state` with no `flow` field lands on Welcome.** That is the fallback, not a
-  computation: it is what an older server without the addendum implies, and it is the screen a
-  student with no session should see anyway.
+- **An unknown or missing `flow` lands on Sign up.** `FALLBACK_SCREEN` in `app.js`, and it is a
+  fallback rather than a computation: a `flow` the frontend cannot read is a student we know
+  nothing about, and the thing to do with a student we know nothing about is ask who they are.
+  It is also the cheapest screen to be wrong about, because the student types a name and the
+  server answers again. Falling through to no screen at all would leave the frame blank behind a
+  lifted veil, which is the one outcome the degrade-never-blank rule forbids.
 - **"Replay onboarding" now calls `POST /api/reset?full=1`**, which the addendum defines as
   clearing the session entirely, then routes on the `flow` that comes back. Plain `POST /api/reset`
   keeps the seeded course and is what a demo rehearsal wants; the button's label promises the
   longer walk, so it asks for the longer walk.
 - **The server owns the chrome. `CHROME` in `app.js` is the fallback for when it cannot be
   reached.** `GET /api/state` returns a `ui` object keyed by the server's own `<group>.<name>` i18n
-  keys, `CHROME` is flat camelCase, and `SERVER_UI_ALIASES` bridges the two. **32 of the 61 local
-  keys resolve to a server string; the other 29 are listed in `LOCAL_ONLY_CHROME` with a reason
+  keys, `CHROME` is flat camelCase, and `SERVER_UI_ALIASES` bridges the two. **33 of the 59 local
+  keys resolve to a server string; the other 26 are listed in `LOCAL_ONLY_CHROME` with a reason
   each.** A key naming nothing local is ignored rather than added, so the table cannot fill up with
   strings nothing renders, and only an existing *string* can be replaced, which is what keeps
   `blockersHead` (a function of the blocker count) from being clobbered.
@@ -146,13 +152,10 @@ Stated plainly, since none of this is in the contract:
   What it catches is the other kind: a string translated on the server, expected on screen, landing
   nowhere. If you fix a Hindi string on the server and see no change, that log names the reason.
 
-  Three server keys are **deliberately not** taken, and they are the only ones where the server has
-  a key and the frontend still wins: `goal.prompt`, `goal.example` and `action.get_started`. Those
-  are the welcome question, its prefill and its button, and the server's wording for all three
-  ("What do you want to be able to do?", "I want to understand how neural networks learn", "Get
-  started") is different copy rather than a translation of the copy that was signed off with the
-  design. Point them at the server the moment the two agree on the words. `offline` is also local
-  by necessity: it is the message shown when the server is gone, so it cannot come from the server.
+  There is no longer any server key the frontend deliberately overrides. The three that used to be
+  on that list, `goal.prompt`, `goal.example` and `action.get_started`, were the welcome question,
+  its prefill and its button; they left `data/i18n/*.json` with the screen. `offline` is local by
+  necessity: it is the message shown when the server is gone, so it cannot come from the server.
 - **The Blockers headline** ("Two things keep tripping you up") is generated from the number of
   blockers, because the contract returns no headline for that tab.
 - **"N skills away"** renders `goal.skills_away` plus the words "skills away". The number is the
@@ -171,7 +174,7 @@ Stated plainly, since none of this is in the contract:
 - **The mock covers the three new endpoints too.** `MOCK_COURSES` carries the five courses from
   `data/courses.json` with their real ids, titles and skill counts; the Hindi strings and the
   `detail` lines are written here rather than translated by the server. A small `mockSession`
-  object moves `welcome -> courses -> ready` as you walk the screens, so the whole flow is
+  object moves `signup -> courses -> ready` as you walk the screens, so the whole flow is
   developable with the API down and `?mock=1` walks it from the start. The mock also refuses a
   non-selectable id, the same way the endpoint is specified to.
 - **The status bar** ("9:41", "OPEN TUTOR") is decoration from the mock, not live.
@@ -192,8 +195,8 @@ then hears that it is not available. Visually it drops to a dashed border and mu
 the same vocabulary the locked node dot already uses, so the group reads as a roadmap rather than
 as five broken buttons. Only the playable card takes a hover state.
 
-The whole flow is operable from the keyboard: on Welcome and Sign up, Enter in the field advances,
-and on Course selection the single playable card is the only tab stop on the screen. A refusal from
+The whole flow is operable from the keyboard: on Sign up, Enter in the field advances, and on
+Course selection the single playable card is the only tab stop on the screen. A refusal from
 `POST /api/courses/{id}/select` stays put and writes to the console: its `error` is a machine string
 and is not localised, so it is never put on screen, and it cannot be reached anyway because the
 disabled card is not clickable.
