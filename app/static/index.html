@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Open Tutor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=STIX+Two+Text:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="light">
+
+<div class="stage">
+<div class="frame" id="frame">
+
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="wordmark">OPEN TUTOR</span>
+  </div>
+
+  <!-- offline / error banner -->
+  <div class="banner" id="banner" hidden>
+    <span class="banner-dot"></span>
+    <span id="bannerText"></span>
+  </div>
+
+  <!-- ============ ONBOARDING ============ -->
+  <section class="screen screen--pad-flow" id="screen-onboard">
+    <div class="onboard">
+      <h1 class="onboard-q" data-t="goalQ"></h1>
+      <label class="onboard-field">
+        <input id="goalInput" class="onboard-input" type="text" autocomplete="off" spellcheck="false">
+        <span class="caret" id="goalCaret" aria-hidden="true"></span>
+      </label>
+      <div class="spacer"></div>
+      <button class="btn btn--primary" id="btnBuild" data-t="build"></button>
+    </div>
+  </section>
+
+  <!-- ============ TODAY ============ -->
+  <section class="screen" id="screen-today">
+    <div class="scroll scroll--tab scroll--today">
+      <div class="eyebrow" data-t="today"></div>
+      <h1 class="headline" id="todayHead"></h1>
+      <div class="cards" id="todayList"></div>
+    </div>
+    <button class="btn btn--primary btn--float" id="btnStartSession" data-t="start"></button>
+  </section>
+
+  <!-- ============ PATH ============ -->
+  <section class="screen" id="screen-path">
+    <div class="scroll scroll--tab">
+      <div class="goalcard">
+        <div class="goalcard-top">
+          <span class="goalcard-title" id="goalTitle"></span>
+          <span class="goalcard-away" id="goalAway"></span>
+        </div>
+        <div class="goalcard-pace" id="goalPace"></div>
+      </div>
+
+      <div class="spine-wrap">
+        <div class="spine-rail"></div>
+        <div class="stages" id="pathStages"></div>
+      </div>
+
+      <div class="legend" id="pathLegend"></div>
+    </div>
+  </section>
+
+  <!-- ============ BLOCKERS ============ -->
+  <section class="screen" id="screen-blockers">
+    <div class="scroll scroll--tab">
+      <div class="eyebrow" data-t="blockers"></div>
+      <h1 class="headline" id="blockersHead"></h1>
+      <div class="blockers" id="blockersList"></div>
+    </div>
+  </section>
+
+  <!-- ============ YOU ============ -->
+  <section class="screen" id="screen-you">
+    <div class="scroll scroll--tab">
+      <div class="eyebrow" data-t="you"></div>
+      <h1 class="headline" id="youStreak"></h1>
+      <div class="statrow">
+        <div class="stat">
+          <div class="stat-num math" id="statMastered"></div>
+          <div class="stat-label" data-t="mastered"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-num math" id="statAccuracy"></div>
+          <div class="stat-label" data-t="accuracy"></div>
+        </div>
+      </div>
+      <div class="settings">
+        <div class="setting-row">
+          <span class="setting-name" data-t="language"></span>
+          <span class="seg">
+            <button class="seg-btn" id="btnLangEn">English</button>
+            <button class="seg-btn" id="btnLangHi">हिंदी</button>
+          </span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-name" data-t="appearance"></span>
+          <span class="seg">
+            <button class="seg-btn" id="btnLight" data-t="light"></button>
+            <button class="seg-btn" id="btnDark" data-t="dark"></button>
+          </span>
+        </div>
+        <button class="setting-link" id="btnReplay" data-t="replay"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SOLVE ============ -->
+  <section class="screen screen--pad-flow" id="screen-solve">
+    <div class="flowhead">
+      <span class="steps"><span class="stepbars" id="solveSteps"></span><span class="steplabel" id="solveStepLabel"></span></span>
+      <button class="closebtn" data-exit aria-label="Close">&#10005;</button>
+    </div>
+
+    <div class="scroll scroll--flow">
+      <div class="eyebrow eyebrow--tight" id="problemLabel"></div>
+      <div class="problem math" id="problemMath"></div>
+
+      <label class="answerbox">
+        <input id="answerInput" class="answerinput math" type="text" autocomplete="off" spellcheck="false" inputmode="text">
+      </label>
+
+      <button class="photobtn" id="btnPhoto">
+        <span class="camglyph"><span></span></span>
+        <span class="photobtn-label" data-t="photo"></span>
+      </button>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+      <div class="inline-note" id="solveNote" hidden></div>
+
+      <button class="btn btn--primary btn--check" id="btnCheckAnswer" data-t="check"></button>
+
+      <div class="spacer"></div>
+
+      <div class="hintcard">
+        <div class="hintcard-top">
+          <span class="hintcard-title" data-t="hints"></span>
+          <span class="hintcard-count math" id="hintCount"></span>
+        </div>
+        <div id="hintList"></div>
+        <button class="hintbtn" id="btnNextHint" data-t="hintNext"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CHECK ============ -->
+  <section class="screen screen--pad-flow" id="screen-check">
+    <div class="flowhead">
+      <span class="steps"><span class="stepbars" id="checkSteps"></span><span class="steplabel" id="checkStepLabel"></span></span>
+      <button class="closebtn" data-exit aria-label="Close">&#10005;</button>
+    </div>
+    <h2 class="flowhead-title" data-t="checkHead"></h2>
+    <div class="flowhead-sub" data-t="checkSub"></div>
+    <div class="transcript" id="transcript"></div>
+    <div class="spacer"></div>
+    <button class="btn btn--primary" id="btnConfirmLines" data-t="confirm"></button>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section class="screen screen--pad-flow" id="screen-result">
+    <div class="flowhead">
+      <span class="steps"><span class="stepbars" id="resultSteps"></span><span class="steplabel" id="resultStepLabel"></span></span>
+      <button class="closebtn" data-exit aria-label="Close">&#10005;</button>
+    </div>
+
+    <div class="scroll scroll--flow">
+      <div class="verdictrow">
+        <span class="verdict" id="resVerdict"></span>
+        <span class="expected math" id="resExpected"></span>
+      </div>
+
+      <div class="softnote" id="resNote" hidden></div>
+
+      <div class="workblock math" id="resWork" hidden></div>
+
+      <div class="thinking" id="resWaiting" hidden>
+        <span class="blip"></span><span data-t="reading"></span>
+      </div>
+
+      <div class="diag" id="resDiag" hidden>
+        <div class="diag-prose">
+          <strong id="diagHeadline"></strong> <span id="diagBody"></span>
+        </div>
+        <div class="diag-recurrence" id="diagRecurrence"></div>
+        <div class="diag-consequence" id="diagConsequenceRow">
+          <span class="dot dot--learning"></span>
+          <span id="diagConsequence"></span>
+        </div>
+        <div class="diag-ask">
+          <span class="diag-ask-label" data-t="ask"></span>
+          <span class="diag-ask-btns">
+            <button class="chipbtn" id="btnBlameYes" data-t="yes"></button>
+            <button class="chipbtn" id="btnBlameNo" data-t="no"></button>
+          </span>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+      <button class="btn btn--primary btn--result-next" id="btnResultNext"></button>
+    </div>
+  </section>
+
+  <!-- ============ COMPLETE ============ -->
+  <section class="screen screen--pad-flow" id="screen-complete">
+    <div class="eyebrow" data-t="sessionDone"></div>
+    <div class="completebody">
+      <div class="finish">
+        <div class="finish-rail"></div>
+        <div class="finish-fillwrap" id="spineWrap"><div class="finish-fill" id="spineFill"></div></div>
+        <div class="finish-nodes" id="finishNodes"></div>
+      </div>
+      <div class="tomorrow" id="tomorrowLine"></div>
+      <div class="xpline" id="xpLine"></div>
+    </div>
+    <button class="btn btn--primary" id="btnDone" data-t="done"></button>
+  </section>
+
+  <!-- ============ TAB BAR ============ -->
+  <nav class="tabbar" id="tabbar" hidden>
+    <button class="tab" data-tab="today"><span class="glyph glyph--today"></span><span class="tab-label" data-t="tabToday"></span></button>
+    <button class="tab" data-tab="path"><span class="glyph glyph--path"></span><span class="tab-label" data-t="tabPath"></span></button>
+    <button class="tab" data-tab="blockers"><span class="glyph glyph--blockers"></span><span class="tab-label" data-t="tabBlockers"></span></button>
+    <button class="tab" data-tab="you"><span class="glyph glyph--you"></span><span class="tab-label" data-t="tabYou"></span></button>
+  </nav>
+
+  <!-- ============ LOADING VEIL ============ -->
+  <div class="veil" id="veil">
+    <span class="blip"></span><span data-t="loading"></span>
+  </div>
+
+</div>
+</div>
+
+<script src="app.js" defer></script>
+</body>
+</html>

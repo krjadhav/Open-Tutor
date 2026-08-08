@@ -1,0 +1,1333 @@
+/* ==========================================================================
+   Open Tutor: frontend
+   Plain HTML, CSS and vanilla JS. No build step, no framework.
+   Served as static files by the FastAPI app. Every field this file reads is
+   defined in docs/api-contract.md; nothing here invents a field.
+   ========================================================================== */
+
+'use strict';
+
+/* --------------------------------------------------------------------------
+   1. Configuration
+   DATA_SOURCE is the single switch. LIVE hits the API and falls back to the
+   mock only when a call fails, so the demo renders even if the server is down.
+   Force the mock with ?mock=1 in the URL. ?fast=1 marks the first four
+   problems done so the Complete screen is two taps away.
+   -------------------------------------------------------------------------- */
+
+var QS = new URLSearchParams(location.search);
+
+var CONFIG = {
+  DATA_SOURCE: QS.get('mock') === '1' ? 'MOCK' : 'LIVE',   // 'LIVE' | 'MOCK'
+  BASE: '/api',
+  FAST_DEMO: QS.get('fast') === '1',
+  DIAGNOSIS_MIN_WAIT_MS: 700   // the blinking indicator must be seen, not flash
+};
+
+/* --------------------------------------------------------------------------
+   2. Chrome strings
+   Content strings (chips, skill names, verdicts, the diagnosis, `needs:`,
+   pace lines) always come from the server, already translated. Only the fixed
+   furniture below lives here, because the contract exposes no endpoint for it.
+   If GET /api/state ever returns a `ui` object it wins: see applyServerUI.
+   -------------------------------------------------------------------------- */
+
+var CHROME = {
+  en: {
+    goalQ: 'What do you want to understand?',
+    goalDefault: 'How neural networks learn',
+    build: 'Build my path',
+    today: 'Today', start: 'Start session',
+    blockers: 'Blockers', fix: 'Fix this →',
+    you: 'You', mastered: 'skills mastered', accuracy: 'accuracy this week',
+    language: 'Language', appearance: 'Appearance',
+    light: 'Light', dark: 'Dark', replay: 'Replay onboarding',
+    answerPlaceholder: 'Type your answer',
+    photo: 'Photograph your working',
+    check: 'Check answer',
+    hints: 'Hints', hintNext: 'Show next hint', hintTwin: 'Try the twin problem',
+    checkHead: 'Here’s what we read.', checkSub: 'Tap any line to correct it.',
+    edit: 'edit', confirm: 'Looks right',
+    expected: 'Expected', reading: 'Reading your working…',
+    ask: 'Was this your mistake?', yes: 'Yes', no: 'No',
+    sessionDone: 'Session complete', done: 'Done',
+    next: 'Next problem', finish: 'Finish session',
+    stepSolve: 'Solve', stepCheck: 'Check', stepResult: 'Result',
+    tabToday: 'Today', tabPath: 'Path', tabBlockers: 'Blockers', tabYou: 'You',
+    loading: 'Loading',
+    offline: 'Server not responding. Showing demo data.',
+    ocrEmpty: 'We could not read that photo. Type your answer instead.',
+    ocrFailed: 'The photo did not go through. Type your answer instead.',
+    diagFailed: 'We could not read the working this time.',
+    unsimplified: 'Correct, but it can be simplified further.',
+    xp: 'XP', unlockedWord: 'unlocked',
+    setDone: 'Today’s set is finished.',
+    blockersHead: function (n) {
+      if (n === 0) { return 'Nothing is blocking you right now'; }
+      if (n === 1) { return 'One thing keeps tripping you up'; }
+      if (n === 2) { return 'Two things keep tripping you up'; }
+      return n + ' things keep tripping you up';
+    }
+  },
+  hi: {
+    goalQ: 'आप क्या समझना चाहते हैं?',
+    goalDefault: 'न्यूरल नेटवर्क कैसे सीखते हैं',
+    build: 'मेरा रास्ता बनाएँ',
+    today: 'आज', start: 'सत्र शुरू करें',
+    blockers: 'रुकावटें', fix: 'इसे ठीक करें →',
+    you: 'आप', mastered: 'कौशल में महारत', accuracy: 'इस हफ़्ते सटीकता',
+    language: 'भाषा', appearance: 'रूप',
+    light: 'हल्का', dark: 'गहरा', replay: 'शुरुआत फिर देखें',
+    answerPlaceholder: 'अपना उत्तर लिखें',
+    photo: 'अपना काम फ़ोटो करें',
+    check: 'उत्तर जाँचें',
+    hints: 'संकेत', hintNext: 'अगला संकेत दिखाएँ', hintTwin: 'जुड़वाँ प्रश्न आज़माएँ',
+    checkHead: 'हमने यह पढ़ा।', checkSub: 'सुधारने के लिए किसी पंक्ति पर टैप करें।',
+    edit: 'बदलें', confirm: 'सही है',
+    expected: 'अपेक्षित', reading: 'आपका काम पढ़ा जा रहा है…',
+    ask: 'क्या यही आपकी ग़लती थी?', yes: 'हाँ', no: 'नहीं',
+    sessionDone: 'सत्र पूरा', done: 'हो गया',
+    next: 'अगला प्रश्न', finish: 'सत्र समाप्त करें',
+    stepSolve: 'हल', stepCheck: 'जाँच', stepResult: 'नतीजा',
+    tabToday: 'आज', tabPath: 'रास्ता', tabBlockers: 'रुकावटें', tabYou: 'आप',
+    loading: 'लोड हो रहा है',
+    offline: 'सर्वर नहीं मिला। डेमो डेटा दिख रहा है।',
+    ocrEmpty: 'यह फ़ोटो पढ़ा नहीं जा सका। उत्तर लिखकर भेजें।',
+    ocrFailed: 'फ़ोटो नहीं भेजा जा सका। उत्तर लिखकर भेजें।',
+    diagFailed: 'इस बार आपका काम पढ़ा नहीं जा सका।',
+    unsimplified: 'सही है, पर इसे और सरल किया जा सकता है।',
+    xp: 'XP', unlockedWord: 'खुले',
+    setDone: 'आज का सेट पूरा हो गया।',
+    blockersHead: function (n) {
+      if (n === 0) { return 'अभी कोई रुकावट नहीं है'; }
+      if (n === 1) { return 'एक चीज़ बार-बार अटका रही है'; }
+      if (n === 2) { return 'दो चीज़ें बार-बार अटका रही हैं'; }
+      return n + ' चीज़ें बार-बार अटका रही हैं';
+    }
+  }
+};
+
+function T() { return CHROME[state.lang] || CHROME.en; }
+
+/* The server may take chrome over at any time by returning `ui` on /api/state. */
+function applyServerUI(payload) {
+  if (!payload || !payload.ui) { return; }
+  var src = payload.ui, target = CHROME[state.lang];
+  Object.keys(src).forEach(function (k) {
+    if (typeof src[k] === 'string') { target[k] = src[k]; }
+  });
+}
+
+/* --------------------------------------------------------------------------
+   3. Mathematics rendering
+   No external library is permitted, so this is a deliberately small LaTeX to
+   HTML pass: enough for the item bank's stems and answers. It is language
+   independent by construction, which is what keeps maths identical in Hindi.
+   -------------------------------------------------------------------------- */
+
+var LATEX_SYMBOLS = {
+  to: '→', rightarrow: '→', cdot: '·', times: '×', div: '÷',
+  pi: 'π', theta: 'θ', alpha: 'α', beta: 'β', lambda: 'λ',
+  mu: 'μ', sigma: 'σ', partial: '∂', nabla: '∇', infty: '∞',
+  le: '≤', leq: '≤', ge: '≥', geq: '≥', ne: '≠', neq: '≠',
+  approx: '≈', sum: '∑', prod: '∏', int: '∫',
+  Delta: 'Δ', delta: 'δ', pm: '±', in: '∈'
+};
+
+function escapeHTML(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function mathBody(raw) {
+  var s = escapeHTML(raw);
+
+  s = s.replace(/\\(left|right|!|,|;|:)/g, '');
+  s = s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '($1)/($2)');
+  s = s.replace(/\\sqrt\{([^{}]*)\}/g, '√($1)');
+  s = s.replace(/\\text\{([^{}]*)\}/g, '$1');
+
+  s = s.replace(/\\([a-zA-Z]+)/g, function (m, word) {
+    if (Object.prototype.hasOwnProperty.call(LATEX_SYMBOLS, word)) { return LATEX_SYMBOLS[word]; }
+    return word;                       // \sin, \lim and friends read fine bare
+  });
+
+  s = s.replace(/-&gt;/g, '→');
+  s = s.replace(/&lt;=/g, '≤').replace(/&gt;=/g, '≥');
+  s = s.replace(/!=/g, '≠');
+  s = s.replace(/\*/g, '·');
+
+  s = s.replace(/\^\{([^{}]*)\}/g, '<sup>$1</sup>');
+  s = s.replace(/\^(-?[0-9A-Za-z])/g, '<sup>$1</sup>');
+  s = s.replace(/_\{([^{}]*)\}/g, '<sub>$1</sub>');
+  s = s.replace(/_(-?[0-9A-Za-z])/g, '<sub>$1</sub>');
+
+  s = s.replace(/''/g, '″').replace(/'/g, '′');
+  s = s.replace(/-/g, '−');       // hyphen-minus to the true minus sign
+
+  return s;
+}
+
+/* A whole string that is maths. */
+function mathHTML(raw) {
+  return '<span class="math">' + mathBody(raw) + '</span>';
+}
+
+function splitDollars(s, outsideIsMath) {
+  var parts = s.split('$');
+  var out = '';
+  for (var i = 0; i < parts.length; i++) {
+    if (!parts[i]) { continue; }
+    if (i % 2 === 1) {
+      out += '<span class="math">' + mathBody(parts[i]) + '</span>';
+    } else {
+      out += outsideIsMath ? mathBody(parts[i]) : escapeHTML(parts[i]);
+    }
+  }
+  return out;
+}
+
+/* A `math` field. A string with no $ is treated as all maths, which is how the
+   mock renders "Differentiate f(x) = ...". */
+function mixedHTML(raw) {
+  var s = String(raw === null || raw === undefined ? '' : raw);
+  if (s.indexOf('$') === -1) { return mathBody(s); }
+  return splitDollars(s, true);
+}
+
+/* A prose field such as the diagnosis body. Plain text stays plain: only the
+   $...$ spans are rendered as mathematics. */
+function proseHTML(raw) {
+  var s = String(raw === null || raw === undefined ? '' : raw);
+  if (s.indexOf('$') === -1) { return escapeHTML(s); }
+  return splitDollars(s, false);
+}
+
+/* --------------------------------------------------------------------------
+   4. Mock data
+   Shaped to docs/api-contract.md exactly, drawn from data/graph/nodes.json and
+   data/demo/diagnosis_cache.json. Used only when a live call fails.
+   -------------------------------------------------------------------------- */
+
+function pick(en, hi) { return state.lang === 'hi' ? hi : en; }
+
+function MOCK_STATE() {
+  return {
+    student_id: 'demo',
+    lang: state.lang,
+    goal: {
+      node_id: 'ai.gradient-descent-step',
+      title: pick('Gradient descent', 'ग्रेडिएंट डिसेंट'),
+      skills_away: 17,
+      pace_line: pick('about 21 days at your pace', 'आपकी गति से लगभग 21 दिन')
+    },
+    today: {
+      headline: pick('6 problems · 15 min', '6 प्रश्न · 15 मिनट'),
+      problems: [
+        { item_id: 'gen-alg.sign-distribution-1',
+          math: 'Expand and simplify $5x - (3x - 2)$',
+          chip: pick('Blocker · signs', 'रुकावट · चिह्न'),
+          slot: 'blocker', is_blocker: true, done: false },
+        { item_id: 'gen-alg.fraction-arithmetic-1',
+          math: 'Simplify $2/(x+1) - 3/(x-2)$',
+          chip: pick('Blocker · fractions', 'रुकावट · भिन्न'),
+          slot: 'blocker', is_blocker: true, done: false },
+        { item_id: 'gen-lim.indeterminate-factoring-1',
+          math: 'Evaluate $\\lim_{x \\to 2} (x^2 - 4)/(x - 2)$',
+          chip: pick('Review', 'दोहराव'),
+          slot: 'review', is_blocker: false, done: false },
+        { item_id: 'gen-der.power-rule-1',
+          math: 'Differentiate $f(x) = x^{5} - 4x^{2}$',
+          chip: pick('Review', 'दोहराव'),
+          slot: 'review', is_blocker: false, done: false },
+        { item_id: 'demo-quotient-sign',
+          math: 'Differentiate $f(x) = (2x + 1)/(x - 3)$',
+          chip: pick('New · Quotient rule', 'नया · भागफल नियम'),
+          slot: 'new', is_blocker: false, done: false },
+        { item_id: 'gen-opt.critical-points-1',
+          math: 'Find the critical points of $f(x) = x^2 - 6x + 5$',
+          chip: pick('On your path', 'आपके रास्ते पर'),
+          slot: 'goal_link', is_blocker: false, done: false }
+      ]
+    },
+    path: {
+      stages: [
+        { id: 'ai', name: pick('Gradient descent', 'ग्रेडिएंट डिसेंट'), count: '0/3', state: 'locked', skills: [
+          { node_id: 'ai.gradient-descent-step', name: pick('The gradient descent update step', 'ग्रेडिएंट डिसेंट का अद्यतन चरण'), state: 'locked',
+            needs: pick('needs: Gradient of a loss with respect to parameters', 'चाहिए: परामितियों के सापेक्ष हानि का ग्रेडिएंट') },
+          { node_id: 'ai.gradient-of-loss', name: pick('Gradient of a loss with respect to parameters', 'परामितियों के सापेक्ष हानि का ग्रेडिएंट'), state: 'locked',
+            needs: pick('needs: The gradient vector', 'चाहिए: ग्रेडिएंट सदिश') },
+          { node_id: 'ai.loss-function', name: pick('Loss as a function of parameters', 'परामितियों के फलन के रूप में हानि'), state: 'locked',
+            needs: pick('needs: Functions of several variables', 'चाहिए: कई चरों के फलन') }
+        ]},
+        { id: 'opt', name: pick('Optimisation', 'अनुकूलन'), count: '0/2', state: 'locked', skills: [
+          { node_id: 'opt.local-extrema', name: pick('Classifying local minima and maxima', 'स्थानीय न्यूनतम और अधिकतम पहचानना'), state: 'locked',
+            needs: pick('needs: Finding critical points', 'चाहिए: क्रांतिक बिंदु खोजना') },
+          { node_id: 'opt.critical-points', name: pick('Finding critical points', 'क्रांतिक बिंदु खोजना'), state: 'locked',
+            needs: pick('needs: Derivative as slope of the tangent line', 'चाहिए: स्पर्श रेखा की ढाल के रूप में अवकलज') }
+        ]},
+        { id: 'mv', name: pick('Multivariable', 'बहुचर'), count: '0/4', state: 'locked', skills: [
+          { node_id: 'mv.directional-derivative', name: pick('Directional derivatives and steepest descent', 'दिशात्मक अवकलज और तीव्रतम ढलान'), state: 'locked',
+            needs: pick('needs: The gradient vector', 'चाहिए: ग्रेडिएंट सदिश') },
+          { node_id: 'mv.gradient', name: pick('The gradient vector', 'ग्रेडिएंट सदिश'), state: 'locked',
+            needs: pick('needs: Partial derivatives', 'चाहिए: आंशिक अवकलज') },
+          { node_id: 'mv.partial-derivative', name: pick('Partial derivatives', 'आंशिक अवकलज'), state: 'locked',
+            needs: pick('needs: Chain rule', 'चाहिए: शृंखला नियम') },
+          { node_id: 'mv.functions-several-vars', name: pick('Functions of several variables', 'कई चरों के फलन'), state: 'locked',
+            needs: pick('needs: Recognizing and decomposing f(g(x))', 'चाहिए: f(g(x)) को पहचानना और खोलना') }
+        ]},
+        { id: 'der', name: pick('Derivative rules', 'अवकलन नियम'), count: '3/8', state: 'now', skills: [
+          { node_id: 'der.quotient-rule', name: pick('Quotient rule', 'भागफल नियम'), state: 'now', needs: '' },
+          { node_id: 'der.chain-rule', name: pick('Chain rule', 'शृंखला नियम'), state: 'locked',
+            needs: pick('needs: Recognizing and decomposing f(g(x))', 'चाहिए: f(g(x)) को पहचानना और खोलना') },
+          { node_id: 'der.exp-log-derivatives', name: pick('Derivatives of e^x and ln x', 'e^x और ln x के अवकलज'), state: 'locked',
+            needs: pick('needs: Properties of exponentials and logarithms', 'चाहिए: घातांक और लघुगणक के गुण') },
+          { node_id: 'der.higher-order', name: pick('Second and higher derivatives', 'द्वितीय और उच्च अवकलज'), state: 'learning', needs: '' },
+          { node_id: 'der.slope-interpretation', name: pick('Derivative as slope of the tangent line', 'स्पर्श रेखा की ढाल के रूप में अवकलज'), state: 'learning', needs: '' },
+          { node_id: 'der.definition', name: pick('The derivative as a limit of the difference quotient', 'अंतर भागफल की सीमा के रूप में अवकलज'), state: 'mastered', needs: '' },
+          { node_id: 'der.constant-multiple-sum', name: pick('Constant multiple and sum rules', 'अचर गुणज और योग नियम'), state: 'mastered', needs: '' },
+          { node_id: 'der.power-rule', name: pick('Power rule', 'घात नियम'), state: 'mastered', needs: '' }
+        ]},
+        { id: 'lim', name: pick('Limits', 'सीमाएँ'), count: '3/3', state: 'mastered', skills: [
+          { node_id: 'lim.indeterminate-factoring', name: pick('Resolving 0/0 limits by factoring and cancelling', 'गुणनखंड से 0/0 सीमाएँ हल करना'), state: 'mastered', needs: '' },
+          { node_id: 'lim.direct-substitution', name: pick('Evaluating limits by direct substitution', 'सीधे प्रतिस्थापन से सीमा निकालना'), state: 'mastered', needs: '' },
+          { node_id: 'lim.concept', name: pick('Informal idea of a limit', 'सीमा की सामान्य समझ'), state: 'mastered', needs: '' }
+        ]},
+        { id: 'trig', name: pick('Trig values', 'त्रिकोणमितीय मान'), count: '1/1', state: 'mastered', skills: [
+          { node_id: 'trig.unit-circle', name: pick('Exact values of sine and cosine at standard angles', 'मानक कोणों पर साइन और कोसाइन के सटीक मान'), state: 'mastered', needs: '' }
+        ]},
+        { id: 'alg', name: pick('Algebra moves', 'बीजगणित चालें'), count: '3/7', state: 'learning', skills: [
+          { node_id: 'alg.sign-distribution', name: pick('Distributing a negative across a sum or difference', 'योग या अंतर पर ऋण चिह्न खोलना'), state: 'learning', needs: '' },
+          { node_id: 'alg.fraction-arithmetic', name: pick('Adding and simplifying rational expressions', 'परिमेय व्यंजक जोड़ना और सरल करना'), state: 'learning', needs: '' },
+          { node_id: 'alg.function-composition', name: pick('Recognizing and decomposing f(g(x))', 'f(g(x)) को पहचानना और खोलना'), state: 'learning', needs: '' },
+          { node_id: 'alg.vectors', name: pick('Vector notation, scalar multiples and the dot product', 'सदिश संकेत, अदिश गुणज और डॉट गुणनफल'), state: 'learning', needs: '' },
+          { node_id: 'alg.exponent-rules', name: pick('Laws of exponents, including negative and fractional', 'घातांक के नियम, ऋण और भिन्न समेत'), state: 'mastered', needs: '' },
+          { node_id: 'alg.factoring', name: pick('Factoring polynomials', 'बहुपदों का गुणनखंडन'), state: 'mastered', needs: '' },
+          { node_id: 'alg.solving-equations', name: pick('Solving linear and quadratic equations', 'रैखिक और वर्ग समीकरण हल करना'), state: 'mastered', needs: '' }
+        ]}
+      ],
+      legend: [
+        { state: 'mastered', label: pick('mastered', 'महारत') },
+        { state: 'learning', label: pick('learning', 'सीख रहे') },
+        { state: 'now', label: pick('now', 'अभी') },
+        { state: 'locked', label: pick('locked', 'बंद') }
+      ]
+    },
+    blockers: [
+      { node_id: 'alg.sign-distribution',
+        rank: pick('Blocker 1', 'रुकावट 1'),
+        name: pick('Dropping negatives across brackets', 'कोष्ठक पर ऋण चिह्न गिरना'),
+        freq: pick('4 times this week', 'इस हफ़्ते 4 बार'),
+        wrong: '= [2x - 6 - 2x + 1] / (x-3)^2',
+        right: '= [2x - 6 - 2x - 1] / (x-3)^2',
+        item_count: 7 },
+      { node_id: 'alg.fraction-arithmetic',
+        rank: pick('Blocker 2', 'रुकावट 2'),
+        name: pick('Subtracting fractions by subtracting denominators', 'हर घटाकर भिन्न घटाना'),
+        freq: pick('twice', 'दो बार'),
+        wrong: '3/4 - 1/6 = 2/2',
+        right: '3/4 - 1/6 = 7/12',
+        item_count: 4 }
+    ],
+    you: {
+      streak_line: pick('12 day streak', '12 दिन लगातार'),
+      mastered: 9,
+      accuracy: '78%'
+    }
+  };
+}
+
+var MOCK_HINTS = {
+  en: [
+    { n: 1, text: 'A fraction of two functions. Which rule is that?', is_math: false },
+    { n: 2, text: "(u/v)' = (u'v - uv') / v^2", is_math: true },
+    { n: 3, text: "u = 2x + 1, v = x - 3. Write u'v - uv' before you simplify.", is_math: false },
+    { n: 4, text: "Full solution: f'(x) = -7/(x-3)^2.", is_math: false }
+  ],
+  hi: [
+    { n: 1, text: 'दो फलनों का भागफल। कौन-सा नियम लगेगा?', is_math: false },
+    { n: 2, text: "(u/v)' = (u'v - uv') / v^2", is_math: true },
+    { n: 3, text: "u = 2x + 1, v = x - 3. सरल करने से पहले u'v - uv' लिखें।", is_math: false },
+    { n: 4, text: "पूरा हल: f'(x) = -7/(x-3)^2.", is_math: false }
+  ]
+};
+
+function mockStart(itemId) {
+  var problems = (state.data && state.data.today && state.data.today.problems) || MOCK_STATE().today.problems;
+  var idx = 0;
+  for (var i = 0; i < problems.length; i++) { if (problems[i].item_id === itemId) { idx = i; } }
+  var p = problems[idx] || problems[0];
+  return {
+    item_id: p.item_id,
+    index: idx + 1,
+    total: problems.length,
+    problem_label: pick('Problem ' + (idx + 1) + ' of ' + problems.length,
+                        'प्रश्न ' + (idx + 1) + ' / ' + problems.length),
+    math: p.math,
+    hints: MOCK_HINTS[state.lang] || MOCK_HINTS.en
+  };
+}
+
+var MOCK_WORK_LINES = [
+  "f'(x) = [(2)(x-3) - (2x+1)(1)] / (x-3)^2",
+  '= [2x - 6 - 2x + 1] / (x-3)^2',
+  '= -5 / (x-3)^2'
+];
+
+/* The mock cannot run a CAS, so it grades by item id. The three item ids below
+   are chosen to exercise all three Result states without a server. */
+function mockGrade(payload) {
+  var id = payload.item_id;
+  if (id === 'demo-quotient-sign') {
+    return { attempt_id: 'mock-a1', correct: false,
+             verdict: pick('Incorrect', 'ग़लत'),
+             expected_latex: '-7/(x-3)^{2}', unsimplified: false, needs_diagnosis: true };
+  }
+  if (id === 'gen-alg.fraction-arithmetic-1') {
+    return { attempt_id: 'mock-a2', correct: true,
+             verdict: pick('Correct', 'सही'),
+             expected_latex: '(-x - 7)/((x+1)(x-2))', unsimplified: true, needs_diagnosis: false };
+  }
+  return { attempt_id: 'mock-a3', correct: true,
+           verdict: pick('Correct', 'सही'),
+           expected_latex: '', unsimplified: false, needs_diagnosis: false };
+}
+
+function mockDiagnose() {
+  return {
+    blamed_node: 'alg.sign-distribution',
+    headline: pick('Your quotient rule is correct.',
+                   'आपका भागफल नियम सही है।'),
+    body: pick('You dropped the negative when distributing across −(2x+1), so −2x−1 became −2x+1.',
+               '−(2x+1) को खोलते समय आपने ऋण चिह्न छोड़ दिया, इसलिए −2x−1 की जगह −2x+1 बन गया।'),
+    recurrence: pick('Same mistake as Tuesday.', 'मंगलवार वाली वही ग़लती।'),
+    failed_line_index: 1,
+    consequence: pick('Distributing a negative drops from mastered to needs-work.',
+                      'ऋण चिह्न खोलना: महारत से अभ्यास पर आ गया।'),
+    from_cache: true,
+    latency_s: 0.0
+  };
+}
+
+function mockCommit() {
+  return {
+    xp: 40,
+    node_changes: [{ node_id: 'alg.sign-distribution', from: 'mastered', to: 'learning' }],
+    unlocked: [],
+    // commitAndAdvance marks the current item done before calling this, so the
+    // set is finished only when nothing at all is left.
+    session_done: remainingProblems().length === 0
+  };
+}
+
+function mockComplete() {
+  return {
+    xp_total: 120,
+    unlocked_count: 3,
+    nodes: [
+      { node_id: 'der.chain-rule', name: pick('Chain rule', 'शृंखला नियम'), state: 'now', just_lit: true },
+      { node_id: 'der.quotient-rule', name: pick('Quotient rule', 'भागफल नियम'), state: 'mastered', just_lit: true },
+      { node_id: 'der.product-rule', name: pick('Product rule', 'गुणनफल नियम'), state: 'mastered', just_lit: false },
+      { node_id: 'der.power-rule', name: pick('Power rule', 'घात नियम'), state: 'mastered', just_lit: false }
+    ],
+    tomorrow: pick('Tomorrow starts with sign distribution.',
+                   'कल की शुरुआत ऋण चिह्न से होगी।')
+  };
+}
+
+var MOCK_TRANSCRIBE = { lines: MOCK_WORK_LINES.slice(), ocr_seconds: 6.8, source: 'cache' };
+
+/* --------------------------------------------------------------------------
+   5. API layer
+   Every call tries the server first, then falls back to the mock. A failure
+   raises the offline banner; the next success lowers it.
+   -------------------------------------------------------------------------- */
+
+function url(path) {
+  return CONFIG.BASE + path + (path.indexOf('?') === -1 ? '?' : '&') + 'lang=' + state.lang;
+}
+
+function setOffline(on) {
+  if (state.offline === on) { return; }
+  state.offline = on;
+  var banner = byId('banner');
+  byId('bannerText').textContent = T().offline;
+  banner.hidden = !on;
+}
+
+function callJSON(method, path, body) {
+  var opts = { method: method, headers: { 'Accept': 'application/json' } };
+  if (body !== undefined) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  return fetch(url(path), opts).then(function (r) {
+    if (!r.ok) { throw new Error('HTTP ' + r.status); }
+    return r.json();
+  });
+}
+
+/* live() runs the request, fallback() supplies mock data if anything fails. */
+function request(method, path, body, fallback) {
+  if (CONFIG.DATA_SOURCE === 'MOCK') {
+    setOffline(false);
+    return Promise.resolve(fallback());
+  }
+  return callJSON(method, path, body).then(function (data) {
+    setOffline(false);
+    return data;
+  }).catch(function (err) {
+    console.warn('[open-tutor] falling back to mock for ' + path + ':', err.message);
+    setOffline(true);
+    return fallback();
+  });
+}
+
+var API = {
+  state: function () { return request('GET', '/state', undefined, MOCK_STATE); },
+  reset: function () { return request('POST', '/reset', {}, MOCK_STATE); },
+  start: function (itemId) {
+    return request('POST', '/solve/start', { item_id: itemId }, function () { return mockStart(itemId); });
+  },
+  grade: function (payload) {
+    return request('POST', '/solve/grade', payload, function () { return mockGrade(payload); });
+  },
+  diagnose: function (payload) {
+    return request('POST', '/solve/diagnose', payload, mockDiagnose);
+  },
+  commit: function (payload) {
+    return request('POST', '/solve/commit', payload, mockCommit);
+  },
+  complete: function () { return request('GET', '/session/complete', undefined, mockComplete); },
+  transcribe: function (file, itemId) {
+    if (CONFIG.DATA_SOURCE === 'MOCK') {
+      return new Promise(function (res) { setTimeout(function () { res(MOCK_TRANSCRIBE); }, 900); });
+    }
+    var fd = new FormData();
+    fd.append('image', file, file.name || 'working.jpg');
+    fd.append('item_id', itemId);
+    return fetch(url('/solve/transcribe'), { method: 'POST', body: fd }).then(function (r) {
+      if (!r.ok) { throw new Error('HTTP ' + r.status); }
+      return r.json();
+    }).then(function (d) { setOffline(false); return d; })
+      .catch(function (err) {
+        console.warn('[open-tutor] transcribe failed:', err.message);
+        setOffline(true);
+        return MOCK_TRANSCRIBE;
+      });
+  }
+};
+
+/* --------------------------------------------------------------------------
+   6. State
+   -------------------------------------------------------------------------- */
+
+var state = {
+  lang: 'en',
+  theme: 'light',
+  screen: 'onboard',
+  tab: 'today',
+  data: null,          // GET /api/state payload
+  openStage: null,
+  offline: false,
+  doneIds: {},         // item ids graded in this session, applied over any reload
+  flow: null
+};
+
+function newFlow(itemId) {
+  return {
+    itemId: itemId,
+    channel: 'typed',
+    start: null,
+    hintLevel: 0,
+    workLines: [],
+    grade: null,
+    diagnosis: null,
+    blameAnswered: false
+  };
+}
+
+/* --------------------------------------------------------------------------
+   7. Small DOM helpers
+   -------------------------------------------------------------------------- */
+
+function byId(id) { return document.getElementById(id); }
+function clear(node) { while (node.firstChild) { node.removeChild(node.firstChild); } }
+
+function h(tag, cls, text) {
+  var n = document.createElement(tag);
+  if (cls) { n.className = cls; }
+  if (text !== undefined && text !== null) { n.textContent = text; }
+  return n;
+}
+
+function dotClass(nodeState) {
+  var known = { mastered: 1, learning: 1, now: 1, locked: 1 };
+  return 'dot dot--' + (known[nodeState] ? nodeState : 'locked');
+}
+
+function stateTextClass(nodeState) {
+  if (nodeState === 'locked') { return 'is-locked-text'; }
+  if (nodeState === 'now') { return 'is-now-text'; }
+  return '';
+}
+
+/* --------------------------------------------------------------------------
+   8. Chrome and theme
+   -------------------------------------------------------------------------- */
+
+function applyChrome() {
+  var t = T();
+  var nodes = document.querySelectorAll('[data-t]');
+  for (var i = 0; i < nodes.length; i++) {
+    var key = nodes[i].getAttribute('data-t');
+    if (typeof t[key] === 'string') { nodes[i].textContent = t[key]; }
+  }
+  byId('goalInput').placeholder = t.goalDefault;
+  byId('answerInput').placeholder = t.answerPlaceholder;
+  byId('bannerText').textContent = t.offline;
+  byId('btnLangEn').classList.toggle('is-on', state.lang === 'en');
+  byId('btnLangHi').classList.toggle('is-on', state.lang === 'hi');
+  byId('btnLight').classList.toggle('is-on', state.theme === 'light');
+  byId('btnDark').classList.toggle('is-on', state.theme === 'dark');
+}
+
+function applyTheme() {
+  document.body.setAttribute('data-theme', state.theme);
+  try { localStorage.setItem('ot.theme', state.theme); } catch (e) { /* private mode */ }
+}
+
+function setLang(lang) {
+  if (state.lang === lang) { return; }
+  var prev = state.lang;
+  state.lang = lang;
+  try { localStorage.setItem('ot.lang', lang); } catch (e) { /* private mode */ }
+  document.documentElement.lang = lang;
+  var goal = byId('goalInput');
+  if (goal.value === CHROME[prev].goalDefault) { goal.value = CHROME[lang].goalDefault; }
+  applyChrome();
+  // The server owns the translated content, so re-fetch rather than re-label.
+  loadState().then(function () {
+    renderAll();
+    if (state.screen === 'solve' && state.flow) { restartCurrentProblem(); }
+  });
+}
+
+/* --------------------------------------------------------------------------
+   9. Screen routing
+   -------------------------------------------------------------------------- */
+
+var TAB_SCREENS = { today: 1, path: 1, blockers: 1, you: 1 };
+
+function showScreen(name) {
+  state.screen = name;
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) {
+    screens[i].classList.toggle('is-active', screens[i].id === 'screen-' + name);
+  }
+  var onTab = !!TAB_SCREENS[name];
+  byId('tabbar').hidden = !onTab;
+  if (onTab) {
+    state.tab = name;
+    var tabs = document.querySelectorAll('.tab');
+    for (var j = 0; j < tabs.length; j++) {
+      tabs[j].classList.toggle('is-on', tabs[j].getAttribute('data-tab') === name);
+    }
+  }
+  var scroller = document.querySelector('#screen-' + name + ' .scroll');
+  if (scroller) { scroller.scrollTop = 0; }
+}
+
+function goTab(name) { showScreen(name); renderAll(); }
+
+/* --------------------------------------------------------------------------
+   10. Tab renderers
+   -------------------------------------------------------------------------- */
+
+function renderAll() {
+  if (!state.data) { return; }
+  applyChrome();          // before the renderers, which set their own labels
+  renderToday();
+  renderPath();
+  renderBlockers();
+  renderYou();
+}
+
+function problems() {
+  var d = state.data;
+  return (d && d.today && Array.isArray(d.today.problems)) ? d.today.problems : [];
+}
+
+function isDone(p) { return !!(p.done || state.doneIds[p.item_id]); }
+
+function remainingProblems() {
+  return problems().filter(function (p) { return !isDone(p); });
+}
+
+function renderToday() {
+  var d = state.data, list = byId('todayList');
+  byId('todayHead').textContent = (d.today && d.today.headline) || '';
+  clear(list);
+
+  var ps = problems();
+  if (!ps.length) {
+    list.appendChild(h('div', 'inline-note', T().setDone));
+  }
+  ps.forEach(function (p) {
+    var card = h('button', 'problemcard' + (isDone(p) ? ' is-done' : ''));
+    var math = h('span', 'problemcard-math');
+    math.innerHTML = mixedHTML(p.math);
+    card.appendChild(math);
+
+    var meta = h('span', 'problemcard-meta');
+    if (p.is_blocker) { meta.appendChild(h('span', 'problemcard-dot')); }
+    meta.appendChild(h('span', 'problemcard-chip', p.chip || ''));
+    if (isDone(p)) { meta.appendChild(h('span', 'problemcard-tick', '✓')); }
+    card.appendChild(meta);
+
+    card.addEventListener('click', function () { startProblem(p.item_id); });
+    list.appendChild(card);
+  });
+
+  var start = byId('btnStartSession');
+  var left = remainingProblems();
+  start.disabled = left.length === 0;
+  start.textContent = left.length === 0 ? T().finish : T().start;
+}
+
+function renderPath() {
+  var d = state.data;
+  var goal = d.goal || {};
+  byId('goalTitle').textContent = goal.title || '';
+  byId('goalAway').textContent = (goal.skills_away === undefined || goal.skills_away === null)
+    ? '' : String(goal.skills_away) + ' ' + (state.lang === 'hi' ? 'कौशल दूर' : 'skills away');
+  byId('goalPace').textContent = goal.pace_line || '';
+
+  var wrap = byId('pathStages');
+  clear(wrap);
+  var stages = (d.path && Array.isArray(d.path.stages)) ? d.path.stages : [];
+
+  if (state.openStage === null) {
+    var nowStage = stages.filter(function (s) { return s.state === 'now'; })[0];
+    state.openStage = nowStage ? nowStage.id : (stages[0] ? stages[0].id : null);
+  }
+
+  stages.forEach(function (s) {
+    var item = h('div', 'stage-item');
+    item.appendChild(h('span', dotClass(s.state) + ' stage-dot'));
+
+    var open = state.openStage === s.id;
+    var btn = h('button', 'stage-btn' + (open ? ' is-open' : '') + (s.state === 'now' ? ' is-now' : ''));
+    btn.appendChild(h('span', 'stage-name' + (s.state === 'locked' ? ' is-locked' : ''), s.name || ''));
+    var meta = h('span', 'stage-meta');
+    var legendLabel = legendLabelFor(s.state);
+    meta.appendChild(h('span', 'stage-state', legendLabel));
+    meta.appendChild(h('span', 'stage-count', s.count || ''));
+    btn.appendChild(meta);
+    btn.addEventListener('click', function () {
+      state.openStage = open ? null : s.id;
+      renderPath();
+    });
+    item.appendChild(btn);
+
+    if (open) {
+      var skills = h('div', 'skills');
+      (s.skills || []).forEach(function (k) {
+        var row = h('div', 'skill');
+        row.appendChild(h('span', dotClass(k.state)));
+        var body = h('span', 'skill-body');
+        body.appendChild(h('span', 'skill-name ' + stateTextClass(k.state), k.name || ''));
+        var tags = h('span', 'skill-tags');
+        tags.appendChild(h('span', 'skill-state ' + stateTextClass(k.state), legendLabelFor(k.state)));
+        if (k.needs) { tags.appendChild(h('span', 'skill-needs', k.needs)); }
+        body.appendChild(tags);
+        row.appendChild(body);
+        skills.appendChild(row);
+      });
+      item.appendChild(skills);
+    }
+    wrap.appendChild(item);
+  });
+
+  var legend = byId('pathLegend');
+  clear(legend);
+  ((d.path && d.path.legend) || []).forEach(function (l) {
+    var span = h('span', 'legend-item');
+    span.appendChild(h('span', dotClass(l.state)));
+    span.appendChild(document.createTextNode(l.label || ''));
+    legend.appendChild(span);
+  });
+}
+
+/* The legend is the server's own vocabulary for the four states, so state
+   labels elsewhere are read back from it rather than translated here. */
+function legendLabelFor(nodeState) {
+  var legend = (state.data && state.data.path && state.data.path.legend) || [];
+  for (var i = 0; i < legend.length; i++) {
+    if (legend[i].state === nodeState) { return legend[i].label || nodeState; }
+  }
+  return nodeState || '';
+}
+
+function renderBlockers() {
+  var list = byId('blockersList');
+  var bs = Array.isArray(state.data.blockers) ? state.data.blockers : [];
+  byId('blockersHead').textContent = T().blockersHead(bs.length);
+  clear(list);
+
+  bs.forEach(function (b, i) {
+    var card = h('div', 'blockercard');
+    var body = h('div', 'blockercard-body');
+
+    var top = h('div', 'blockercard-top');
+    top.appendChild(h('span', 'blockercard-rank', b.rank || ''));
+    top.appendChild(h('span', 'blockercard-freq', b.freq || ''));
+    body.appendChild(top);
+
+    body.appendChild(h('div', 'blockercard-name', b.name || ''));
+
+    // The student's own failing line, struck through, above the corrected one.
+    var lines = h('div', 'blockercard-lines');
+    var wrong = h('span', 'blockercard-wrong');
+    wrong.innerHTML = mathBody(b.wrong || '');
+    var right = h('span', 'blockercard-right');
+    right.innerHTML = mathBody(b.right || '');
+    lines.appendChild(wrong);
+    lines.appendChild(right);
+    body.appendChild(lines);
+
+    card.appendChild(body);
+
+    var fix = h('button', 'blockercard-fix', T().fix);
+    fix.addEventListener('click', function () { fixBlocker(i); });
+    card.appendChild(fix);
+
+    list.appendChild(card);
+  });
+}
+
+function renderYou() {
+  var y = state.data.you || {};
+  byId('youStreak').textContent = y.streak_line || '';
+  byId('statMastered').textContent = (y.mastered === undefined || y.mastered === null) ? '-' : String(y.mastered);
+  byId('statAccuracy').textContent = y.accuracy || '-';
+}
+
+/* --------------------------------------------------------------------------
+   11. Step indicator: two dots typed, three photo
+   -------------------------------------------------------------------------- */
+
+function stepLabels() {
+  var t = T();
+  return state.flow && state.flow.channel === 'photo'
+    ? [t.stepSolve, t.stepCheck, t.stepResult]
+    : [t.stepSolve, t.stepResult];
+}
+
+function renderSteps(barsId, labelId, screenName) {
+  var labels = stepLabels();
+  var idx;
+  if (screenName === 'solve') { idx = 0; }
+  else if (screenName === 'check') { idx = 1; }
+  else { idx = labels.length - 1; }
+
+  var bars = byId(barsId);
+  clear(bars);
+  for (var i = 0; i < labels.length; i++) {
+    bars.appendChild(h('span', 'stepbar' + (i <= idx ? ' is-on' : '')));
+  }
+  byId(labelId).textContent = labels[idx];
+}
+
+/* --------------------------------------------------------------------------
+   12. Solve
+   -------------------------------------------------------------------------- */
+
+function startProblem(itemId) {
+  state.flow = newFlow(itemId);
+  showScreen('solve');
+  byId('problemLabel').textContent = '';
+  byId('problemMath').innerHTML = '';
+  byId('answerInput').value = '';
+  byId('solveNote').hidden = true;
+  renderSteps('solveSteps', 'solveStepLabel', 'solve');
+  renderHints();
+
+  API.start(itemId).then(function (s) {
+    if (!state.flow || state.flow.itemId !== itemId) { return; }
+    state.flow.start = s;
+    byId('problemLabel').textContent = s.problem_label || '';
+    byId('problemMath').innerHTML = mixedHTML(s.math);
+    renderHints();
+    byId('answerInput').focus();
+  });
+}
+
+function restartCurrentProblem() {
+  if (state.flow) { startProblem(state.flow.itemId); }
+}
+
+function renderHints() {
+  var f = state.flow;
+  var all = (f && f.start && Array.isArray(f.start.hints)) ? f.start.hints : [];
+  var shown = f ? f.hintLevel : 0;
+  byId('hintCount').textContent = shown + ' / ' + (all.length || 0);
+
+  var list = byId('hintList');
+  clear(list);
+  all.slice(0, shown).forEach(function (hint, i) {
+    var row = h('div', 'hint');
+    row.appendChild(h('span', 'hint-n', String(hint.n !== undefined ? hint.n : i + 1)));
+    var text = h('span', 'hint-text' + (hint.is_math ? ' math' : ''));
+    if (hint.is_math) { text.innerHTML = mathBody(hint.text); }
+    else { text.innerHTML = proseHTML(hint.text); }
+    row.appendChild(text);
+    list.appendChild(row);
+  });
+
+  var btn = byId('btnNextHint');
+  // The twin problem in hint rung 4 has no endpoint in the contract, so the
+  // ladder simply ends rather than offering something that cannot be served.
+  btn.hidden = !all.length || shown >= all.length;
+  btn.textContent = T().hintNext;
+}
+
+function nextHint() {
+  var f = state.flow;
+  if (!f || !f.start) { return; }
+  var total = (f.start.hints || []).length;
+  if (f.hintLevel < total) { f.hintLevel += 1; renderHints(); }
+}
+
+function submitTyped() {
+  var f = state.flow;
+  if (!f) { return; }
+  var answer = byId('answerInput').value.trim();
+  if (!answer) { byId('answerInput').focus(); return; }
+  f.channel = 'typed';
+  f.workLines = [];
+  gradeAndShow({
+    item_id: f.itemId,
+    typed_answer: answer,
+    hint_level: f.hintLevel,
+    channel: 'typed',
+    work_lines: []
+  });
+}
+
+/* --------------------------------------------------------------------------
+   13. Photo path
+   -------------------------------------------------------------------------- */
+
+function onPhotoChosen(ev) {
+  var f = state.flow;
+  var file = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  if (!file || !f) { return; }
+
+  var note = byId('solveNote');
+  note.hidden = false;
+  note.textContent = T().reading;
+
+  API.transcribe(file, f.itemId).then(function (res) {
+    if (!state.flow || state.flow !== f) { return; }
+    var lines = (res && Array.isArray(res.lines)) ? res.lines.filter(function (l) { return String(l).trim(); }) : [];
+    if (!lines.length) {
+      // Fall back to the typed path with a plain message rather than dead-ending.
+      note.hidden = false;
+      note.textContent = res && res.error ? T().ocrEmpty : T().ocrEmpty;
+      byId('answerInput').focus();
+      return;
+    }
+    note.hidden = true;
+    f.channel = 'photo';
+    f.workLines = lines;
+    showScreen('check');
+    renderCheck();
+  }).catch(function () {
+    note.hidden = false;
+    note.textContent = T().ocrFailed;
+  });
+}
+
+function renderCheck() {
+  var f = state.flow;
+  renderSteps('checkSteps', 'checkStepLabel', 'check');
+  var wrap = byId('transcript');
+  clear(wrap);
+  f.workLines.forEach(function (line, i) {
+    var row = h('div', 'tline');
+    // Rendered as mathematics at rest so OCR errors are easy to spot, but
+    // editing happens on the raw transcript text the server sent.
+    var text = h('span', 'tline-text');
+    text.innerHTML = mathBody(f.workLines[i]);
+    text.contentEditable = 'true';
+    text.spellcheck = false;
+    text.addEventListener('focus', function () { text.textContent = f.workLines[i]; });
+    text.addEventListener('input', function () { f.workLines[i] = text.textContent; });
+    text.addEventListener('blur', function () {
+      f.workLines[i] = text.textContent;
+      text.innerHTML = mathBody(f.workLines[i]);
+    });
+    row.appendChild(text);
+    row.appendChild(h('span', 'tline-edit', T().edit));
+    row.addEventListener('click', function () { text.focus(); });
+    wrap.appendChild(row);
+  });
+}
+
+function confirmLines() {
+  var f = state.flow;
+  if (!f) { return; }
+  var lines = f.workLines.filter(function (l) { return String(l).trim(); });
+  gradeAndShow({
+    item_id: f.itemId,
+    typed_answer: lines.length ? lines[lines.length - 1] : '',
+    hint_level: f.hintLevel,
+    channel: 'photo',
+    work_lines: lines
+  });
+}
+
+/* --------------------------------------------------------------------------
+   14. Result: three states
+   -------------------------------------------------------------------------- */
+
+function gradeAndShow(payload) {
+  var f = state.flow;
+  showScreen('result');
+  resetResultScreen();
+  renderSteps('resultSteps', 'resultStepLabel', 'result');
+
+  API.grade(payload).then(function (g) {
+    if (!state.flow || state.flow !== f) { return; }
+    f.grade = g;
+    renderVerdict(g);
+
+    if (g.needs_diagnosis && !g.correct) {
+      requestDiagnosis(f, payload);
+    } else {
+      showNextButton();
+    }
+  });
+}
+
+function resetResultScreen() {
+  byId('resVerdict').textContent = '';
+  byId('resVerdict').className = 'verdict';
+  byId('resExpected').innerHTML = '';
+  byId('resNote').hidden = true;
+  byId('resWork').hidden = true;
+  byId('resWaiting').hidden = true;
+  byId('resDiag').hidden = true;
+  byId('btnResultNext').hidden = true;
+}
+
+function renderVerdict(g) {
+  var f = state.flow;
+  var verdict = byId('resVerdict');
+  verdict.textContent = g.verdict || '';
+  verdict.classList.toggle('is-correct', !!g.correct);
+
+  // State 1, correct: the verdict and nothing else. No diagnosis is requested.
+  // State 2, correct but unsimplified: the verdict plus one light note.
+  // State 3, incorrect: expected answer, the working, then the diagnosis.
+  if (g.correct && g.unsimplified) {
+    var note = byId('resNote');
+    note.hidden = false;
+    note.innerHTML = escapeHTML(T().unsimplified) +
+      (g.expected_latex ? ' <span class="math">' + mathBody(g.expected_latex) + '</span>' : '');
+  }
+
+  if (!g.correct) {
+    if (g.expected_latex) {
+      byId('resExpected').innerHTML = escapeHTML(T().expected) + ' ' + mathBody(g.expected_latex);
+    }
+    if (f.workLines.length) { renderWork(-1); }
+  }
+}
+
+function renderWork(highlightIndex) {
+  var f = state.flow;
+  var block = byId('resWork');
+  block.hidden = false;
+  clear(block);
+  f.workLines.forEach(function (line, i) {
+    var span = h('span', 'workline' + (i === highlightIndex ? ' is-hl' : ''));
+    span.innerHTML = mathBody(line);
+    block.appendChild(span);
+  });
+}
+
+function requestDiagnosis(f, gradePayload) {
+  byId('resWaiting').hidden = false;
+  var started = Date.now();
+  var workText = f.workLines.length ? f.workLines.join('\n') : (gradePayload.typed_answer || '');
+
+  API.diagnose({
+    attempt_id: f.grade.attempt_id,
+    item_id: f.itemId,
+    work_text: workText
+  }).then(function (dg) {
+    var wait = Math.max(0, CONFIG.DIAGNOSIS_MIN_WAIT_MS - (Date.now() - started));
+    setTimeout(function () {
+      if (!state.flow || state.flow !== f) { return; }
+      byId('resWaiting').hidden = true;
+      f.diagnosis = dg;
+      if (!dg || (!dg.headline && !dg.body)) {
+        byId('resNote').hidden = false;
+        byId('resNote').textContent = T().diagFailed;
+        showNextButton();
+        return;
+      }
+      renderDiagnosis(dg);
+    }, wait);
+  }).catch(function () {
+    byId('resWaiting').hidden = true;
+    byId('resNote').hidden = false;
+    byId('resNote').textContent = T().diagFailed;
+    showNextButton();
+  });
+}
+
+function renderDiagnosis(dg) {
+  var f = state.flow;
+  if (f.workLines.length && typeof dg.failed_line_index === 'number' && dg.failed_line_index >= 0) {
+    renderWork(dg.failed_line_index);
+  }
+  byId('diagHeadline').textContent = dg.headline || '';
+  byId('diagBody').innerHTML = proseHTML(dg.body || '');
+
+  var rec = byId('diagRecurrence');
+  rec.textContent = dg.recurrence || '';
+  rec.hidden = !dg.recurrence;
+
+  var consRow = byId('diagConsequenceRow');
+  byId('diagConsequence').textContent = dg.consequence || '';
+  consRow.hidden = !dg.consequence;
+
+  var panel = byId('resDiag');
+  panel.hidden = false;
+  // restart the arrive animation
+  panel.style.animation = 'none';
+  void panel.offsetWidth;
+  panel.style.animation = '';
+}
+
+function showNextButton() {
+  var btn = byId('btnResultNext');
+  btn.hidden = false;
+  btn.textContent = remainingProblems().length > 1 ? T().next : T().finish;
+}
+
+function answerBlame(confirmed) {
+  var f = state.flow;
+  if (!f || f.blameAnswered) { return; }
+  f.blameAnswered = true;
+  byId('btnBlameYes').disabled = true;
+  byId('btnBlameNo').disabled = true;
+  commitAndAdvance(confirmed);
+}
+
+function commitAndAdvance(blameConfirmed) {
+  var f = state.flow;
+  if (!f) { return; }
+  state.doneIds[f.itemId] = true;
+
+  var payload = { attempt_id: f.grade ? f.grade.attempt_id : null, blame_confirmed: null };
+  if (blameConfirmed !== undefined && blameConfirmed !== null) { payload.blame_confirmed = blameConfirmed; }
+
+  byId('btnResultNext').disabled = true;
+
+  API.commit(payload).then(function (c) {
+    byId('btnResultNext').disabled = false;
+    byId('btnBlameYes').disabled = false;
+    byId('btnBlameNo').disabled = false;
+    // The contract calls GET /api/state after every commit.
+    return loadState().then(function () {
+      var left = remainingProblems();
+      if ((c && c.session_done) || left.length === 0) {
+        goComplete();
+      } else {
+        startProblem(left[0].item_id);
+      }
+    });
+  });
+}
+
+/* --------------------------------------------------------------------------
+   15. Complete
+   -------------------------------------------------------------------------- */
+
+function goComplete() {
+  showScreen('complete');
+  var wrap = byId('finishNodes');
+  clear(wrap);
+  byId('tomorrowLine').textContent = '';
+  byId('xpLine').textContent = '';
+  byId('spineWrap').classList.remove('is-rising');
+  byId('spineWrap').style.height = '0%';
+
+  API.complete().then(function (c) {
+    var nodes = Array.isArray(c.nodes) ? c.nodes : [];
+    clear(wrap);
+    nodes.forEach(function (n) {
+      var row = h('div', 'finish-node');
+      var dot = h('span', dotClass(n.state));
+      if (n.state === 'mastered' && n.just_lit) { dot.setAttribute('data-lit', '1'); }
+      row.appendChild(dot);
+      row.appendChild(h('span', 'finish-name ' + stateTextClass(n.state), n.name || ''));
+      wrap.appendChild(row);
+    });
+
+    byId('tomorrowLine').textContent = c.tomorrow || '';
+    var t = T();
+    byId('xpLine').textContent = '+' + (c.xp_total || 0) + ' ' + t.xp + ' · ' +
+      (c.unlocked_count || 0) + ' ' + t.unlockedWord;
+
+    // The spine grows from the bottom to the highest lit node, then the newly
+    // mastered nodes take the gold.
+    var lit = nodes.filter(function (n) { return n.state === 'mastered'; }).length;
+    var frac = nodes.length ? Math.max(0.18, lit / nodes.length) : 0;
+    var wrapEl = byId('spineWrap');
+    wrapEl.style.height = Math.round(frac * 100) + '%';
+    setTimeout(function () { wrapEl.classList.add('is-rising'); }, 60);
+
+    setTimeout(function () {
+      var lits = wrap.querySelectorAll('[data-lit="1"]');
+      for (var i = 0; i < lits.length; i++) { lits[i].classList.add('dot--goldin'); }
+    }, 700);
+  });
+}
+
+/* --------------------------------------------------------------------------
+   16. Blockers, "Fix this"
+   The contract has no endpoint for composing a set from a node id, so this
+   opens the matching blocker problem already in today's set.
+   -------------------------------------------------------------------------- */
+
+function fixBlocker(rankIndex) {
+  var blockerProblems = problems().filter(function (p) { return p.is_blocker && !isDone(p); });
+  var target = blockerProblems[rankIndex] || blockerProblems[0] || remainingProblems()[0] || problems()[0];
+  if (target) { startProblem(target.item_id); }
+}
+
+/* --------------------------------------------------------------------------
+   17. Loading
+   -------------------------------------------------------------------------- */
+
+function loadState() {
+  return API.state().then(function (payload) {
+    if (payload && payload.lang && payload.lang !== state.lang) {
+      // Trust the server about which language it actually served.
+      state.lang = payload.lang;
+      applyChrome();
+    }
+    applyServerUI(payload);
+    state.data = payload;
+    if (CONFIG.FAST_DEMO) {
+      problems().slice(0, 4).forEach(function (p) { state.doneIds[p.item_id] = true; });
+      CONFIG.FAST_DEMO = false;
+    }
+    return payload;
+  });
+}
+
+/* --------------------------------------------------------------------------
+   18. Wiring
+   -------------------------------------------------------------------------- */
+
+function wire() {
+  byId('btnBuild').addEventListener('click', function () { goTab('today'); });
+  byId('goalInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { goTab('today'); }
+  });
+
+  byId('btnStartSession').addEventListener('click', function () {
+    var left = remainingProblems();
+    if (left.length) { startProblem(left[0].item_id); } else { goComplete(); }
+  });
+
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) {
+    (function (btn) {
+      btn.addEventListener('click', function () { goTab(btn.getAttribute('data-tab')); });
+    })(tabs[i]);
+  }
+
+  var exits = document.querySelectorAll('[data-exit]');
+  for (var j = 0; j < exits.length; j++) {
+    exits[j].addEventListener('click', function () { state.flow = null; goTab('today'); });
+  }
+
+  byId('btnNextHint').addEventListener('click', nextHint);
+  byId('btnCheckAnswer').addEventListener('click', submitTyped);
+  byId('answerInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { submitTyped(); }
+  });
+
+  byId('btnPhoto').addEventListener('click', function () { byId('photoInput').click(); });
+  byId('photoInput').addEventListener('change', onPhotoChosen);
+
+  byId('btnConfirmLines').addEventListener('click', confirmLines);
+
+  byId('btnBlameYes').addEventListener('click', function () { answerBlame(true); });
+  byId('btnBlameNo').addEventListener('click', function () { answerBlame(false); });
+  byId('btnResultNext').addEventListener('click', function () { commitAndAdvance(null); });
+
+  byId('btnDone').addEventListener('click', function () { state.flow = null; goTab('today'); });
+
+  byId('btnLangEn').addEventListener('click', function () { setLang('en'); });
+  byId('btnLangHi').addEventListener('click', function () { setLang('hi'); });
+  byId('btnLight').addEventListener('click', function () { state.theme = 'light'; applyTheme(); applyChrome(); });
+  byId('btnDark').addEventListener('click', function () { state.theme = 'dark'; applyTheme(); applyChrome(); });
+
+  byId('btnReplay').addEventListener('click', function () {
+    state.doneIds = {};
+    state.flow = null;
+    state.openStage = null;
+    API.reset().then(function (payload) {
+      state.data = payload;
+      applyServerUI(payload);
+      renderAll();
+      showScreen('onboard');
+    });
+  });
+}
+
+function boot() {
+  try {
+    var savedTheme = localStorage.getItem('ot.theme');
+    var savedLang = localStorage.getItem('ot.lang');
+    if (savedTheme === 'light' || savedTheme === 'dark') { state.theme = savedTheme; }
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) { state.theme = 'dark'; }
+    if (savedLang === 'en' || savedLang === 'hi') { state.lang = savedLang; }
+  } catch (e) { /* private mode */ }
+
+  document.documentElement.lang = state.lang;
+  applyTheme();
+  applyChrome();
+  byId('goalInput').value = T().goalDefault;
+  wire();
+  showScreen('onboard');
+
+  loadState().then(function () {
+    renderAll();
+    byId('veil').hidden = true;
+  }).catch(function (err) {
+    console.error('[open-tutor] boot failed', err);
+    byId('veil').hidden = true;
+    setOffline(true);
+    state.data = MOCK_STATE();
+    renderAll();
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
