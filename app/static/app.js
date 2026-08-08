@@ -1186,24 +1186,28 @@ function renderPath() {
     });
     item.appendChild(btn);
 
-    if (open) {
-      var skills = bevel('div', 'skills', 'bev-face--sunk');
-      var skillsBody = h('div', 'skills-body');
-      (s.skills || []).forEach(function (k) {
-        var srow = h('div', 'skill');
-        srow.appendChild(h('span', dotClass(k.state)));
-        var sbody = h('span', 'skill-body');
-        sbody.appendChild(h('span', 'skill-name ' + stateTextClass(k.state), k.name || ''));
-        var tags = h('span', 'skill-tags');
-        tags.appendChild(h('span', 'skill-state ' + stateTextClass(k.state), legendLabelFor(k.state)));
-        if (k.needs) { tags.appendChild(h('span', 'skill-needs', k.needs)); }
-        sbody.appendChild(tags);
-        srow.appendChild(sbody);
-        skillsBody.appendChild(srow);
-      });
-      skills.face.appendChild(skillsBody);
-      item.appendChild(skills);
-    }
+    // Every stage's skills are ALWAYS in the DOM, whether the stage is open or not,
+    // because the desktop Path lays the whole goal slice out at once and cannot ask
+    // for nodes that were never rendered. The phone is unchanged: `styles.css` gives
+    // a stage without `skills--open` `display: none`, which occupies no space, so the
+    // one-open-at-a-time spine looks and measures exactly as it did before.
+    var skills = bevel('div', 'skills' + (open ? ' skills--open' : ''), 'bev-face--sunk');
+    var skillsBody = h('div', 'skills-body');
+    (s.skills || []).forEach(function (k) {
+      var srow = h('div', 'skill');
+      srow.appendChild(h('span', dotClass(k.state)));
+      var sbody = h('span', 'skill-body');
+      sbody.appendChild(h('span', 'skill-name ' + stateTextClass(k.state), k.name || ''));
+      var tags = h('span', 'skill-tags');
+      tags.appendChild(h('span', 'skill-state ' + stateTextClass(k.state), legendLabelFor(k.state)));
+      if (k.needs) { tags.appendChild(h('span', 'skill-needs', k.needs)); }
+      sbody.appendChild(tags);
+      srow.appendChild(sbody);
+      skillsBody.appendChild(srow);
+    });
+    skills.face.appendChild(skillsBody);
+    item.appendChild(skills);
+
     wrap.appendChild(item);
   });
 
@@ -1471,13 +1475,23 @@ function renderCheck() {
   });
 }
 
+/* The last line of a derivation is written as a continuation, "= -5 / (x-3)^2", and
+   that leading equals sign is not part of the answer. Sent verbatim the CAS cannot
+   parse it and returns `could not read that answer`, which took the photo path to an
+   error verdict with `needs_diagnosis: false` and no diagnosis at all: the one moment
+   docs/demo-runbook.md step 7 exists for. The work_lines are sent UNCHANGED, so the
+   diagnosis cache still matches on the transcript exactly as it was read. */
+function answerFromWork(line) {
+  return String(line === null || line === undefined ? '' : line).trim().replace(/^=\s*/, '');
+}
+
 function confirmLines() {
   var f = state.flow;
   if (!f) { return; }
   var lines = f.workLines.filter(function (l) { return String(l).trim(); });
   gradeAndShow({
     item_id: f.itemId,
-    typed_answer: lines.length ? lines[lines.length - 1] : '',
+    typed_answer: lines.length ? answerFromWork(lines[lines.length - 1]) : '',
     hint_level: f.hintLevel,
     channel: 'photo',
     work_lines: lines
