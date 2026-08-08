@@ -275,7 +275,9 @@ body{
   border:2px solid #0a0f1e;border-radius:12px;padding:4px 12px}
 .ev-cta-label b{color:#ffd23f}
 
-/* add-a-course slot */
+/* empty-state / add-a-course slot */
+.ev-emptycard{background:rgba(10,26,54,.3);border:4px dashed #3a5488;box-shadow:none}
+.ev-emptycard:hover{transform:none;filter:none}
 .ev-add{background:rgba(10,26,54,.35);border:4px dashed #3a5488;box-shadow:none}
 .ev-add:hover{transform:translateY(-3px);filter:none;border-color:#5f7ad6}
 .ev-add-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:14px}
@@ -353,6 +355,14 @@ body{
 .br-circle{width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#3aa0ff,#0064c8);border:2px solid #0a0f1e;
   display:grid;place-items:center;font-family:var(--f-head);font-size:11px;color:#fff}
 
+/* ===== processing: DAG formation ===== */
+.pg-wrap{position:relative;background:linear-gradient(180deg,#ffffff,#e7f0ff);border:3px solid #0a0f1e;border-radius:12px;overflow:hidden}
+.pg-node{position:absolute;transform:translate(-50%,-50%);width:94px;padding:7px 6px;text-align:center;
+  font-family:var(--f-ui);font-weight:600;font-size:9.5px;line-height:1.12;color:#06233b;
+  background:radial-gradient(circle at 50% 30%,#dcecff,#a9d0f5);border:2px solid #3b7cc4;border-radius:42%;
+  box-shadow:0 2px 4px rgba(0,0,0,.22)}
+.pg-node.pgpop{animation:kgpop .42s}
+
 /* ===== battle pass ===== */
 .bp-body{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:14px 16px;overflow:auto}
 .bp-hero{display:flex;gap:16px;align-items:center;position:relative;overflow:hidden;
@@ -387,10 +397,13 @@ body{
 .kg-screen{min-height:100%;display:flex;flex-direction:column}
 .kg-body{flex:1;min-height:0;display:flex;flex-direction:column;padding:10px 16px 16px}
 .kg-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.kg-canvas-wrap{flex:1;min-height:0;display:flex;gap:12px}
-.kg-canvas{position:relative;flex:1;min-height:300px;overflow:hidden;border:4px solid #0a0f1e;border-radius:14px;
+.kg-canvas-wrap{flex:1;min-height:0;position:relative}
+.kg-canvas{position:relative;width:100%;height:100%;min-height:340px;overflow:auto;border:4px solid #0a0f1e;border-radius:14px;
   background:radial-gradient(circle at 50% 0%, #ffffff, #e7f0ff);box-shadow:inset 0 0 40px rgba(43,108,176,.12)}
-.kg-canvas.ro{min-height:0}
+.kg-canvas.ro{min-height:0;overflow:auto}
+.kg-canvas::-webkit-scrollbar{width:10px;height:10px}
+.kg-canvas::-webkit-scrollbar-thumb{background:#9cc2ef;border-radius:8px}
+.kg-sizer{position:relative}
 .kg-canvas.connecting{outline:3px dashed #8a4bff;outline-offset:-7px;cursor:crosshair}
 .kg-layer{position:absolute;left:0;top:0;transform-origin:top left}
 .kg-edges{position:absolute;left:0;top:0;pointer-events:none}
@@ -415,7 +428,11 @@ body{
 .kg-anchor{position:absolute;transform:translate(-50%,0);font-family:var(--f-head);font-size:15px;color:#e21b1b;
   text-shadow:0 1px 0 #fff,0 0 3px #fff;pointer-events:none;white-space:nowrap}
 .kg-anchor.end{transform:translate(-50%,-100%)}
-.kg-insp{flex:0 0 244px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.kg-insp{position:absolute;top:10px;right:10px;width:236px;max-height:calc(100% - 20px);z-index:9;
+  display:flex;flex-direction:column;gap:10px;overflow:auto;
+  background:rgba(20,14,54,.94);border:3px solid #0a0f1e;border-radius:14px;padding:10px;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.kg-insp::-webkit-scrollbar{width:6px}.kg-insp::-webkit-scrollbar-thumb{background:#5a4a9e;border-radius:6px}
+.kg-node{width:150px}
 
 /* ===== reusable UI ===== */
 .pad{padding:16px}
@@ -686,49 +703,64 @@ function confetti(host,n=40){
 const R = {};
 
 /* ---- 1. LIBRARY ---- */
-R.library = {
-  desktop(){return `<div class="ev-screen">
+/* Calculus course tile args (shared by §1 empty-state and §2) */
+const CALC=['#9be000','#5f9e00','∫','Calculus I','Limits &amp; Derivatives','2h 5m',62,'11/18 topics','#8fd94a','#256b2e','📈','Calculus II'];
+/* Sections 1 (Library, empty) and 2 (Choose a course) share this UI */
+function libDesktop(cfg){
+  const cards=cfg.courses.map(c=>evCard.apply(null,c)).join('');
+  const empty=cfg.empty?`<div class="ev-card ev-emptycard">
+    <div class="ev-add-inner"><div class="ev-add-plus">📚</div>
+      <div class="ev-add-t">NO COURSES YET</div>
+      <div class="tiny" style="color:#9fb0d6;max-width:190px">Upload a textbook and OpenTutor builds your first course</div></div></div>`:'';
+  return `<div class="ev-screen">
     <div class="ev-top">
       <div class="ev-iconbtn" onclick="toast('Back')">◀</div>
-      <div class="ev-title">CHOOSE A COURSE</div>
+      <div class="ev-title">${cfg.title}</div>
       <div style="flex:1"></div>
       <div class="ev-iconbtn" onclick="toast('Home')">🏠</div>
     </div>
     <div class="ev-body" style="flex-direction:column">
       <div class="ev-rhead">
         <span class="ev-streak"><span class="cnt">4</span> DAY STREAK 🔥</span>
-        <span class="ev-h" style="margin:0">MY COURSES · 3/4</span>
+        <span class="ev-h" style="margin:0">${cfg.subhead}</span>
       </div>
       <div class="ev-grid ev-grid-2">
         ${evUploadCard()}
-        ${evCard('#9be000','#5f9e00','∫','Calculus I','Limits &amp; Derivatives','2h 5m',62,'11/18 topics','#8fd94a','#256b2e','📈','Calculus II')}
-        ${evCard('#7fd0ff','#0a6bc0','⚛️','Physics I','Kinematics','6h 0m',48,'9/20 topics','#3aa0ff','#0a4f9e','🚀','Physics II')}
-        ${evCard('#aebeff','#5b73d8','💻','Intro to CS','Recursion','7h 5m',67,'16/24 topics','#5f7ad6','#232f5e','💻','Data Structures')}
+        ${cards}
+        ${empty}
       </div>
     </div>
     <div class="ev-cta">
-      <div class="ev-cta-label">Today's goal · <b>2 reviews</b></div>
-      ${playBtn('START SESSION','go(5)')}
+      <div class="ev-cta-label">${cfg.ctaLabel}</div>
+      ${playBtn(cfg.cta.label,cfg.cta.onclick)}
     </div>
     <div class="ev-tabs">
-      <div class="ev-tab active">LIBRARY</div>
-      <div class="ev-tab" onclick="go(3)">COURSES</div>
+      <div class="ev-tab ${cfg.tab==='LIBRARY'?'active':''}" onclick="go(0)">LIBRARY</div>
+      <div class="ev-tab ${cfg.tab==='COURSES'?'active':''}" onclick="go(3)">COURSES</div>
       <div class="ev-tab" onclick="go(2)">GRAPH</div>
       <div class="ev-tab" onclick="toast('Community — coming soon')">COMMUNITY</div>
     </div>
-  </div>`;},
-  phone(){return `<div class="pad col">
-    <h3 class="sec">📚 Library</h3>
+  </div>`;
+}
+function libPhone(cfg){
+  return `<div class="pad col">
+    <h3 class="sec">${cfg.phoneTitle}</h3>
     <div class="drop" onclick="toast('Use camera to scan pages')">
       <div class="ic">📸</div><div class="display up" style="font-size:15px">Scan / upload book</div>
       <div class="tiny muted">Snap pages or import a file</div>
     </div>
-    <h4 class="sec">My courses · 3/4</h4>
-    ${book('#3fd971','Calculus I','Limits & Derivatives','62%')}
-    ${book('#0084D8','Physics I','Kinematics','48%')}
-    ${book('#8a4bff','Intro to CS','Recursion','67%')}
-    ${playBtn('START SESSION','go(5)')}
-  </div>`;}
+    <h4 class="sec">${cfg.subhead}</h4>
+    ${cfg.empty
+      ? `<div class="mobile-only-note"><div style="font-size:24px">📚</div><b>No courses yet</b><div class="tiny muted">Upload a textbook to begin</div></div>`
+      : cfg.courses.map(c=>book(c[8],c[3],c[4].replace('&amp;','&'),c[6]+'%')).join('')}
+    ${cfg.empty?'':playBtn(cfg.cta.label,cfg.cta.onclick)}
+  </div>`;
+}
+R.library = {
+  desktop(){return libDesktop({title:'YOUR LIBRARY',tab:'LIBRARY',subhead:'MY COURSES · 0/4',
+    courses:[],empty:true,ctaLabel:'Textbook uploaded — build it',cta:{label:'BUILD COURSE',onclick:'go(1)'}});},
+  phone(){return libPhone({phoneTitle:'📚 Library',subhead:'My courses · 0/4',courses:[],empty:true});},
+  after(){ setTimeout(()=>toast('📄 Uploaded “Thomas’ Calculus” — ready to build'),300); }
 };
 function evConfetti(){
   const c=['#ffd23f','#ff5b52','#3fd971','#18ABEF','#ffffff','#ff8a1e','#c58bff'];
@@ -805,20 +837,47 @@ R.processing = {
       <div class="col" id="procList">${PROC.map((s,i)=>pstep(s,i)).join('')}</div>
       <div class="card" style="background:rgba(0,0,0,.25)">
         <h4 class="sec">Live graph forming</h4>
-        <div id="procGraph">${miniGraph(true)}</div>
+        <div id="procGraph" class="pg-wrap" style="height:330px"></div>
         <div class="bar big" style="margin-top:12px"><i id="procBar" style="width:6%"></i></div>
         <div class="small muted" style="margin-top:6px" id="procPct">6% · analysing chapter 1 of 14</div>
       </div>
     </div></div>`;},
   phone(){return `<div class="pad col center">
-    <div style="font-size:52px;animation:pulse 1s infinite">🧠</div>
     <div class="display up" style="font-size:15px">Building your graph…</div>
+    <div id="procGraphM" class="pg-wrap" style="height:250px;width:100%"></div>
     <div class="bar" style="width:100%"><i id="procBarM" style="width:6%"></i></div>
     <div class="col" style="width:100%">${PROC.slice(0,4).map((s,i)=>pstep(s,i)).join('')}</div>
-    <div class="mobile-only-note tiny">Heavy graph editing lives on desktop — you'll study here.</div>
   </div>`;},
-  after(){ animateProcessing(); }
+  after(){ animateProcessing(); pgAnimate(); }
 };
+/* animated DAG formation: a course roadmap grows bottom → top */
+const PG={
+  order:['c1','c2','la','mv','pb','de','ml'],
+  nodes:{
+    c1:{l:'Calculus I',x:170,y:296}, c2:{l:'Calculus II',x:170,y:238},
+    la:{l:'Linear Algebra',x:98,y:178}, mv:{l:'Multivariable Calculus',x:244,y:178},
+    pb:{l:'Probability &amp; Stats',x:196,y:112}, de:{l:'Differential Equations',x:292,y:114},
+    ml:{l:'Math for ML',x:84,y:106},
+  },
+  edges:[['c1','c2'],['c2','la'],['c2','mv'],['la','ml'],['mv','pb'],['mv','de'],['pb','ml']],
+};
+function pgRender(k,hostId){
+  const host=document.getElementById(hostId); if(!host)return;
+  const shown=PG.order.slice(0,k), set=new Set(shown);
+  let svg=`<svg viewBox="0 0 340 330" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><defs><marker id="pgar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7EDCFD"/></marker></defs>`;
+  PG.edges.forEach(([a,b])=>{if(set.has(a)&&set.has(b)){const A=PG.nodes[a],B=PG.nodes[b];
+    svg+=`<line x1="${A.x}" y1="${A.y-13}" x2="${B.x}" y2="${B.y+15}" stroke="#7EDCFD" stroke-width="2" marker-end="url(#pgar)" opacity=".85"/>`;}});
+  svg+='</svg>';
+  const nodes=shown.map((id,i)=>{const n=PG.nodes[id];
+    return `<div class="pg-node${i===k-1?' pgpop':''}" style="left:${(n.x/340*100).toFixed(1)}%;top:${(n.y/330*100).toFixed(1)}%">${n.l}</div>`;}).join('');
+  host.innerHTML=svg+nodes;
+}
+function pgAnimate(){
+  let k=0; pgRender(0,'procGraph'); pgRender(0,'procGraphM');
+  const step=()=>{ if(state.stage!==1)return; k++; pgRender(k,'procGraph'); pgRender(k,'procGraphM');
+    if(k<PG.order.length) setTimeout(step,600); };
+  setTimeout(step,500);
+}
 function pstep(s,i){return `<div class="pstep wait" data-i="${i}"><div class="tick">${s.ic}</div>
   <div><div style="font-weight:600">${s.t}</div><div class="tiny muted status">queued</div></div></div>`;}
 function animateProcessing(){
@@ -856,9 +915,9 @@ R.graph = {
     </div>
     <div class="kg-body">
       <div class="kg-toolbar">
+        <button class="btn gold sm" onclick="kgGrow()">▶ Build next level</button>
         <button class="btn green sm" onclick="kgAdd()">➕ Add topic</button>
         <button class="btn blue sm" onclick="kgManualSplit()">✂️ Manual split</button>
-        <button class="btn gold sm" onclick="kgAISplit()">✨ AI split</button>
         <button class="btn ghost sm" id="kgConnBtn" onclick="kgToggleConnect()">🔗 Connect</button>
         <button class="btn red sm" onclick="kgDelete()">🗑️ Delete</button>
         <button class="btn ghost sm" onclick="kgRelayout()">✦ Auto-layout</button>
@@ -896,19 +955,40 @@ function gpos(id,s){const n=GNODES.find(x=>x.id===id);return {x:n.x*s,y:n.y*s};}
 function miniGraph(){return graphSVG(true);}
 
 /* ===== interactive knowledge graph (DAG editor) ===== */
-const VW=680, VH=360;
-const KG={nodes:[],edges:[],sel:null,connectFrom:null,mode:'select',_seeded:false};
+let VW=780, VH=380; // virtual canvas — grows with the graph
+const KG={nodes:[],edges:[],sel:null,connectFrom:null,mode:'select',_seeded:false,stage:0};
 let KG_SEQ=1; const kgId=()=>'k'+(KG_SEQ++);
-function kgSeed(){
-  KG.nodes=[
-    {id:'n1',label:'Adding Fractions and Whole Numbers Using Models',ex:'$2+\\tfrac{1}{2}$ — shade 2 wholes and one half with area models $=2\\tfrac{1}{2}$.'},
-    {id:'n2',label:'Adding Fractions With Unlike Denominators Using Models',ex:'$\\tfrac{1}{2}+\\tfrac{1}{3}=\\tfrac{3}{6}+\\tfrac{2}{6}=\\tfrac{5}{6}$ with fraction bars.'},
-    {id:'n3',label:'Adding Fractions and Whole Numbers',ex:'$3+\\tfrac{3}{4}=\\tfrac{15}{4}=3\\tfrac{3}{4}$.'},
-    {id:'n4',label:'Subtracting Fractions and Whole Numbers Using Models',ex:'$3-\\tfrac{1}{4}$ — remove one quarter from 3 wholes $=2\\tfrac{3}{4}$.'},
-    {id:'n5',label:'Adding Fractions With Unlike Denominators',ex:'$\\tfrac{2}{5}+\\tfrac{1}{4}=\\tfrac{8}{20}+\\tfrac{5}{20}=\\tfrac{13}{20}$.'},
-  ];
-  KG.edges=[['n1','n2'],['n1','n3'],['n1','n4'],['n2','n5']];
-  KG.sel='n1';
+/* scripted growth: click "Build next" to step through the 3-panel sequence */
+const KG_N={
+  A:['Adding Fractions and Whole Numbers Using Models','$2+\\tfrac{1}{2}$ with area models $=2\\tfrac{1}{2}$.'],
+  B:['Adding Fractions With Unlike Denominators Using Models','$\\tfrac{1}{2}+\\tfrac{1}{3}=\\tfrac{3}{6}+\\tfrac{2}{6}=\\tfrac{5}{6}$.'],
+  C:['Adding Fractions and Whole Numbers','$3+\\tfrac{3}{4}=3\\tfrac{3}{4}$.'],
+  D:['Subtracting Fractions and Whole Numbers Using Models','$3-\\tfrac{1}{4}=2\\tfrac{3}{4}$.'],
+  E:['Adding Fractions With Unlike Denominators','$\\tfrac{2}{5}+\\tfrac{1}{4}=\\tfrac{13}{20}$.'],
+  F:['Subtracting Fractions With Unlike Denominators Using Models','$\\tfrac{3}{4}-\\tfrac{1}{3}=\\tfrac{5}{12}$ with models.'],
+  G:['Subtracting Fractions and Whole Numbers','$4-\\tfrac{2}{5}=3\\tfrac{3}{5}$.'],
+  H:['Adding Mixed Numbers With Unlike Denominators','$1\\tfrac{1}{2}+2\\tfrac{1}{3}=3\\tfrac{5}{6}$.'],
+  I:['Subtracting Fractions With Unlike Denominators','$\\tfrac{3}{4}-\\tfrac{1}{3}=\\tfrac{5}{12}$.'],
+  J:['Subtracting Mixed Numbers With Unlike Denominators','$3\\tfrac{1}{4}-1\\tfrac{2}{3}=1\\tfrac{7}{12}$.'],
+};
+const KG_STAGES=[
+  {ids:['A','B','C','D'],edges:[['A','B'],['A','C'],['A','D']]},
+  {ids:['A','B','C','D','E'],edges:[['A','B'],['A','C'],['A','D'],['B','E'],['C','E']]},
+  {ids:['A','B','C','D','E','F','G','H','I','J'],
+   edges:[['A','B'],['A','C'],['A','D'],['B','E'],['C','E'],['C','F'],['D','F'],['D','G'],['E','H'],['F','H'],['F','I'],['G','I'],['H','J'],['I','J']]},
+];
+function kgApplyStage(idx,animate){
+  const st=KG_STAGES[idx]; const prev=new Set(KG.nodes.map(n=>n.id));
+  KG.nodes=st.ids.map(id=>({id,label:KG_N[id][0],ex:KG_N[id][1],_new:(animate&&!prev.has(id))?1:0}));
+  KG.edges=st.edges.map(e=>e.slice());
+  KG.stage=idx;
+}
+function kgSeed(){ KG.stage=0; kgApplyStage(0,false); KG.sel='A'; }
+function kgGrow(){
+  if(KG.stage>=KG_STAGES.length-1){toast('✅ Graph fully built');return;}
+  kgApplyStage(KG.stage+1,true);
+  toast(KG.stage===1?'✨ AI added the next level':'✨ AI expanded to the full DAG');
+  kgRenderGraph(true); kgRenderInspector();
 }
 function kgLevels(){
   const radj={}; KG.nodes.forEach(n=>radj[n.id]=[]);
@@ -923,14 +1003,17 @@ function kgLevels(){
   KG.nodes.forEach(n=>vis(n.id,new Set()));
   return lv;
 }
-function kgLayout(W,H){
+function kgLayout(){
   const lv=kgLevels(); const maxL=Math.max(0,...KG.nodes.map(n=>lv[n.id]));
   const byL={}; KG.nodes.forEach(n=>{(byL[lv[n.id]]=byL[lv[n.id]]||[]).push(n);});
-  const mTop=46,mBot=58,mSide=104;
+  const maxCols=Math.max(1,...Object.values(byL).map(a=>a.length));
+  const rowGap=155, colGap=220, mSide=135, mTop=74, mBot=90;
+  VW=Math.max(820, mSide*2+(maxCols-1)*colGap);
+  VH=Math.max(400, mTop+mBot+maxL*rowGap);
   KG.nodes.forEach(n=>{
     const L=lv[n.id],arr=byL[L],idx=arr.indexOf(n),cols=arr.length;
-    n.x = cols===1 ? W/2 : mSide+idx*((W-2*mSide)/(cols-1));
-    n.y = maxL===0 ? H/2 : (H-mBot) - L*((H-mTop-mBot)/maxL);
+    n.x = cols===1 ? VW/2 : mSide+idx*((VW-2*mSide)/(cols-1));
+    n.y = maxL===0 ? VH/2 : (VH-mBot) - L*rowGap;
   });
 }
 function ellR(rx,ry,a){return rx*ry/Math.sqrt((ry*Math.cos(a))**2+(rx*Math.sin(a))**2);}
@@ -965,15 +1048,17 @@ function kgAnchorsHTML(){
 }
 function kgRenderInto(canvasId,interactive){
   const canvas=document.getElementById(canvasId); if(!canvas)return;
-  const scale=(canvas.clientWidth||VW)/VW;
-  canvas.style.height=(VH*scale)+'px';
-  canvas.innerHTML=`<div class="kg-layer" style="width:${VW}px;height:${VH}px;transform:scale(${scale})">`
-    + kgEdgesSVG() + KG.nodes.map(n=>kgNodeHTML(n,interactive)).join('') + kgAnchorsHTML() + `</div>`;
+  const cw=canvas.clientWidth||VW;
+  const scale=interactive?Math.max(.6,Math.min(1,cw/VW)):Math.min(1,cw/VW);
+  if(interactive) KG._scale=scale;
+  canvas.innerHTML=`<div class="kg-sizer" style="width:${(VW*scale).toFixed(0)}px;height:${(VH*scale).toFixed(0)}px">`
+    +`<div class="kg-layer" style="width:${VW}px;height:${VH}px;transform:scale(${scale})">`
+    + kgEdgesSVG() + KG.nodes.map(n=>kgNodeHTML(n,interactive)).join('') + kgAnchorsHTML() + `</div></div>`;
   typeset(canvas);
   if(interactive) kgBindNodes(canvasId,scale);
 }
 function kgRenderGraph(relayout){
-  if(relayout) kgLayout(VW,VH);
+  if(relayout) kgLayout();
   kgRenderInto('kgCanvas',true);
   kgRenderInto('kgCanvasM',false);
   if(relayout) setTimeout(()=>{KG.nodes.forEach(n=>n._new=0);},450);
@@ -991,11 +1076,13 @@ function kgDragStart(e,id,el,scale){
   if(e.target.classList.contains('kg-exbtn'))return;
   const canvas=document.getElementById('kgCanvas'); const rect=canvas.getBoundingClientRect();
   const n=KG.nodes.find(x=>x.id===id);
-  const ox=(e.clientX-rect.left)/scale-n.x, oy=(e.clientY-rect.top)/scale-n.y;
+  const toV=(cx,cy)=>({x:(cx-rect.left+canvas.scrollLeft)/scale,y:(cy-rect.top+canvas.scrollTop)/scale});
+  const s0=toV(e.clientX,e.clientY); const ox=s0.x-n.x, oy=s0.y-n.y;
   el._moved=false;
   const move=ev=>{
-    n.x=Math.min(VW-70,Math.max(70,(ev.clientX-rect.left)/scale-ox));
-    n.y=Math.min(VH-40,Math.max(40,(ev.clientY-rect.top)/scale-oy));
+    const p=toV(ev.clientX,ev.clientY);
+    n.x=Math.min(VW-70,Math.max(70,p.x-ox));
+    n.y=Math.min(VH-40,Math.max(40,p.y-oy));
     el.style.left=n.x+'px'; el.style.top=n.y+'px'; el._moved=true;
     const layer=canvas.querySelector('.kg-layer'); const old=layer&&layer.querySelector('.kg-edges');
     if(old){const t=document.createElement('div');t.innerHTML=kgEdgesSVG();layer.replaceChild(t.firstChild,old);}
@@ -1043,19 +1130,22 @@ function kgDelete(){
   KG.nodes=KG.nodes.filter(n=>n.id!==KG.sel);
   KG.sel=(KG.nodes[0]||{}).id||null; toast('🗑️ Topic deleted'); kgRenderGraph(true); kgRenderInspector();
 }
+/* Split: the sub-topics become PREREQUISITES of the node (children -> parent).
+   The node's old incoming edges (its prereqs) move onto the sub-topics. */
+function kgSplitInto(n,labels){
+  const parents=KG.edges.filter(e=>e[1]===n.id).map(e=>e[0]); // old prereqs of n
+  const subs=labels.map(l=>({id:kgId(),label:l,ex:kgExampleFor(l),_new:1}));
+  KG.nodes.push(...subs);
+  KG.edges=KG.edges.filter(e=>e[1]!==n.id);          // drop old edges INTO n
+  parents.forEach(p=>subs.forEach(s=>KG.edges.push([p,s.id]))); // old prereqs now feed the subs
+  subs.forEach(s=>KG.edges.push([s.id,n.id]));        // subs are prerequisites of n
+  KG.sel=n.id;
+}
 function kgManualSplit(){
   const n=KG.nodes.find(x=>x.id===KG.sel); if(!n){toast('Select a node to split');return;}
-  const aId=kgId(),bId=kgId(); const base=n.label.replace(/ — Part [AB]$/,'');
-  const a={id:aId,label:base+' — Part A',ex:n.ex,_new:1};
-  const b={id:bId,label:base+' — Part B',ex:n.ex,_new:1};
-  const parents=KG.edges.filter(e=>e[1]===n.id).map(e=>e[0]);
-  const children=KG.edges.filter(e=>e[0]===n.id).map(e=>e[1]);
-  KG.edges=KG.edges.filter(e=>e[0]!==n.id&&e[1]!==n.id);
-  KG.nodes=KG.nodes.filter(x=>x.id!==n.id);
-  KG.nodes.push(a,b);
-  parents.forEach(p=>{KG.edges.push([p,aId]);KG.edges.push([p,bId]);});
-  children.forEach(c=>{KG.edges.push([aId,c]);KG.edges.push([bId,c]);});
-  KG.sel=aId; toast('✂️ Manual split → 2 parts. Rename each in the inspector.'); kgRenderGraph(true); kgRenderInspector();
+  const base=n.label.replace(/ — Part [AB]$/,'');
+  kgSplitInto(n,[base+' — Part A',base+' — Part B']);
+  toast('✂️ Split into 2 prerequisites feeding “'+base+'”'); kgRenderGraph(true); kgRenderInspector();
 }
 const KG_AI={
   'Adding Fractions and Whole Numbers':['Adding Mixed Numbers With Unlike Denominators','Subtracting Fractions With Unlike Denominators'],
@@ -1074,16 +1164,9 @@ function kgExampleFor(label){
 }
 function kgAISplit(){
   const n=KG.nodes.find(x=>x.id===KG.sel); if(!n){toast('Select a node for AI split');return;}
-  const subs=kgAISuggest(n.label);
-  toast('✨ AI analysing “'+n.label+'”…');
-  let i=0;
-  const step=()=>{
-    if(i>=subs.length)return;
-    const id=kgId(); KG.nodes.push({id,label:subs[i],ex:kgExampleFor(subs[i]),_new:1});
-    KG.edges.push([n.id,id]); kgRenderGraph(true);
-    i++; setTimeout(step,700);
-  };
-  setTimeout(step,450);
+  kgSplitInto(n,kgAISuggest(n.label));
+  toast('✨ AI split — added prerequisites feeding “'+n.label+'”');
+  kgRenderGraph(true); kgRenderInspector();
 }
 function kgToggleExpand(id){ const n=KG.nodes.find(x=>x.id===id); if(n){n.expanded=!n.expanded; kgRenderGraph(false);} }
 function kgRename(v){ const n=KG.nodes.find(x=>x.id===KG.sel); if(n){n.label=v; kgRenderGraph(false);} }
@@ -1116,31 +1199,12 @@ function kgRenderInspector(){
     </div>`;
 }
 
-/* ---- 4. COURSE ---- */
+/* ---- 4. COURSE (§2: same UI, now one course built) ---- */
 R.course = {
-  desktop(){return `<div class="pad-lg col">
-    <h3 class="sec">🎯 Pick a course to study</h3>
-    <div class="grid3">
-      ${course('Calculus I','∫','#FB1A24','Ready',true)}
-      ${course('Calculus II','∑','#FEC513','Locked',false)}
-      ${course('Linear Algebra','⟂','#0084D8','Ready',true)}
-      ${course('Probability','🎲','#3fd971','Ready',true)}
-      ${course('Diff. Equations','𝑑y','#8a4bff','Locked',false)}
-      ${course('Real Analysis','ℝ','#18ABEF','Locked',false)}
-    </div>
-    <div class="card light" style="margin-top:4px">
-      <div class="row" style="align-items:center;justify-content:space-between">
-        <div><h4 class="sec">Calculus I</h4><div class="small">14 topics · est. 22h · builds on Precalculus</div></div>
-        <button class="btn red" onclick="go(4)">Study this ▶</button>
-      </div>
-    </div>
-  </div>`;},
-  phone(){return `<div class="pad col">
-    <h3 class="sec">🎯 Study</h3>
-    ${course('Calculus I','∫','#FB1A24','Ready',true,true)}
-    ${course('Linear Algebra','⟂','#0084D8','Ready',true,true)}
-    ${course('Probability','🎲','#3fd971','Ready',true,true)}
-  </div>`;}
+  desktop(){return libDesktop({title:'CHOOSE A COURSE',tab:'COURSES',subhead:'MY COURSES · 1/4',
+    courses:[CALC],empty:false,ctaLabel:"Today's goal · <b>2 reviews</b>",cta:{label:'START SESSION',onclick:'go(5)'}});},
+  phone(){return libPhone({phoneTitle:'🎯 Choose a course',subhead:'My courses · 1/4',
+    courses:[CALC],empty:false,cta:{label:'START SESSION',onclick:'go(5)'}});}
 };
 function course(t,ic,c,tag,ready,mobile){return `<div class="card" style="${ready?'':'filter:grayscale(.5) brightness(.7)'};cursor:${ready?'pointer':'default'}" ${ready?`onclick="go(4)"`:''}>
   <div class="row" style="align-items:center;gap:10px">
