@@ -170,9 +170,13 @@ run in 23 drifted to a different node.
 **Guesses, tune these first.** Every constant in section 3. None has been calibrated against a real
 student. The ones most likely to be wrong, in order:
 
-1. `LAMBDA_BLAME = 1.5` and `BLAME_MAX_B_DELTA = 2.0`. **The cap is currently inert**: the model's
-   observed confidence is 0.93 to 0.97, so blame moves `b` by about 1.4 and the cap never engages.
-   The 25% discount is doing the protective work the cap was supposed to do.
+1. `LAMBDA_BLAME = 1.5`. The cap on blame is now a property rather than a number: **one blame
+   moves a node at most one status boundary**. It is scale-free, so it survives retuning
+   `LAMBDA_BLAME`, and it is tested. It still **does not bind on any state the engine can produce**:
+   reaching `mastered` forces `a >= 9b`, which puts the one-boundary limit above the 2.0 backstop,
+   and no cap engages until `LAMBDA_BLAME > 2.27` (currently 1.5). The 25% discount is still what
+   does the protective work. This is now a rule with a reason instead of a magic constant, but it
+   changes no number on real histories.
 2. `IMPLICIT_CREDIT_DEFAULT = 0.25` and single-hop propagation. Credit currently stops one level
    down. See section 8.
 3. `MASTERED_P = 0.90` with `b = 1` needs about 8 correct photo-quality attempts per skill. That is
@@ -194,19 +198,38 @@ All are in the plan or in `core_engine.md`; none is needed to prove the loop.
 
 ## 8. Known gaps, honestly
 
-- **Implicit credit is single-hop.** A chain rule problem credits function composition and the power
-  rule, but nothing those in turn exercise. `core_engine.md` §2.2 specifies transitive propagation
-  (multiply along a path, max across paths) and is right that it is more principled. We can settle
-  it by replay rather than argument, which is what the event log is for.
-- **Six shortcut edges** in the prerequisite graph: direct edges also implied by a longer path. They
-  inflate the lock surface. `core_engine.md` makes transitive reduction a storage invariant and we
-  should too.
-- **Node-level `difficulty_b` is dead data.** Selection reads item difficulty. Three inversions
-  exist and nothing will ever tell us they are wrong.
-- **Hint prose is English on 34 of 37 nodes.** The three the demo touches are fully Hindi.
-- **The blame cap never binds.** See section 6.
-- **Committing a blame can lock the node the student was just working on**, because blame cascades
-  down. Correct behaviour, possibly bad experience.
+**Implicit credit trades warmth against spacing, and that tension is unresolved.** Rule 2 refreshes
+`last_seen` so a node being exercised does not decay out from under the student. The cost is that
+the refresh can consume a review the student had not yet earned: a node credited in the morning is
+no longer *due* in the evening, so the evening drill stops counting as a spaced retrieval and its
+stability never grows. Single-hop credit already has this tension. Transitive credit spreads it
+across the whole subtree, which is why it is implemented but shipped OFF (see below). The fix
+belongs in rule 4: a node that was credited but never tested should not lose its spacing. Not done.
+
+**Transitive implicit credit: built, measured, not shipped.** `MasteryConfig(transitive_credit=True)`
+turns it on. `core_engine.md` §2.2 is right that multiply-along-path, max-across-paths is the more
+principled rule, and it satisfies every constraint that document states. On our demo history it
+moves no status, no blocker and no accuracy figure at the anchor instant, and one hour later it
+locks `der.quotient-rule`, `der.definition` and `lim.indeterminate-factoring`, because a single day-5
+attempt now credits two nodes nine hours before their evening drills. That is a change, not an
+improvement: a few thousandths of `p` on already-mastered nodes, at the cost of the demo's climax
+node. Revisit after the rule 4 fix above.
+
+**The blame cascade is driven by stability, not by `b`.** Committing a blame halves `R` through
+`BLAME_STABILITY_FACTOR`, and `p_eff = p · R`, so no bound on the evidence term can undo it. The
+property-based cap in section 6 does not soften it and does not claim to. Softening it is a change
+to rule 4.
+
+**Six shortcut edges are KEPT, deliberately.** `core_engine.md` argues a shortcut never changes
+readiness, but that argument assumes ancestrally closed binary mastery. We check continuous `p_eff`
+against *direct* prerequisites only, so nothing rechecks a deep ancestor once an intermediate is
+satisfied, and all six were measured to change readiness under decay or blame. The principled way to
+earn the reduction axiom is to make `status` lock on any weak *ancestor*; that costs a whole-ancestry
+query per node per render and a much larger lock surface. See `docs/audits/graph-invariants.md`.
+
+**Node-level `difficulty_b` is still not read by selection**, but it is now validated: monotonicity
+against prerequisites is an error-severity check and the three inversions are fixed. The original
+complaint was never that it was unused, it was that it was unchecked.
 
 ---
 
@@ -220,4 +243,18 @@ engine/xp.py          the anti-farming XP formula
 engine/replay.py      attempts to state, and per-day frames
 services/grading.py   the CAS. Decides correctness.
 services/diagnose.py  the model. Explains errors. Never decides correctness.
+
+engine/graph_validate.py       executable invariants. `python3 -m engine.graph_validate`
+scripts/tune/replay_compare.py replay one log under two configs and diff the result
 ```
+
+**How to settle a tuning question.** Do not argue about a constant, replay against it:
+
+```bash
+python3 scripts/tune/replay_compare.py --candidate on --horizons 0,1,6,24 --fail-on-change
+```
+
+It re-derives status at several instants, because **a comparison at one point on a decay curve is
+not a comparison**. That is not a stylistic preference: the tool first reported "no demo-critical
+fact moved" for a change that locks three nodes an hour later. A shrinking prerequisite margin
+counts as a failure, not a note.
