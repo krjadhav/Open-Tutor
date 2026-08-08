@@ -126,6 +126,8 @@ input { font-family: inherit; color: inherit; }
 .scroll { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
 .scroll--tab { padding: 64px 20px 108px; box-sizing: border-box; }
 .scroll--today { padding-bottom: 190px; }
+/* a scrolling screen with no tab bar under it */
+.scroll--plain { padding: 64px 20px 28px; box-sizing: border-box; }
 
 /* inside a flow screen the padding lives on the screen, so the scroller is flat */
 .scroll--flow {
@@ -149,6 +151,13 @@ input { font-family: inherit; color: inherit; }
   font-size: 27px; font-weight: 600; letter-spacing: -.02em;
   margin: 6px 0 0; line-height: 1.15; text-wrap: pretty;
 }
+
+/* The one supporting sentence a screen is allowed. */
+.screen-sub {
+  font-size: 13.5px; line-height: 1.45; color: var(--muted);
+  margin: 8px 0 0; text-wrap: pretty; flex: none;
+}
+.onboard .screen-sub { margin-top: 16px; }
 
 .math { font-family: var(--math); }
 .math sup { font-size: .72em; }
@@ -186,10 +195,13 @@ input { font-family: inherit; color: inherit; }
 }
 
 /* --------------------------------------------------------------------------
-   Onboarding
+   Welcome and Sign up
+   Sign up reuses the welcome layout exactly: one question, one field, one
+   button. It has no password and no email field, by design.
    -------------------------------------------------------------------------- */
 
-.screen#screen-onboard.is-active { padding: 120px 28px 40px; }
+.screen#screen-onboard.is-active,
+.screen#screen-signup.is-active { padding: 120px 28px 40px; }
 .onboard { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .onboard-q {
   font-size: 31px; line-height: 1.15; font-weight: 600;
@@ -209,6 +221,49 @@ input { font-family: inherit; color: inherit; }
   animation: blink 1.2s steps(1) infinite;
 }
 .onboard-input:focus + .caret { display: none; }
+
+/* --------------------------------------------------------------------------
+   Course selection
+   One playable card, the rest declared and visibly out of reach. The dashed
+   border is the same vocabulary the locked node dot already uses.
+   -------------------------------------------------------------------------- */
+
+.courses { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+
+.coursecard {
+  text-align: left; width: 100%; box-sizing: border-box;
+  border: 1px solid var(--line); background: var(--card);
+  border-radius: 20px; padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 5px;
+  font-family: inherit; color: inherit; cursor: pointer;
+}
+/* Only the playable card responds to the pointer. */
+.coursecard:not(.coursecard--soon):hover { border-color: var(--accent); }
+.coursecard.is-selected { border-color: var(--accent); }
+
+.coursecard-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.coursecard-title { font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+.coursecard-sub { font-size: 13px; line-height: 1.35; color: var(--muted); }
+.coursecard-ends { font-size: 12.5px; line-height: 1.35; margin-top: 7px; }
+.coursecard-endslabel { color: var(--muted); }
+.coursecard-meta {
+  font-size: 11.5px; line-height: 1.4; color: var(--muted); margin-top: 3px;
+}
+.coursecard-skills .math { font-size: 13px; }
+
+/* Not a button, not focusable, and it does not pretend to be tappable. */
+.coursecard--soon {
+  background: transparent; border-style: dashed; cursor: default;
+}
+.coursecard--soon .coursecard-title { color: var(--muted); font-weight: 500; }
+.coursecard--soon .coursecard-sub,
+.coursecard--soon .coursecard-ends,
+.coursecard--soon .coursecard-meta { opacity: .7; }
+.coursecard-pill {
+  font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); border: 1px solid var(--line);
+  border-radius: 20px; padding: 2px 8px; flex: none; white-space: nowrap;
+}
 
 /* --------------------------------------------------------------------------
    Today

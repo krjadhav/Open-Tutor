@@ -25,7 +25,7 @@
     <span id="bannerText"></span>
   </div>
 
-  <!-- ============ ONBOARDING ============ -->
+  <!-- ============ WELCOME (the goal question) ============ -->
   <section class="screen screen--pad-flow" id="screen-onboard">
     <div class="onboard">
       <h1 class="onboard-q" data-t="goalQ"></h1>
@@ -35,6 +35,29 @@
       </label>
       <div class="spacer"></div>
       <button class="btn btn--primary" id="btnBuild" data-t="build"></button>
+    </div>
+  </section>
+
+  <!-- ============ SIGN UP (placeholder: a name, and nothing else) ============ -->
+  <section class="screen screen--pad-flow" id="screen-signup">
+    <div class="onboard">
+      <h1 class="onboard-q" data-t="signupQ"></h1>
+      <label class="onboard-field">
+        <input id="nameInput" class="onboard-input" type="text" autocomplete="name" spellcheck="false">
+      </label>
+      <p class="screen-sub" data-t="signupNote"></p>
+      <div class="spacer"></div>
+      <button class="btn btn--primary" id="btnSignup" data-t="continueWord"></button>
+    </div>
+  </section>
+
+  <!-- ============ COURSE SELECTION ============ -->
+  <section class="screen" id="screen-courses">
+    <div class="scroll scroll--plain">
+      <div class="eyebrow" data-t="coursesEyebrow"></div>
+      <h1 class="headline" data-t="coursesHead"></h1>
+      <p class="screen-sub" data-t="coursesNote"></p>
+      <div class="courses" id="coursesList"></div>
     </div>
   </section>
 

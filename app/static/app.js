@@ -37,6 +37,13 @@ var CHROME = {
     goalQ: 'What do you want to understand?',
     goalDefault: 'How neural networks learn',
     build: 'Build my path',
+    signupQ: 'What should we call you?',
+    namePlaceholder: 'Your name',
+    signupNote: 'No account is created; this is a placeholder.',
+    continueWord: 'Continue',
+    coursesEyebrow: 'Courses', coursesHead: 'Choose where to begin',
+    coursesNote: 'One course is ready; the rest are coming.',
+    endsAt: 'Ends at', skillsWord: 'skills', comingSoon: 'Coming soon',
     today: 'Today', start: 'Start session',
     blockers: 'Blockers', fix: 'Fix this →',
     you: 'You', mastered: 'skills mastered', accuracy: 'accuracy this week',
@@ -73,6 +80,15 @@ var CHROME = {
     goalQ: 'आप क्या समझना चाहते हैं?',
     goalDefault: 'न्यूरल नेटवर्क कैसे सीखते हैं',
     build: 'मेरा रास्ता बनाएँ',
+    signupQ: 'हम आपको क्या कहें?',
+    namePlaceholder: 'आपका नाम',
+    signupNote: 'कोई खाता नहीं बनता; यह सिर्फ़ एक प्लेसहोल्डर है।',
+    continueWord: 'आगे बढ़ें',
+    // "पाठ्यक्रम" rather than "कोर्स", to match the word the server's own
+    // Hindi uses in the headline just below it.
+    coursesEyebrow: 'पाठ्यक्रम', coursesHead: 'कहाँ से शुरू करें',
+    coursesNote: 'एक कोर्स तैयार है; बाकी जल्द आ रहे हैं।',
+    endsAt: 'अंत में', skillsWord: 'कौशल', comingSoon: 'जल्द आ रहा है',
     today: 'आज', start: 'सत्र शुरू करें',
     blockers: 'रुकावटें', fix: 'इसे ठीक करें →',
     you: 'आप', mastered: 'कौशल में महारत', accuracy: 'इस हफ़्ते सटीकता',
@@ -109,13 +125,136 @@ var CHROME = {
 
 function T() { return CHROME[state.lang] || CHROME.en; }
 
-/* The server may take chrome over at any time by returning `ui` on /api/state. */
+/* The server's own i18n keys are `<group>.<name>`; this table is flat camelCase.
+   Every pair below is a genuine counterpart, so the server's string wins and the
+   local one is only ever the fallback for an unreachable API. The exceptions,
+   and the reason for each, are listed under `LOCAL_ONLY_CHROME` below. */
+var SERVER_UI_ALIASES = {
+  // The three screens before the tabs
+  'signup.title': 'signupQ',
+  'signup.subtitle': 'signupNote',
+  // `signup.name_label` and not `signup.name_placeholder`: the field has no
+  // visible label, so the placeholder is the only thing naming it, and
+  // "Optional" would leave the student guessing what to type.
+  'signup.name_label': 'namePlaceholder',
+  'action.continue': 'continueWord',
+  'screen.courses': 'coursesHead',
+  'courses.subtitle': 'coursesNote',
+  'course.ends_at': 'endsAt',
+  'course.coming_soon': 'comingSoon',
+
+  // Tabs, and the eyebrow that names each screen. A server key may feed more
+  // than one local key: the Blockers and You eyebrows repeat their tab's word,
+  // and the server has only the one word for each.
+  'tab.today': 'tabToday',
+  'tab.path': 'tabPath',
+  'tab.blockers': ['tabBlockers', 'blockers'],
+  'tab.you': ['tabYou', 'you'],
+  'screen.todays_set': 'today',        // the eyebrow above Today's headline
+
+  // Today
+  'action.start_set': 'start',
+  'session.finished': 'setDone',
+
+  // Solve
+  'action.take_photo': 'photo',
+  'action.check_answer': 'check',
+  'action.show_hint': 'hintNext',
+
+  // Check
+  'confirm.ocr': 'checkHead',
+
+  // Result
+  'confirm.diagnosis': 'ask',
+  'common.yes': 'yes',
+  'common.no': 'no',
+  'action.next_problem': 'next',
+
+  // Complete
+  'screen.session_complete': 'sessionDone',
+  'progress.xp_earned': 'xp',
+  'progress.unlocked': 'unlockedWord',
+
+  // The step indicator, which names the three screens of the solve flow
+  'screen.solve': 'stepSolve',
+  'screen.check': 'stepCheck',
+  'screen.result': 'stepResult',
+
+  'common.loading': 'loading'
+};
+
+/* Every CHROME key the server does NOT own, and why. This list is the true set
+   of strings the frontend still has to translate itself. Kept as data so the
+   dev-time check below can tell "no server key exists" apart from "a server key
+   exists and nobody wired it up", which is the failure worth catching. */
+var LOCAL_ONLY_CHROME = {
+  // Fixed copy from the approved design. `goal.prompt` ("What do you want to be
+  // able to do?"), `goal.example` and `action.get_started` ("Get started") are
+  // different wording for these three surfaces, not translations of them, and
+  // the welcome screen's copy was signed off as written. Point these at the
+  // server the moment the two agree on the words.
+  goalQ: 'design copy: server says goal.prompt differently',
+  goalDefault: 'design copy: server says goal.example differently',
+  build: 'design copy: server says action.get_started differently',
+
+  // No server key exists for these.
+  coursesEyebrow: 'no server key', skillsWord: 'no server key: server sends skills_line whole',
+  fix: 'no server key', mastered: 'no server key', accuracy: 'no server key',
+  language: 'no server key', appearance: 'no server key',
+  light: 'no server key', dark: 'no server key', replay: 'no server key',
+  hints: 'no server key', hintTwin: 'no server key, and the twin is not wired',
+  checkSub: 'no server key', edit: 'no server key', confirm: 'no server key',
+  expected: 'no server key', reading: 'no server key', done: 'no server key',
+  finish: 'no server key', unsimplified: 'no server key',
+  blockersHead: 'a function of the blocker count, not a string',
+
+  // Deliberately local even though a loosely related server key exists.
+  answerPlaceholder: 'action.type_answer is the photo-failure button, not this placeholder',
+  ocrEmpty: 'no server key; error.generic is too generic to explain a failed photo',
+  ocrFailed: 'no server key; action.retake_photo is a button, not this message',
+  diagFailed: 'no server key; error.generic is too generic to explain a failed diagnosis',
+  offline: 'must not depend on the server: it is the message shown when the server is gone'
+};
+
+/* The server owns the chrome whenever it sends any: `ui` on /api/state wins over
+   the table above, which is what keeps `data/i18n/hi.json` the single place a
+   Hindi string is fixed. CHROME is the fallback for an unreachable API. */
 function applyServerUI(payload) {
   if (!payload || !payload.ui) { return; }
   var src = payload.ui, target = CHROME[state.lang];
+  var unresolved = [];
+
   Object.keys(src).forEach(function (k) {
-    if (typeof src[k] === 'string') { target[k] = src[k]; }
+    if (typeof src[k] !== 'string') { return; }
+    var local = SERVER_UI_ALIASES[k] || k;
+    var names = (typeof local === 'string') ? [local] : local;
+    var landed = false;
+    names.forEach(function (name) {
+      // Only a string already in the table can be replaced: that keeps the
+      // server's dotted keys out of it and keeps `blockersHead`, which is a
+      // function, from being overwritten with a string.
+      if (typeof target[name] === 'string') { target[name] = src[k]; landed = true; }
+    });
+    if (!landed) { unresolved.push(k); }
   });
+
+  reportUnresolvedUI(unresolved, Object.keys(src).length);
+}
+
+/* Any server string the frontend renders nowhere. The list is expected to be
+   non-empty: the server uses one i18n file for chrome AND for the words it
+   composes payloads from, so `stage.*`, `slot.*`, `node.*`, `verdict.*` and
+   friends arrive already baked into `/api/state` and have no business in this
+   table. What this catches is the other kind: a string somebody translated on
+   the server, expected to see on screen, and which silently landed nowhere. */
+function reportUnresolvedUI(unresolved, total) {
+  if (state.uiReported || !unresolved.length) { return; }
+  state.uiReported = true;
+  console.info('[open-tutor] server ui: ' + (total - unresolved.length) + ' of ' + total +
+    ' keys render as chrome. Not rendered: ' + unresolved.sort().join(', '));
+  var localOnly = Object.keys(LOCAL_ONLY_CHROME);
+  console.info('[open-tutor] chrome the server does not own (' + localOnly.length + '): ' +
+    localOnly.map(function (k) { return k + ' (' + LOCAL_ONLY_CHROME[k] + ')'; }).join('; '));
 }
 
 /* --------------------------------------------------------------------------
@@ -214,10 +353,15 @@ function proseHTML(raw) {
 
 function pick(en, hi) { return state.lang === 'hi' ? hi : en; }
 
+/* The mock keeps its own three-screen session so the flow is walkable with the
+   backend down: signup moves it to `courses`, selecting a course to `ready`. */
+var mockSession = { flow: 'welcome', name: '', course: null };
+
 function MOCK_STATE() {
   return {
     student_id: 'demo',
     lang: state.lang,
+    flow: mockSession.flow,
     goal: {
       node_id: 'ai.gradient-descent-step',
       title: pick('Gradient descent', 'ग्रेडिएंट डिसेंट'),
@@ -338,6 +482,67 @@ function MOCK_STATE() {
       accuracy: '78%'
     }
   };
+}
+
+/* Shaped to the addendum, with the ids, titles and skill counts taken from
+   data/courses.json. `selectable` is carried as its own field here for the same
+   reason the server sends it: the frontend must never infer it from `state`. */
+function MOCK_COURSES() {
+  return {
+    courses: [
+      { id: 'calculus-for-ai',
+        title: pick('Calculus for AI', 'AI के लिए कैलकुलस'),
+        subtitle: pick('From algebra to gradient descent', 'बीजगणित से ग्रेडिएंट डिसेंट तक'),
+        ends_at: pick('The gradient descent update step', 'ग्रेडिएंट डिसेंट का अद्यतन चरण'),
+        state: 'active', skills: 37,
+        detail: pick('about 18 days at 15 min a day', 'रोज़ 15 मिनट, लगभग 18 दिन'),
+        selectable: true },
+      { id: 'linear-algebra-for-ai',
+        title: pick('Linear Algebra for AI', 'AI के लिए रैखिक बीजगणित'),
+        subtitle: pick('Vectors to eigenvalues', 'सदिश से आइगेनमान तक'),
+        ends_at: pick('Principal component analysis', 'मुख्य घटक विश्लेषण'),
+        state: 'coming_soon', skills: 41,
+        detail: pick('Coming soon', 'जल्द आ रहा है'), selectable: false },
+      { id: 'jee-calculus',
+        title: pick('JEE Mains Calculus', 'JEE मेन्स कैलकुलस'),
+        subtitle: pick('The full calculus syllabus', 'पूरा कैलकुलस पाठ्यक्रम'),
+        ends_at: pick('Definite integrals and areas', 'निश्चित समाकल और क्षेत्रफल'),
+        state: 'coming_soon', skills: 63,
+        detail: pick('Coming soon', 'जल्द आ रहा है'), selectable: false },
+      { id: 'class-12-calculus',
+        title: pick('Class 12 Calculus', 'कक्षा 12 कैलकुलस'),
+        subtitle: pick('CBSE board, in your language', 'CBSE बोर्ड, आपकी भाषा में'),
+        ends_at: pick('Applications of integrals', 'समाकलन के अनुप्रयोग'),
+        state: 'coming_soon', skills: 58,
+        detail: pick('Coming soon', 'जल्द आ रहा है'), selectable: false },
+      { id: 'probability-for-ml',
+        title: pick('Probability for ML', 'ML के लिए प्रायिकता'),
+        subtitle: pick('Counting to Bayes', 'गिनती से बेज़ तक'),
+        ends_at: pick('Maximum likelihood estimation', 'अधिकतम संभाव्यता आकलन'),
+        state: 'coming_soon', skills: 34,
+        detail: pick('Coming soon', 'जल्द आ रहा है'), selectable: false }
+    ],
+    selected: mockSession.course
+  };
+}
+
+function mockSignup(name) {
+  mockSession.name = name || '';
+  mockSession.flow = 'courses';
+  return { student_id: 'demo', name: mockSession.name, next: 'courses' };
+}
+
+/* The endpoint refusing a coming_soon id is the backstop, not the gate, so the
+   mock refuses too rather than quietly letting an unplayable course through. */
+function mockSelectCourse(courseId) {
+  var all = MOCK_COURSES().courses;
+  var wanted = all.filter(function (c) { return c.id === courseId; })[0];
+  if (!wanted || !wanted.selectable) {
+    return { error: pick('not available yet', 'अभी उपलब्ध नहीं'), selected: mockSession.course };
+  }
+  mockSession.course = wanted.id;
+  mockSession.flow = 'ready';
+  return MOCK_STATE();
 }
 
 var MOCK_HINTS = {
@@ -488,7 +693,22 @@ function request(method, path, body, fallback) {
 
 var API = {
   state: function () { return request('GET', '/state', undefined, MOCK_STATE); },
-  reset: function () { return request('POST', '/reset', {}, MOCK_STATE); },
+  /* full=1 clears the session and lands back on Welcome, which is what
+     "Replay onboarding" means now that there are three screens before Today. */
+  reset: function (full) {
+    return request('POST', full ? '/reset?full=1' : '/reset', {}, function () {
+      if (full) { mockSession = { flow: 'welcome', name: '', course: null }; }
+      return MOCK_STATE();
+    });
+  },
+  courses: function () { return request('GET', '/courses', undefined, MOCK_COURSES); },
+  signup: function (name) {
+    return request('POST', '/session/signup', { name: name }, function () { return mockSignup(name); });
+  },
+  selectCourse: function (courseId) {
+    return request('POST', '/courses/' + encodeURIComponent(courseId) + '/select', {},
+      function () { return mockSelectCourse(courseId); });
+  },
   start: function (itemId) {
     return request('POST', '/solve/start', { item_id: itemId }, function () { return mockStart(itemId); });
   },
@@ -533,7 +753,10 @@ var state = {
   data: null,          // GET /api/state payload
   openStage: null,
   offline: false,
+  uiReported: false,   // the chrome coverage line is logged once per load
   doneIds: {},         // item ids graded in this session, applied over any reload
+  // The solve attempt in progress. Not to be confused with the server's `flow`
+  // field, which names a screen and is deliberately never stored here.
   flow: null
 };
 
@@ -564,6 +787,18 @@ function h(tag, cls, text) {
   return n;
 }
 
+/* "37 skills" with the numeral in the maths face, which is how every other
+   number in the app is set. Language independent: "37 कौशल" leads with digits
+   too. Falls back to plain text if the string does not start with a number. */
+function numberFirst(cls, text) {
+  var span = h('span', cls);
+  var m = /^(\d[\d.,]*)([\s\S]*)$/.exec(String(text));
+  if (!m) { span.textContent = text; return span; }
+  span.appendChild(h('span', 'math', m[1]));
+  span.appendChild(document.createTextNode(m[2]));
+  return span;
+}
+
 function dotClass(nodeState) {
   var known = { mastered: 1, learning: 1, now: 1, locked: 1 };
   return 'dot dot--' + (known[nodeState] ? nodeState : 'locked');
@@ -587,6 +822,11 @@ function applyChrome() {
     if (typeof t[key] === 'string') { nodes[i].textContent = t[key]; }
   }
   byId('goalInput').placeholder = t.goalDefault;
+  // The field has no visible label, so the placeholder is also its accessible
+  // name. Setting it explicitly means a screenreader still names the field
+  // once the student has typed into it and the placeholder is gone.
+  byId('nameInput').placeholder = t.namePlaceholder;
+  byId('nameInput').setAttribute('aria-label', t.namePlaceholder);
   byId('answerInput').placeholder = t.answerPlaceholder;
   byId('bannerText').textContent = t.offline;
   byId('btnLangEn').classList.toggle('is-on', state.lang === 'en');
@@ -622,6 +862,19 @@ function setLang(lang) {
 
 var TAB_SCREENS = { today: 1, path: 1, blockers: 1, you: 1 };
 
+/* GET /api/state carries `flow`, and it decides which of the three screens
+   before the tabs the student lands on. The rule lives on the server: nothing
+   here recomputes it and nothing about it is kept in localStorage. */
+var SCREEN_FOR_FLOW = { welcome: 'onboard', courses: 'courses', ready: 'today' };
+
+function routeFromFlow(flowName) {
+  var screen = SCREEN_FOR_FLOW[flowName];
+  if (screen === 'today') { goTab('today'); return Promise.resolve(); }
+  if (screen === 'courses') { return openCourses(); }
+  showScreen('onboard');      // also the fallback if the server omits `flow`
+  return Promise.resolve();
+}
+
 function showScreen(name) {
   state.screen = name;
   var screens = document.querySelectorAll('.screen');
@@ -642,6 +895,118 @@ function showScreen(name) {
 }
 
 function goTab(name) { showScreen(name); renderAll(); }
+
+/* --------------------------------------------------------------------------
+   9b. Sign up and course selection
+   Sign up is a placeholder and says so on the screen: a display name, one
+   button, no password and no email field. Course selection renders whatever
+   GET /api/courses returns and gates interaction on `selectable` alone.
+   -------------------------------------------------------------------------- */
+
+function openSignup() {
+  showScreen('signup');
+  byId('btnSignup').disabled = false;
+  byId('nameInput').focus();
+}
+
+function submitSignup() {
+  var btn = byId('btnSignup');
+  if (btn.disabled) { return; }
+  btn.disabled = true;
+  // The name is optional in the contract, so an empty field is allowed through.
+  API.signup(byId('nameInput').value.trim()).then(function (res) {
+    btn.disabled = false;
+    routeFromFlow(res && res.next ? res.next : 'courses');
+  });
+}
+
+function openCourses() {
+  showScreen('courses');
+  clear(byId('coursesList'));
+  return API.courses().then(renderCourses);
+}
+
+function renderCourses(payload) {
+  var list = byId('coursesList');
+  var t = T();
+  clear(list);
+
+  var courses = (payload && Array.isArray(payload.courses)) ? payload.courses : [];
+  var selected = payload ? payload.selected : null;
+
+  courses.forEach(function (c) {
+    // The server decides what is playable. Never infer this from `c.state`.
+    var playable = c.selectable === true;
+
+    var card = h(playable ? 'button' : 'div',
+                 'coursecard' + (playable ? '' : ' coursecard--soon'));
+
+    if (playable) {
+      card.type = 'button';
+      if (selected && c.id === selected) {
+        card.classList.add('is-selected');
+        card.setAttribute('aria-current', 'true');
+      }
+      card.addEventListener('click', function () { chooseCourse(c.id); });
+    } else {
+      // A div, so there is no button to focus and nothing to press: it is out
+      // of the tab order by construction rather than by tabindex="-1".
+      // aria-disabled states in the accessibility tree what the dashed border
+      // and the "Coming soon" marker say on the screen.
+      card.setAttribute('aria-disabled', 'true');
+    }
+
+    var top = h('span', 'coursecard-top');
+    top.appendChild(h('span', 'coursecard-title', c.title || ''));
+    if (!playable) {
+      // The server's own wording when it sends one, so the marker stays
+      // localised and is read straight after the title.
+      top.appendChild(h('span', 'coursecard-pill', c.detail || t.comingSoon));
+    }
+    card.appendChild(top);
+
+    if (c.subtitle) { card.appendChild(h('span', 'coursecard-sub', c.subtitle)); }
+
+    if (c.ends_at) {
+      var ends = h('span', 'coursecard-ends');
+      ends.appendChild(h('span', 'coursecard-endslabel', t.endsAt + ' '));
+      ends.appendChild(document.createTextNode(c.ends_at));
+      card.appendChild(ends);
+    }
+
+    var meta = h('span', 'coursecard-meta');
+    // The server sends a ready-made `skills_line` ("37 skills"). Prefer it, and
+    // fall back to composing the count with a local word, because the addendum
+    // only promises `skills`.
+    var skillsLine = c.skills_line ||
+      ((c.skills === undefined || c.skills === null) ? '' : String(c.skills) + ' ' + t.skillsWord);
+    if (skillsLine) { meta.appendChild(numberFirst('coursecard-skills', skillsLine)); }
+    if (playable && c.detail) {
+      if (meta.firstChild) { meta.appendChild(document.createTextNode(' · ')); }
+      meta.appendChild(h('span', 'coursecard-detail', c.detail));
+    }
+    if (meta.firstChild) { card.appendChild(meta); }
+
+    list.appendChild(card);
+  });
+}
+
+function chooseCourse(courseId) {
+  API.selectCourse(courseId).then(function (payload) {
+    // A refusal comes back as HTTP 200 with `error` and no state body. That
+    // string is a machine string and is not localised, so it is never put on
+    // screen: the non-interactive card is the gate and this is only the
+    // backstop behind it. Staying put is the whole behaviour.
+    if (!payload || (payload.error && !payload.today)) {
+      console.warn('[open-tutor] course refused:', courseId, payload && payload.error);
+      return;
+    }
+    // Select returns the full GET /api/state body, so go straight to Today
+    // with this payload rather than asking again.
+    adoptState(payload);
+    goTab('today');
+  });
+}
 
 /* --------------------------------------------------------------------------
    10. Tab renderers
@@ -1219,21 +1584,25 @@ function fixBlocker(rankIndex) {
    17. Loading
    -------------------------------------------------------------------------- */
 
+/* Adopting a state body. POST /api/courses/{id}/select returns the same shape,
+   so it takes this path too and Today never needs a second call. */
+function adoptState(payload) {
+  if (payload && payload.lang && payload.lang !== state.lang) {
+    // Trust the server about which language it actually served.
+    state.lang = payload.lang;
+    applyChrome();
+  }
+  applyServerUI(payload);
+  state.data = payload;
+  if (CONFIG.FAST_DEMO) {
+    problems().slice(0, 4).forEach(function (p) { state.doneIds[p.item_id] = true; });
+    CONFIG.FAST_DEMO = false;
+  }
+  return payload;
+}
+
 function loadState() {
-  return API.state().then(function (payload) {
-    if (payload && payload.lang && payload.lang !== state.lang) {
-      // Trust the server about which language it actually served.
-      state.lang = payload.lang;
-      applyChrome();
-    }
-    applyServerUI(payload);
-    state.data = payload;
-    if (CONFIG.FAST_DEMO) {
-      problems().slice(0, 4).forEach(function (p) { state.doneIds[p.item_id] = true; });
-      CONFIG.FAST_DEMO = false;
-    }
-    return payload;
-  });
+  return API.state().then(adoptState);
 }
 
 /* --------------------------------------------------------------------------
@@ -1241,9 +1610,15 @@ function loadState() {
    -------------------------------------------------------------------------- */
 
 function wire() {
-  byId('btnBuild').addEventListener('click', function () { goTab('today'); });
+  // Welcome now leads to sign up, not straight to the tabs.
+  byId('btnBuild').addEventListener('click', openSignup);
   byId('goalInput').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { goTab('today'); }
+    if (e.key === 'Enter') { openSignup(); }
+  });
+
+  byId('btnSignup').addEventListener('click', submitSignup);
+  byId('nameInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { submitSignup(); }
   });
 
   byId('btnStartSession').addEventListener('click', function () {
@@ -1289,11 +1664,12 @@ function wire() {
     state.doneIds = {};
     state.flow = null;
     state.openStage = null;
-    API.reset().then(function (payload) {
-      state.data = payload;
-      applyServerUI(payload);
+    // full=1 clears the session as well, which is what replaying the
+    // onboarding means: back to Welcome, then sign up, then the course.
+    API.reset(true).then(function (payload) {
+      adoptState(payload);
       renderAll();
-      showScreen('onboard');
+      routeFromFlow(payload && payload.flow);
     });
   });
 }
@@ -1314,8 +1690,11 @@ function boot() {
   wire();
   showScreen('onboard');
 
-  loadState().then(function () {
+  loadState().then(function (payload) {
     renderAll();
+    // The server names the screen to land on; the frontend does not compute it.
+    return routeFromFlow(payload && payload.flow);
+  }).then(function () {
     byId('veil').hidden = true;
   }).catch(function (err) {
     console.error('[open-tutor] boot failed', err);
@@ -1323,6 +1702,7 @@ function boot() {
     setOffline(true);
     state.data = MOCK_STATE();
     renderAll();
+    routeFromFlow(state.data.flow);
   });
 }
 
