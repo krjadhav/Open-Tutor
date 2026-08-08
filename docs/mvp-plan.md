@@ -1,5 +1,9 @@
 # Open Tutor: MVP plan
 
+> **Historical.** This was the plan made before building. For what the engine
+> actually does today, read [engine.md](engine.md). Sections on scope and the
+> demo script are still current; section 6 (engine subset) has been superseded.
+
 Companion to `learning-design.md`. That document is why; this one is what to build on Sunday.
 All three pillars are measured and hold (§14, §15, §16). Nothing here is speculative.
 

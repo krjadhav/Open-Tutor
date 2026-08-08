@@ -1,5 +1,9 @@
 # Open Tutor: learning design and idea evaluation
 
+> **Reasoning and results, in the order we learned them.** For a plain
+> description of the engine as built, read [engine.md](engine.md). Sections 14
+> to 17 are the measured experiments and remain the evidence base.
+
 Status: pre-MVP evaluation. No code decisions here, only the learning model and what is worth building.
 
 ---
