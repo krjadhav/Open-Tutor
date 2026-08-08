@@ -1428,20 +1428,27 @@ const rqState={i:0};
 /* Review = handwritten, photographed on the phone (one question at a time) */
 R.review = {
   desktop(){return `<div class="pad-lg col center" style="justify-content:center;height:100%">
-    <div class="card" style="max-width:460px;width:100%">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <span class="pill cyan">📘 Review · Untimed</span>
-        <span class="pill gold">Q ${rqState.i+1} / 5</span></div>
-      <div class="bar" style="margin:10px 0"><i style="width:${((rqState.i)/5)*100}%"></i></div>
-      <div class="mobile-only-note" style="margin-top:6px">
-        <div style="font-size:30px">✍️📷</div>
-        <b>Handwrite &amp; photograph each solution on your phone</b>
-        <div class="tiny muted">Every review answer is your own written work — snap it and move on. Desktop mirrors progress.</div>
-      </div>
-    </div></div>`;},
+    <div class="card" style="max-width:520px;width:100%" id="rqDesk">${rvDesktop()}</div>
+  </div>`;},
   phone(){return `<div class="pad col" id="rqHost">${rvCamera()}</div>`;},
-  after(){ dragCrop(); typeset($('phoneScreen')); }
+  after(){ dragCrop(); typeset($('phoneScreen')); typeset($('desktopScreen')); }
 };
+function rvDesktop(){
+  const q=RQ[rqState.i%RQ.length];
+  return `<div class="row" style="justify-content:space-between;align-items:center">
+      <span class="pill cyan">📘 Review · Untimed</span>
+      <span class="pill gold">Q ${rqState.i+1} / 5</span></div>
+    <div class="bar" style="margin:10px 0"><i style="width:${(rqState.i/5)*100}%"></i></div>
+    <div class="qcard" style="margin-top:4px">
+      <div class="qnum">QUESTION ${rqState.i+1}</div>
+      <div style="font-weight:600;margin:6px 0;font-size:18px">${q.q}</div>
+    </div>
+    <div class="mobile-only-note" style="margin-top:10px">
+      <div style="font-size:28px">✍️📷</div>
+      <b>Solve it, then upload your handwritten answer in the app</b>
+      <div class="tiny muted">Open OpenTutor on your phone → snap &amp; crop your working for this question.</div>
+    </div>`;
+}
 function rvCamera(){
   const q=RQ[rqState.i%RQ.length];
   return `<div class="row" style="justify-content:space-between;align-items:center">
@@ -1482,6 +1489,7 @@ function rvSubmit(){
     toast('Review complete! +150 XP'); go(9); return;
   }
   rqState.i++; $('rqHost').innerHTML=rvCamera(); dragCrop(); typeset($('rqHost'));
+  const d=$('rqDesk'); if(d){d.innerHTML=rvDesktop(); typeset(d);}
 }
 
 /* ---- 8. ASSESSMENT ---- */
