@@ -1,607 +1,1018 @@
 /* ==========================================================================
-   Open Tutor: design system
-   Tokens, palettes, type and keyframes are taken unchanged from the approved
-   mock (Open Tutor.dc.html v2) and docs/ui-spec.md section 1.
+   Open Tutor: the arcade design system
+   Vocabulary taken from the Brawl Stars style mock (BrawlStars_Katex_UI) and
+   docs/arcade-restyle-plan.md. Everything here is a CLASS, never an inline
+   style, because twelve screens share these pieces.
+
+   DARK ONLY. There is no light palette and no appearance toggle: the mock has
+   no light variant, and a light Brawl Stars is not a thing. The language
+   toggle stays.
    ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   READABILITY RULE. Read this before adding a stroke anywhere.
+
+   Black text-stroke goes on HEADLINES, NUMBERS, CHIPS and BUTTONS ONLY.
+
+   Any sentence a student actually has to read is plain white or #C4CBE2 on
+   dark, with NO stroke: `.prose`, the diagnosis, course subtitles, hint text,
+   notes. A 6px stroke on a 38px title reads as a game logo; the same treatment
+   on the Result diagnosis, which is two lines of ordinary prose and is the
+   emotional payload of the entire product, would be unreadable.
+
+   The mock will mislead you here: it strokes everything, because it contains
+   no prose. Do not "fix" this by stroking the sentences.
+   -------------------------------------------------------------------------- */
 
 html, body { margin: 0; padding: 0; }
 
 body {
-  --page: #E8E5DE;
-  --bg: #F5F3EE;
-  --card: #FFFFFF;
-  --ink: #15130F;
-  --muted: #6B6459;
-  --line: #E3DED4;
-  --accent: #0E8C8C;
-  --accent-soft: rgba(14, 140, 140, .10);
-  --gold: #B5820E;
-  --gold-soft: rgba(181, 130, 14, .13);
-  --sunk: #EDEAE3;
+  /* surfaces */
+  --page:   #15171f;
+  --device: #272C3D;
+  --card:   #353C52;
+  --card-lip: #2B3145;
+  --sunk:   #272C3D;
+  --dim:    #2E3448;
+  --dim-lip: #262B3B;
+  --floor:  #1F2331;
+  --line:   #3E465F;
 
-  /* One stack for UI text: Latin from Schibsted, Devanagari from Noto.
-     The browser picks per glyph, so Hindi prose needs no font switch and
-     mathematics is never affected by the language toggle. */
-  --ui: "Schibsted Grotesk", "Noto Sans Devanagari", system-ui, sans-serif;
-  --math: "STIX Two Text", "Noto Sans Devanagari", Georgia, serif;
+  /* colour */
+  --gold:       #EFC609;
+  --gold-top:   #FBEF44;
+  --gold-under: #A6552D;
+  --amber:      #FCBC21;
+  --cyan:       #68C1E0;
+  --cyan-under: #3C8FAE;
+  --pale:       #8EE0F6;
+  --purple:     #9747FF;
+  --yellow:     #FDE45E;
+
+  /* text */
+  --ink:   #C4CBE2;   /* readable secondary prose on dark */
+  --muted: #8A93AE;
+  --faint: #7583A4;
+
+  /* chips */
+  --chip-blocker: #8538CE;
+  --chip-goal:    #3C8FAE;
+  --chip-review:  #4A5270;
+  --chip-new:     #CE4F0A;
+
+  /* One stack, and the browser picks per glyph: Latin comes from Lilita One,
+     Devanagari from Baloo 2. Lilita One has NO Devanagari at all, so a Hindi
+     string set in it alone falls back to a system face and looks broken beside
+     arcade type. Weight stays 400 everywhere on purpose: Lilita One ships one
+     weight, so asking for 700 would give it a synthetic bold, while Baloo 2
+     resolves 400 to its own 700 and needs no help. */
+  --ui: 'Lilita One', 'Baloo 2', system-ui, sans-serif;
+
+  /* The tab bar's height, and the exact strip a tabbed screen reserves for it.
+     It is FIXED rather than intrinsic because Baloo 2's line box is taller than
+     Lilita One's: left to size itself the bar grew 6px in Hindi and swallowed
+     the bottom of the footer the screen had anchored above it. */
+  --tabbar-h: 80px;
 
   background: var(--page);
-  color: var(--ink);
+  color: #fff;
   font-family: var(--ui);
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
 }
 
-body[data-theme="dark"] {
-  --page: #08090A;
-  --bg: #101112;
-  --card: #191B1C;
-  --ink: #F2F0EB;
-  --muted: #98948B;
-  --line: #292C2D;
-  --accent: #3FD8C8;
-  --accent-soft: rgba(63, 216, 200, .12);
-  --gold: #E0AE3C;
-  --gold-soft: rgba(224, 174, 60, .14);
-  --sunk: #151718;
-}
-
 button { font-family: inherit; color: inherit; }
-input { font-family: inherit; color: inherit; }
+input  { font-family: inherit; color: inherit; }
+a { color: var(--cyan); }
 
-@keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 var(--accent-soft); }
-  70%  { box-shadow: 0 0 0 9px rgba(0, 0, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+/* Mathematics is white on dark and language independent by construction. */
+.katex { color: inherit; }
+.katex .mord.text { font-family: var(--ui); letter-spacing: .02em; }
+/* Shown only when KaTeX did not load. app.js also says so in the console. */
+.math-fallback { color: var(--yellow); letter-spacing: .01em; }
+
+/* Wide tracking is a Latin device. Devanagari is a connected script: spacing it
+   out pulls matras and conjuncts away from the letters they belong to, and the
+   eyebrows above are the worst offenders at .16em. So the tracking stands down
+   in Hindi. app.js sets `lang` on the root element from the language toggle. */
+html[lang="hi"] .eyebrow,
+html[lang="hi"] .lockup-sub,
+html[lang="hi"] .chip,
+html[lang="hi"] .pill,
+html[lang="hi"] .btn-label,
+html[lang="hi"] .tab-label,
+html[lang="hi"] .steplabel,
+html[lang="hi"] .stage-state,
+html[lang="hi"] .skill-state,
+html[lang="hi"] .legend-item,
+html[lang="hi"] .starbadge-word,
+html[lang="hi"] .coursecard-endslabel,
+html[lang="hi"] .coursecard-pilltext,
+html[lang="hi"] .coursecard-playlabel,
+html[lang="hi"] .blockercard-rank,
+html[lang="hi"] .headchip-text,
+html[lang="hi"] .setting-link,
+html[lang="hi"] .tline-edit,
+html[lang="hi"] .veil { letter-spacing: normal; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
-@keyframes arrive {
-  0%   { opacity: 0; transform: translateY(14px); }
-  100% { opacity: 1; transform: none; }
-}
-@keyframes fadein { 0% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes goldin {
-  0%   { transform: scale(1); }
-  45%  { transform: scale(1.7); }
-  100% { transform: scale(1); }
-}
-@keyframes riseline { 0% { height: 0; } 100% { height: 100%; } }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
 
 /* --------------------------------------------------------------------------
-   Frame. Phone first at 390x844. On desktop the same phone is centred.
+   Motion
+   -------------------------------------------------------------------------- */
+
+@keyframes arrive   { 0% { opacity: 0; transform: translateY(10px) scale(.97); } 100% { opacity: 1; transform: none; } }
+@keyframes pulse    { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+@keyframes goldin   { 0% { transform: scale(.6) rotate(-25deg); opacity: 0; } 60% { transform: scale(1.18) rotate(6deg); } 100% { transform: none; opacity: 1; } }
+@keyframes riseline { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes bob      { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-5px) rotate(4deg); } }
+@keyframes blink    { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+/* --------------------------------------------------------------------------
+   Frame. Phone first at 390x844, centred on desktop inside the device shell.
    -------------------------------------------------------------------------- */
 
 .stage {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 36px 20px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 16px;
   box-sizing: border-box;
+  background: radial-gradient(120% 90% at 50% 0%, #2C3248 0%, #15171f 70%);
 }
 
 .frame {
   position: relative;
-  width: 390px;
-  height: 844px;
-  border-radius: 46px;
-  background: var(--bg);
+  width: 390px; height: 844px;
   overflow: hidden;
-  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .45), 0 0 0 1px var(--line);
+  border-radius: 34px;
+  border: 3px solid #000;
+  background: var(--device);
+  box-shadow: 0 10px 0 rgba(0, 0, 0, .55), 0 30px 60px rgba(0, 0, 0, .6);
 }
 
 @media (max-width: 460px) {
   .stage { padding: 0; align-items: stretch; }
   .frame {
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    border-radius: 0;
+    height: 100vh; height: 100dvh;
+    border-radius: 0; border: 0;
     box-shadow: none;
   }
 }
 
+.frame *::-webkit-scrollbar { width: 0; height: 0; }
+.frame * { scrollbar-width: none; }
+
 .statusbar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 30px;
-  font-size: 13px;
-  font-weight: 600;
-  z-index: 6;
-  pointer-events: none;
+  position: absolute; top: 0; left: 0; right: 0; height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 26px;
+  font-size: 13px; letter-spacing: .04em; color: var(--ink);
+  z-index: 6; pointer-events: none;
 }
-.wordmark { letter-spacing: .12em; font-size: 10px; color: var(--muted); }
+.wordmark { letter-spacing: .16em; font-size: 10px; color: var(--faint); }
+/* The sign up screen carries the full gold lockup, so the small one stands down. */
+body[data-screen="signup"] .wordmark { visibility: hidden; }
 
 /* --------------------------------------------------------------------------
    Screens
    -------------------------------------------------------------------------- */
 
-.screen { position: absolute; inset: 0; display: none; }
-.screen.is-active { display: block; }
-.screen--pad-flow.is-active { display: flex; flex-direction: column; padding: 64px 20px 24px; box-sizing: border-box; }
+.screen { position: absolute; inset: 0; display: none; flex-direction: column; }
+.screen.is-active { display: flex; }
 
-.scroll { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
-.scroll--tab { padding: 64px 20px 108px; box-sizing: border-box; }
-.scroll--today { padding-bottom: 190px; }
-/* a scrolling screen with no tab bar under it */
-.scroll--plain { padding: 64px 20px 28px; box-sizing: border-box; }
+/* The tab bar is a SIBLING of the screens, pinned to the bottom of the frame, so it
+   covers the last `--tabbar-h` of whatever is underneath it. A tabbed screen
+   reserves exactly that and lays itself out in what is left, which is what lets it
+   anchor its own footer bar above the tab bar instead of floating a button over the
+   list and cutting the last card in half. */
+.screen--tabbed { padding-bottom: var(--tabbar-h); box-sizing: border-box; }
 
-/* inside a flow screen the padding lives on the screen, so the scroller is flat */
-.scroll--flow {
-  position: static;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: auto;
+#screen-courses, #screen-today, #screen-path, #screen-blockers, #screen-you {
+  background: linear-gradient(180deg, #2F364F 0%, #242938 100%);
+}
+#screen-solve, #screen-check, #screen-result, #screen-complete {
+  background: linear-gradient(180deg, #3B4364 0%, #242938 55%, #1D2130 100%);
+}
+#screen-signup {
+  background: radial-gradient(90% 60% at 50% 8%, #3B4364 0%, #272C3D 62%, #1D2130 100%);
+  /* the two decorative orbs hang off the edges and are meant to be cut off */
+  overflow: hidden;
 }
 
-.spacer { flex: 1; min-height: 12px; }
+.screenhead { flex: none; padding: 52px 20px 12px; }
+.headrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 
-.eyebrow {
-  font-size: 12px; font-weight: 600; letter-spacing: .1em;
-  color: var(--muted); text-transform: uppercase;
+.scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
+.scroll--tab   { padding: 6px 20px 22px; }
+.scroll--plain { padding: 6px 20px 30px; }
+.scroll--flow  { display: flex; flex-direction: column; padding: 8px 20px 20px; gap: 16px; }
+
+/* The two anchored footer bars. A scroll area ENDS above its footer; nothing is ever
+   floated over a list, because the last card then reads as if it were cut in half.
+   `.flowfoot` closes a full-screen solve flow, `.tabfoot` a screen under the tab bar. */
+.flowfoot, .tabfoot {
+  flex: none; box-sizing: border-box;
+  background: var(--floor); border-top: 3px solid #000;
 }
-.eyebrow--tight { margin-top: 38px; letter-spacing: .08em; }
-
-.headline {
-  font-size: 27px; font-weight: 600; letter-spacing: -.02em;
-  margin: 6px 0 0; line-height: 1.15; text-wrap: pretty;
-}
-
-/* The one supporting sentence a screen is allowed. */
-.screen-sub {
-  font-size: 13.5px; line-height: 1.45; color: var(--muted);
-  margin: 8px 0 0; text-wrap: pretty; flex: none;
-}
-.onboard .screen-sub { margin-top: 16px; }
-
-.math { font-family: var(--math); }
-.math sup { font-size: .72em; }
-.math sub { font-size: .72em; }
+.flowfoot { padding: 10px 20px 28px; }
+.tabfoot  { padding: 11px 20px 15px; }
+.flowfoot[hidden], .tabfoot[hidden] { display: none; }
 
 /* --------------------------------------------------------------------------
-   Buttons
+   PRIMITIVE 1: the bevelled panel.
+
+   Two nodes, and it has to be two: a `filter` and a `clip-path` on the SAME
+   element clip the drop shadow away, so the outer node carries the hard shadow
+   and the inner carries the skew, the 2px black border and the face colour.
+   The face colour lives on a ::before inset by 2px, which is what leaves the
+   black showing as a border on the skewed edges, where a real border cannot.
+   -------------------------------------------------------------------------- */
+
+.bev { filter: drop-shadow(0 4px 0 #000) drop-shadow(0 8px 0 rgba(0, 0, 0, .5)); }
+.bev--drop-sm { filter: drop-shadow(0 3px 0 #000) drop-shadow(0 6px 0 rgba(0, 0, 0, .45)); }
+.bev--drop-md { filter: drop-shadow(0 4px 0 #000) drop-shadow(0 8px 0 rgba(0, 0, 0, .5)); }
+.bev--drop-lg {
+  filter: drop-shadow(0 6px 0 #000) drop-shadow(0 11px 0 rgba(0, 0, 0, .5))
+          drop-shadow(0 16px 18px rgba(0, 0, 0, .4));
+}
+
+.bev-face {
+  --sk: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 2px 100%);
+  --face: var(--card);
+  --lip: inset 0 -6px 0 var(--card-lip);
+  position: relative;
+  display: block;
+  clip-path: var(--sk);
+  background: #000;            /* the 2px border the ::before does not cover */
+  padding: 2px;
+  box-sizing: border-box;
+}
+.bev-face::before {
+  content: '';
+  position: absolute; inset: 2px; z-index: -1;
+  background: var(--face);
+  box-shadow: var(--lip);
+  clip-path: var(--sk);
+}
+
+.bev-face--sk-sm { --sk: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 1px 100%); }
+.bev-face--sk-lg { --sk: polygon(0 0, 100% 0, calc(100% - 9px) 100%, 3px 100%); }
+
+.bev-face--card   { --face: var(--card);   --lip: inset 0 -6px 0 var(--card-lip); }
+.bev-face--sunk   { --face: var(--sunk);   --lip: none; }
+.bev-face--dim    { --face: var(--dim);    --lip: inset 0 -6px 0 var(--dim-lip); }
+.bev-face--gold   { --face: var(--gold);   --lip: inset 0 5px 0 var(--gold-top), inset 0 -9px 0 var(--gold-under); }
+.bev-face--cyan   { --face: var(--cyan);   --lip: inset 0 -5px 0 var(--cyan-under); }
+.bev-face--purple { --face: var(--purple); --lip: inset 0 -6px 0 #6B2CB8; }
+
+/* A coloured cap along the top edge of a card. */
+.strip { display: block; height: 8px; }
+.strip--cyan   { background: var(--cyan); }
+.strip--purple { background: var(--purple); }
+.strip--gold   { background: linear-gradient(90deg, var(--amber), var(--yellow)); }
+
+/* --------------------------------------------------------------------------
+   PRIMITIVE 2: the bevelled button. Gold is primary, card grey is secondary.
+   Pressing sinks the button into its own shadow.
    -------------------------------------------------------------------------- */
 
 .btn {
-  border: 0; border-radius: 18px;
-  background: var(--ink); color: var(--bg);
-  font-size: 16px; font-weight: 600;
-  padding: 18px; cursor: pointer; width: 100%;
+  display: block; width: 100%;
+  border: 0; background: none; padding: 0; cursor: pointer;
+  filter: drop-shadow(0 6px 0 #000) drop-shadow(0 11px 0 rgba(0, 0, 0, .45));
 }
-.btn--primary:disabled { opacity: .4; cursor: default; }
-.btn--float {
-  position: absolute; left: 20px; right: 20px; bottom: 112px;
-  width: auto; z-index: 4;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .5);
-}
-.btn--check { margin-top: 10px; flex: none; }
-.btn--result-next { flex: none; margin-top: 18px; }
+.btn:active { transform: translateY(6px); filter: drop-shadow(0 2px 0 #000) drop-shadow(0 4px 0 rgba(0, 0, 0, .45)); }
+.btn:disabled { cursor: default; opacity: .45; filter: drop-shadow(0 3px 0 #000); }
+.btn:disabled:active { transform: none; }
 
+.btn-face { padding: 2px; }
+.btn-face > .btn-label { display: block; padding: 17px 10px 21px; }
+
+.btn-label {
+  font-size: 22px; letter-spacing: .04em; color: #fff;
+  -webkit-text-stroke: 5px #000; paint-order: stroke fill;
+  text-align: center;
+}
+.btn-label--pale { color: var(--pale); font-size: 16px; -webkit-text-stroke: 3px #000; }
+.btn--ghost { filter: drop-shadow(0 4px 0 #000) drop-shadow(0 7px 0 rgba(0, 0, 0, .42)); }
+.btn--ghost:active { transform: translateY(4px); filter: drop-shadow(0 1px 0 #000); }
+.btn--ghost .btn-face > .btn-label { padding: 13px 10px 15px; }
+
+.iconbtn {
+  flex: none; border: 0; background: none; padding: 0; cursor: pointer;
+  filter: drop-shadow(0 4px 0 #000) drop-shadow(0 7px 0 rgba(0, 0, 0, .5));
+}
+.iconbtn:active { transform: translateY(4px); filter: drop-shadow(0 1px 0 #000); }
+.iconbtn-face {
+  --sk: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 1px 100%);
+  --lip: inset 0 -5px 0 var(--device);
+  width: 44px; height: 42px;
+  display: grid; place-items: center;
+}
+.glyph-x {
+  position: relative; width: 16px; height: 16px; display: block;
+}
+.glyph-x::before, .glyph-x::after {
+  content: ''; position: absolute; left: 0; top: 7px;
+  width: 16px; height: 3px; background: #fff;
+  box-shadow: 0 0 0 1.5px #000;
+}
+.glyph-x::before { transform: rotate(45deg); }
+.glyph-x::after  { transform: rotate(-45deg); }
+
+/* A small pill button, used for the yes/no answer under the diagnosis. */
 .chipbtn {
-  border: 1px solid var(--line); background: transparent;
-  border-radius: 12px; padding: 9px 16px;
-  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: 2px solid #000; background: var(--card);
+  padding: 8px 15px 10px; cursor: pointer;
+  font-size: 13px; letter-spacing: .04em; color: #fff;
+  -webkit-text-stroke: 2.5px #000; paint-order: stroke fill;
+  box-shadow: 0 3px 0 #000;
 }
-.chipbtn:hover { border-color: var(--accent); }
+.chipbtn:active { transform: translateY(3px); box-shadow: 0 0 0 #000; }
+.chipbtn:disabled { opacity: .45; cursor: default; }
 
-.closebtn {
-  border: 0; background: transparent; font-size: 20px; line-height: 1;
-  color: var(--muted); cursor: pointer; padding: 4px 6px;
+/* --------------------------------------------------------------------------
+   PRIMITIVE 3: chips, pills, stroked headings, eyebrows, prose, stat tiles
+   -------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 2px solid #000; box-shadow: 0 2px 0 #000;
+  padding: 3px 9px 5px;
+  font-size: 11px; letter-spacing: .05em; color: #fff;
+  -webkit-text-stroke: 2.5px #000; paint-order: stroke fill;
+  background: var(--chip-review);
+}
+.chip--blocker   { background: var(--chip-blocker); }
+.chip--goal-link { background: var(--chip-goal); }
+.chip--review    { background: var(--chip-review); }
+.chip--new       { background: var(--chip-new); }
+
+.pill {
+  border: 2px solid #000; background: var(--sunk);
+  padding: 3px 8px 5px; font-size: 12px; color: var(--ink);
+}
+
+/* Headlines. Stroked, because they are headlines. */
+.hd {
+  margin: 0; color: #fff; line-height: 1.06;
+  -webkit-text-stroke: 5px #000; paint-order: stroke fill;
+  overflow-wrap: break-word;
+}
+/* A stroked headline is 5px fatter than its box on every side, so it needs air
+   under an eyebrow or the two collide. */
+.eyebrow + .hd { margin-top: 6px; }
+.hd--xl { font-size: 36px; line-height: 1.02; -webkit-text-stroke-width: 6px; text-wrap: balance; }
+.hd--l  { font-size: 28px; -webkit-text-stroke-width: 5px; }
+.hd--m  { font-size: 22px; line-height: 1.12; -webkit-text-stroke-width: 4px; }
+
+.eyebrow {
+  display: block;
+  font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--cyan);
+}
+
+/* Sentences. Never stroked. See the readability rule at the top of this file. */
+.prose {
+  margin: 0; font-size: 13.5px; line-height: 1.45;
+  letter-spacing: .01em; color: var(--ink);
+  text-wrap: pretty; overflow-wrap: break-word;
+}
+
+.num {
+  color: #fff; -webkit-text-stroke: 3px #000; paint-order: stroke fill;
 }
 
 /* --------------------------------------------------------------------------
    Sign up
-   The entry point, and the only screen that uses this layout: one question, one
-   field, one button. It has no password and no email field, by design. The goal
-   question that used to share these rules is gone, and with it the blinking
-   caret that stood in its empty field.
+   The entry point, and the only screen with this layout: one question, one
+   field, one button. No password and no email field, by design. It wears the
+   layout of the deleted opening screen, without its input.
    -------------------------------------------------------------------------- */
 
-.screen#screen-signup.is-active { padding: 120px 28px 40px; }
-.onboard { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.onboard-q {
-  font-size: 31px; line-height: 1.15; font-weight: 600;
-  letter-spacing: -.02em; max-width: 290px; text-wrap: pretty; margin: 0;
+.orb { position: absolute; border-radius: 50%; display: block; }
+.orb--cyan   { top: -60px; left: -40px; width: 200px; height: 200px; background: rgba(104, 193, 224, .10); }
+.orb--purple { top: 120px; right: -70px; width: 230px; height: 230px; background: rgba(151, 71, 255, .14); }
+
+.lockup { position: relative; flex: none; padding: 60px 26px 0; text-align: center; }
+.logoplate { display: inline-block; }
+.logoplate .bev-face {
+  --sk: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 1px 100%);
+  --lip: inset 0 4px 0 var(--gold-top), inset 0 -7px 0 var(--gold-under);
 }
-.onboard-field {
-  margin-top: 34px; border-bottom: 2px solid var(--accent);
-  padding-bottom: 12px; display: flex; align-items: center;
+.logoplate-word {
+  display: block; padding: 9px 20px 12px;
+  font-size: 26px; letter-spacing: .02em; color: #fff;
+  -webkit-text-stroke: 4px #000; paint-order: stroke fill;
 }
+.lockup-sub {
+  margin-top: 14px; font-size: 12px; letter-spacing: .16em; color: var(--pale);
+  -webkit-text-stroke: 3px #000; paint-order: stroke fill;
+}
+
+.onboard {
+  position: relative; flex: 1; min-height: 0;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 20px; padding: 0 24px;
+}
+.onboard-q { text-align: center; }
+.onboard-field { display: block; padding: 15px 18px 18px; cursor: text; }
+.onboard-row { display: flex; align-items: center; gap: 9px; margin-top: 9px; }
 .onboard-input {
-  border: 0; background: transparent; outline: none;
-  font-size: 20px; font-weight: 500; width: 100%; padding: 0;
+  flex: 1; min-width: 0; border: 0; background: transparent; outline: none;
+  font-size: 21px; line-height: 1.15; color: #fff; padding: 0;
 }
+.onboard-input::placeholder { color: var(--faint); }
+.caret { width: 4px; height: 26px; background: var(--yellow); flex: none; animation: pulse 1.4s ease-in-out infinite; }
+.onboard-note { text-align: center; }
+.onboard-foot { position: relative; flex: none; padding: 0 24px 48px; }
 
 /* --------------------------------------------------------------------------
    Course selection
-   One playable card, the rest declared and visibly out of reach. The dashed
-   border is the same vocabulary the locked node dot already uses.
+   One playable card, the rest declared and visibly out of reach. The locked
+   cards are divs: not focusable, nothing to press, out of the tab order by
+   construction rather than by tabindex="-1".
    -------------------------------------------------------------------------- */
 
-.courses { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+.courses { display: flex; flex-direction: column; gap: 18px; margin-top: 12px; }
 
-.coursecard {
-  text-align: left; width: 100%; box-sizing: border-box;
-  border: 1px solid var(--line); background: var(--card);
-  border-radius: 20px; padding: 16px 18px;
-  display: flex; flex-direction: column; gap: 5px;
-  font-family: inherit; color: inherit; cursor: pointer;
+.coursecard { position: relative; text-align: left; width: 100%; }
+.coursecard .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 9px) 100%, 3px 100%); }
+.coursecard-body { display: block; padding: 16px 18px 18px; }
+.coursecard-title {
+  display: block; font-size: 26px; line-height: 1.05; color: #fff;
+  -webkit-text-stroke: 5px #000; paint-order: stroke fill;
 }
-/* Only the playable card responds to the pointer. */
-.coursecard:not(.coursecard--soon):hover { border-color: var(--accent); }
-.coursecard.is-selected { border-color: var(--accent); }
+.coursecard-sub { display: block; margin-top: 5px; font-size: 13px; color: #D7FAFF; line-height: 1.3; }
+.coursecard-panel { display: block; margin-top: 13px; }
+.coursecard-panel .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 1px 100%); }
+.coursecard-panelbody { display: block; padding: 10px 12px 13px; }
+.coursecard-endslabel { display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); }
+.coursecard-ends {
+  display: block; margin-top: 5px; font-size: 16px; line-height: 1.15; color: var(--yellow);
+  -webkit-text-stroke: 3px #000; paint-order: stroke fill;
+}
+.coursecard-detail { display: block; font-size: 12.5px; line-height: 1.35; color: var(--ink); }
+.coursecard-play { display: block; margin-top: 15px; }
+.coursecard-play .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 1px 100%); }
+.coursecard-playlabel {
+  display: block; padding: 15px 0 19px; text-align: center;
+  font-size: 22px; letter-spacing: .04em; color: #fff;
+  -webkit-text-stroke: 5px #000; paint-order: stroke fill;
+}
+button.coursecard { border: 0; background: none; padding: 0; cursor: pointer; font-family: inherit; }
+button.coursecard:active { transform: translateY(4px); filter: drop-shadow(0 2px 0 #000) drop-shadow(0 5px 0 rgba(0, 0, 0, .4)); }
 
-.coursecard-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.coursecard-title { font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
-.coursecard-sub { font-size: 13px; line-height: 1.35; color: var(--muted); }
-.coursecard-ends { font-size: 12.5px; line-height: 1.35; margin-top: 7px; }
-.coursecard-endslabel { color: var(--muted); }
-.coursecard-meta {
-  font-size: 11.5px; line-height: 1.4; color: var(--muted); margin-top: 3px;
-}
-.coursecard-skills .math { font-size: 13px; }
-
-/* Not a button, not focusable, and it does not pretend to be tappable. */
-.coursecard--soon {
-  background: transparent; border-style: dashed; cursor: default;
-}
-.coursecard--soon .coursecard-title { color: var(--muted); font-weight: 500; }
-.coursecard--soon .coursecard-sub,
-.coursecard--soon .coursecard-ends,
-.coursecard--soon .coursecard-meta { opacity: .7; }
+.coursecard--soon { opacity: .74; }
+.coursecard--soon .coursecard-title { font-size: 19px; line-height: 1.1; color: var(--ink); -webkit-text-stroke-width: 3.5px; padding-right: 96px; }
+.coursecard--soon .coursecard-sub { color: var(--muted); font-size: 12px; }
+.coursecard--soon .coursecard-endsline { display: block; margin-top: 10px; font-size: 12px; line-height: 1.25; color: var(--faint); }
 .coursecard-pill {
-  font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--muted); border: 1px solid var(--line);
-  border-radius: 20px; padding: 2px 8px; flex: none; white-space: nowrap;
+  position: absolute; top: 11px; right: 12px; transform: rotate(4deg);
+  filter: drop-shadow(0 3px 0 #000);
 }
+.coursecard-pill .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 3px) 100%, 1px 100%); }
+.coursecard-pilltext {
+  display: block; padding: 4px 9px 6px;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--pale);
+}
+
+/* The badge that floats off the corner of the playable card. */
+.starbadge {
+  position: absolute; top: -14px; right: 4px; z-index: 2;
+  animation: bob 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 3px 0 #000);
+}
+.starbadge .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 1px 100%); --face: var(--amber); --lip: inset 0 -5px 0 #B37F10; }
+.starbadge-text {
+  display: block; padding: 6px 10px 8px; text-align: center;
+  font-size: 13px; line-height: .95; color: #fff;
+  -webkit-text-stroke: 3px #000; paint-order: stroke fill;
+}
+.starbadge-word { display: block; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+
+/* No text on this divider: "the roadmap" is chrome the server does not send,
+   and inventing an untranslated string for a rule line is not worth it. */
+.rule { height: 3px; background: var(--line); margin: 4px 0 2px; }
 
 /* --------------------------------------------------------------------------
    Today
    -------------------------------------------------------------------------- */
 
-.cards { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+.streak {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  background: var(--card); border: 2px solid #000; border-radius: 20px;
+  padding: 5px 12px 7px; box-shadow: 0 3px 0 #000;
+  font-size: 13px; color: var(--yellow);
+  -webkit-text-stroke: 3px #000; paint-order: stroke fill;
+}
+.streak::before {
+  content: ''; width: 13px; height: 13px; flex: none; background: var(--amber);
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.streak:empty { display: none; }
+
+.headchip { display: inline-block; margin-top: 10px; }
+.headchip .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 1px 100%); }
+.headchip-text {
+  display: block; padding: 5px 14px 8px;
+  font-size: 14px; letter-spacing: .03em; color: #fff;
+  -webkit-text-stroke: 3px #000; paint-order: stroke fill;
+}
+
+.cards { display: flex; flex-direction: column; gap: 13px; margin-top: 6px; }
 
 .problemcard {
-  text-align: left; width: 100%;
-  border: 1px solid var(--line); background: var(--card);
-  border-radius: 18px; padding: 16px 18px;
-  display: flex; flex-direction: column; gap: 9px; cursor: pointer;
+  display: block; width: 100%; text-align: left;
+  border: 0; background: none; padding: 0; cursor: pointer; font-family: inherit;
+  filter: drop-shadow(0 4px 0 #000) drop-shadow(0 7px 0 rgba(0, 0, 0, .45));
 }
-.problemcard:hover { border-color: var(--accent); }
+.problemcard:active { transform: translateY(4px); filter: drop-shadow(0 1px 0 #000) drop-shadow(0 3px 0 rgba(0, 0, 0, .45)); }
+.problemcard .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 2px 100%); }
+.problemcard-body { display: block; padding: 12px 15px 14px; }
+.problemcard-row { display: flex; align-items: center; gap: 11px; }
+.problemcard-n {
+  flex: none; width: 26px; height: 26px; display: grid; place-items: center;
+  border: 2px solid #000; background: var(--sunk);
+  font-size: 13px; color: var(--faint);
+}
+.problemcard-math {
+  flex: 1; min-width: 0; font-size: 19px; line-height: 1.25; color: #fff;
+  overflow-x: auto; overflow-y: hidden;
+}
+.problemcard-meta { display: flex; align-items: center; gap: 8px; margin-top: 11px; }
+.problemcard-dot {
+  width: 12px; height: 12px; flex: none; border: 2px solid #000; border-radius: 50%;
+  background: var(--purple); box-shadow: 0 0 0 3px rgba(151, 71, 255, .28);
+}
+.problemcard-tick { margin-left: auto; font-size: 14px; color: var(--yellow); -webkit-text-stroke: 2.5px #000; paint-order: stroke fill; }
 .problemcard.is-done { opacity: .5; }
-.problemcard-math { font-family: var(--math); font-size: 19px; line-height: 1.2; }
-.problemcard-meta { display: flex; align-items: center; gap: 6px; }
-.problemcard-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
-.problemcard-chip {
-  font-size: 11.5px; font-weight: 600; letter-spacing: .02em; color: var(--muted);
-}
-.problemcard-tick { margin-left: auto; font-size: 11.5px; color: var(--gold); font-weight: 600; }
 
 /* --------------------------------------------------------------------------
    Path
    -------------------------------------------------------------------------- */
 
-.goalcard {
-  border: 1px solid var(--line); border-radius: 20px;
-  background: var(--card); padding: 16px 18px;
-}
-.goalcard-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.goalcard-title { font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
-.goalcard-away { font-size: 12px; font-weight: 600; color: var(--accent); flex: none; }
-.goalcard-pace { font-size: 12px; color: var(--muted); margin-top: 5px; }
+.goalcard .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 7px) 100%, 2px 100%); }
+.goalcard-body { padding: 13px 16px 16px; }
+.goalcard-title { margin-top: 6px; color: var(--yellow); -webkit-text-stroke-width: 4.5px; }
+.pills { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 9px; }
+.pill:empty { display: none; }
 
-.spine-wrap { position: relative; margin-top: 16px; padding-left: 26px; }
-.spine-rail { position: absolute; left: 5px; top: 14px; bottom: 14px; width: 2px; background: var(--line); }
-.stages { display: flex; flex-direction: column; gap: 8px; }
+.spine-wrap { position: relative; padding-left: 36px; margin-top: 6px; }
+.spine-rail {
+  position: absolute; left: 14px; top: 10px; bottom: 10px; width: 6px;
+  background: var(--line); transform-origin: top; animation: riseline .6s ease-out;
+}
+.stages { display: flex; flex-direction: column; gap: 12px; }
 
 .stage-item { position: relative; }
-.stage-dot { position: absolute; left: -26px; top: 20px; }
+.stage-node {
+  position: absolute; left: -36px; top: 12px;
+  width: 34px; height: 34px; display: grid; place-items: center;
+  border: 3px solid #000; border-radius: 50%; background: var(--line);
+  box-shadow: 0 3px 0 #000; z-index: 1;
+}
+.stage-node::before { content: ''; display: block; }
+/* The same node, in the flow rather than hung off the spine. It stays `relative`
+   rather than `static` because the padlock's shackle is positioned against it. */
+.stage-node--inline { position: relative; left: auto; top: auto; }
+.stage-node--mastered { background: var(--amber); }
+.stage-node--mastered::before {
+  width: 17px; height: 17px; background: #fff; animation: goldin .5s ease-out;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.stage-node--learning { background: var(--cyan-under); }
+.stage-node--learning::before {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2.5px solid #fff; background: linear-gradient(90deg, #fff 50%, transparent 50%);
+  box-sizing: border-box;
+}
+.stage-node--now { background: var(--cyan); }
+.stage-node--now::before {
+  width: 14px; height: 14px; border-radius: 50%; background: #fff;
+  border: 2px solid #000; animation: pulse 1.5s ease-in-out infinite;
+}
+.stage-node--locked { background: var(--line); }
+/* A padlock, drawn from a body and a shackle: the mock used an SVG icon kit we
+   do not have, so the node icons are CSS shapes. */
+.stage-node--locked::before {
+  width: 13px; height: 10px; margin-top: 4px;
+  background: var(--muted); border-radius: 2px;
+}
+.stage-node--locked::after {
+  content: ''; position: absolute; top: 7px;
+  width: 9px; height: 7px; box-sizing: border-box;
+  border: 2.5px solid var(--muted); border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+}
+
 .stage-btn {
-  width: 100%; text-align: left;
-  border: 1px solid var(--line); background: transparent;
-  border-radius: 16px; padding: 14px 16px;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  cursor: pointer;
+  display: block; width: 100%; text-align: left;
+  border: 0; background: none; padding: 0; cursor: pointer; font-family: inherit;
+  filter: drop-shadow(0 4px 0 #000) drop-shadow(0 7px 0 rgba(0, 0, 0, .42));
 }
-.stage-btn.is-open { background: var(--card); }
-.stage-name { font-size: 15px; font-weight: 500; letter-spacing: -.01em; }
-.stage-btn.is-now .stage-name { font-weight: 600; }
+.stage-btn:active { transform: translateY(4px); filter: drop-shadow(0 1px 0 #000); }
+.stage-btn .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 2px 100%); }
+.stage-body { display: block; padding: 11px 14px 13px; }
+.stage-row { display: flex; align-items: center; gap: 10px; }
+.stage-name {
+  flex: 1; min-width: 0; font-size: 18px; line-height: 1.15; color: #fff;
+  -webkit-text-stroke: 3.5px #000; paint-order: stroke fill;
+}
+.stage-count { flex: none; border: 2px solid #000; background: var(--sunk); padding: 2px 7px 4px; font-size: 12px; color: var(--ink); }
+.stage-state { display: block; margin-top: 7px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--pale); }
+
 .stage-name.is-locked { color: var(--muted); }
-.stage-meta { display: flex; align-items: center; gap: 9px; flex: none; }
-.stage-state { font-size: 11px; font-weight: 600; color: var(--muted); }
-.stage-count { font-family: var(--math); font-size: 13px; color: var(--muted); }
+.stage-state.is-locked { color: var(--faint); }
+.stage-count.is-locked { color: var(--faint); }
+.stage-name.is-mastered, .stage-state.is-mastered, .stage-count.is-mastered { color: var(--yellow); }
 
-.skills { display: flex; flex-direction: column; gap: 2px; padding: 6px 0 10px 6px; animation: fadein .25s ease; }
-.skill { display: flex; gap: 12px; padding: 10px 10px 10px 0; align-items: flex-start; }
-.skill .dot { margin-top: 5px; flex: none; }
-.skill-body { display: flex; flex-direction: column; gap: 5px; }
-.skill-name { font-size: 14px; line-height: 1.3; text-wrap: pretty; }
+.skills { margin-top: 9px; animation: arrive .28s ease-out; }
+.skills .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 2px 100%); }
+.skills-body { display: flex; flex-direction: column; gap: 10px; padding: 11px 14px 13px; }
+.skill { display: flex; align-items: flex-start; gap: 9px; }
+.skill .dot { margin-top: 3px; }
+.skill-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+/* A skill name is a sentence a student reads, so it is not stroked. */
+.skill-name { font-size: 14px; line-height: 1.25; color: #fff; overflow-wrap: break-word; }
 .skill-tags { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.skill-state {
-  font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-}
-.skill-needs {
-  font-size: 10.5px; border: 1px solid var(--line); border-radius: 20px;
-  padding: 2px 8px; color: var(--muted);
-}
+.skill-state { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--pale); }
+.skill-needs { font-size: 10.5px; line-height: 1.3; border: 2px solid #000; background: var(--card); padding: 2px 6px 4px; color: var(--ink); }
 .is-locked-text { color: var(--muted); }
-.is-now-text { color: var(--accent); }
+.is-now-text { color: var(--pale); }
 
-.legend {
-  display: flex; gap: 14px; flex-wrap: wrap;
-  margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line);
-}
-.legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding-top: 14px; border-top: 3px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 
 /* Four node states, distinguishable by shape as well as colour. */
-.dot { width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; display: block; flex: none; }
-.dot--mastered { background: var(--gold); }
-.dot--learning {
-  border: 1.5px solid var(--ink);
-  background: linear-gradient(90deg, var(--ink) 50%, transparent 50%);
-}
-.dot--now { border: 2px solid var(--accent); animation: pulse 1.9s ease-out infinite; }
-.dot--locked { border: 1.5px dashed var(--line); }
-.dot--goldin { animation: goldin .8s ease; }
-
-/* --------------------------------------------------------------------------
-   Blockers
-   -------------------------------------------------------------------------- */
-
-.blockers { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
-.blockercard {
-  border: 1px solid var(--line); border-radius: 22px;
-  background: var(--card); overflow: hidden;
-}
-.blockercard-body { padding: 18px 18px 16px; }
-.blockercard-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.blockercard-rank {
-  font-size: 11px; font-weight: 600; letter-spacing: .08em;
-  text-transform: uppercase; color: var(--muted);
-}
-.blockercard-freq { font-size: 11.5px; font-weight: 600; color: var(--muted); flex: none; }
-.blockercard-name {
-  font-size: 21px; font-weight: 600; line-height: 1.2;
-  letter-spacing: -.02em; margin-top: 8px; text-wrap: pretty;
-}
-.blockercard-lines {
-  margin-top: 14px; background: var(--sunk); border-radius: 14px;
-  padding: 12px 14px; font-family: var(--math); font-size: 16px;
-  display: flex; flex-direction: column; gap: 4px;
-}
-.blockercard-wrong { color: var(--muted); text-decoration: line-through; }
-.blockercard-fix {
-  width: 100%; border: 0; border-top: 1px solid var(--line);
-  background: transparent; padding: 15px 15px 15px 18px;
-  font-size: 14px; font-weight: 600; color: var(--accent);
-  cursor: pointer; text-align: left;
-}
-
-/* --------------------------------------------------------------------------
-   You
-   -------------------------------------------------------------------------- */
-
-.statrow { display: flex; gap: 10px; margin-top: 22px; }
-.stat {
-  flex: 1; border: 1px solid var(--line); border-radius: 18px;
-  background: var(--card); padding: 16px;
-}
-.stat-num { font-size: 30px; line-height: 1; }
-.stat-label { font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.3; }
-
-.settings {
-  margin-top: 22px; border: 1px solid var(--line); border-radius: 18px;
-  background: var(--card); overflow: hidden;
-}
-.setting-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 15px 16px; border-top: 1px solid var(--line);
-}
-.setting-row:first-child { border-top: 0; }
-.setting-name { font-size: 14px; }
-.seg { display: flex; background: var(--sunk); border-radius: 12px; padding: 3px; }
-.seg-btn {
-  border: 0; border-radius: 10px; padding: 7px 13px;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  background: transparent; color: var(--muted);
-}
-.seg-btn.is-on { background: var(--ink); color: var(--bg); }
-.setting-link {
-  width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line);
-  background: transparent; padding: 15px 16px; font-size: 14px;
-  color: var(--muted); cursor: pointer;
-}
-
-/* --------------------------------------------------------------------------
-   Flow chrome: step indicator
-   -------------------------------------------------------------------------- */
-
-.flowhead { display: flex; align-items: center; justify-content: space-between; flex: none; }
-.steps { display: flex; gap: 5px; align-items: center; }
-.stepbars { display: flex; gap: 5px; align-items: center; }
-.stepbar { height: 3px; width: 26px; border-radius: 2px; background: var(--line); }
-.stepbar.is-on { background: var(--accent); }
-.steplabel { font-size: 11px; font-weight: 600; color: var(--muted); margin-left: 6px; }
-
-.flowhead-title { font-size: 25px; font-weight: 600; letter-spacing: -.02em; margin: 34px 0 0; }
-.flowhead-sub { font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; display: block; flex: none; border: 2px solid #000; }
+.dot--mastered { background: var(--amber); }
+.dot--learning { background: linear-gradient(90deg, #fff 50%, var(--card) 50%); }
+.dot--now { background: var(--cyan); animation: pulse 1.9s ease-in-out infinite; }
+.dot--locked { background: var(--chip-review); }
 
 /* --------------------------------------------------------------------------
    Solve
    -------------------------------------------------------------------------- */
 
-.problem { margin-top: 14px; font-size: 27px; line-height: 1.35; flex: none; }
-
-.answerbox {
-  margin-top: 26px; border: 1px solid var(--line); border-radius: 18px;
-  background: var(--card); padding: 16px 18px; min-height: 64px;
-  display: flex; align-items: center; box-sizing: border-box; flex: none;
+.flowhead { flex: none; display: flex; align-items: center; gap: 12px; padding: 52px 20px 10px; }
+.steps { flex: 1; display: flex; align-items: center; gap: 7px; }
+.stepbars { flex: 1; display: flex; align-items: center; gap: 7px; }
+.stepbar { height: 9px; flex: 1; border: 2px solid #000; background: var(--line); box-shadow: 0 2px 0 #000; }
+.stepbar.is-on { background: var(--gold); }
+.steplabel {
+  flex: none; font-size: 13px; letter-spacing: .06em; color: var(--pale);
+  -webkit-text-stroke: 3px #000; paint-order: stroke fill;
 }
-.answerbox:focus-within { border-color: var(--accent); }
+
+.solvecard .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 3px 100%); }
+.solvecard-body { padding: 16px 18px 20px; }
+.problem { margin-top: 12px; font-size: 26px; line-height: 1.3; color: #fff; overflow-x: auto; overflow-y: hidden; }
+
+.answerblock { display: flex; flex-direction: column; }
+.answerrow { display: flex; align-items: stretch; }
 .answerinput {
-  border: 0; background: transparent; outline: none;
-  font-size: 19px; width: 100%; padding: 0;
+  flex: 1; min-width: 0; border: 0; outline: none; background: transparent;
+  padding: 17px 16px 19px; font-size: 20px; color: #fff;
 }
-.answerinput::placeholder { color: var(--muted); }
-
+.answerinput::placeholder { color: var(--faint); }
 .photobtn {
-  margin-top: 10px; border: 1px dashed var(--line); border-radius: 18px;
-  background: transparent; padding: 16px 18px;
-  display: flex; align-items: center; gap: 12px; cursor: pointer; flex: none;
+  flex: none; width: 62px; cursor: pointer;
+  border: 0; border-left: 2px solid #000; background: var(--cyan-under);
+  display: grid; place-items: center;
+  box-shadow: inset 0 4px 0 rgba(255, 255, 255, .18), inset 0 -7px 0 rgba(0, 0, 0, .35);
 }
-.photobtn:hover { border-color: var(--accent); }
+.photobtn:active { background: var(--purple); }
 .camglyph {
-  width: 34px; height: 26px; border: 1.5px solid var(--ink); border-radius: 6px;
-  position: relative; flex: none; display: block;
+  width: 26px; height: 20px; border: 3px solid #000; border-radius: 3px;
+  background: #fff; position: relative; display: block;
 }
 .camglyph span {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: 11px; height: 11px; border: 1.5px solid var(--ink); border-radius: 50%; display: block;
+  position: absolute; left: 50%; top: 50%; width: 9px; height: 9px;
+  margin: -4.5px 0 0 -4.5px; border: 2.5px solid #000; border-radius: 50%;
+  display: block; box-sizing: border-box;
 }
-.photobtn-label { font-size: 14px; font-weight: 600; text-align: left; }
+.answernote { margin-top: 7px; font-size: 12px; color: var(--muted); }
+.inline-note { margin-top: 8px; font-size: 12.5px; line-height: 1.45; color: var(--pale); }
 
-.inline-note {
-  margin-top: 10px; font-size: 12.5px; line-height: 1.45;
-  color: var(--muted); flex: none;
-}
+.hintblock { display: flex; flex-direction: column; gap: 9px; }
+.hintblock-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 0; }
+.pips { display: flex; gap: 5px; }
+.pip { width: 16px; height: 16px; border: 2px solid #000; background: var(--line); box-shadow: 0 2px 0 #000; }
+.pip.is-on { background: var(--cyan); }
 
-.hintcard {
-  border: 1px solid var(--line); border-radius: 20px;
-  background: var(--card); overflow: hidden; margin-bottom: 8px; flex: none;
+.hint { animation: arrive .28s ease-out; filter: drop-shadow(0 4px 0 #000) drop-shadow(0 7px 0 rgba(0, 0, 0, .42)); }
+.hint .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 2px 100%); }
+.hint-body { padding: 12px 14px 14px; }
+.hint-row { display: flex; align-items: center; gap: 9px; }
+.hint-n {
+  flex: none; width: 24px; height: 24px; display: grid; place-items: center;
+  border: 2px solid #000; background: var(--cyan); font-size: 13px; color: #fff;
+  -webkit-text-stroke: 2.5px #000; paint-order: stroke fill;
 }
-.hintcard-top {
-  display: flex; align-items: center; justify-content: space-between; padding: 14px 16px;
-}
-.hintcard-title { font-size: 14px; font-weight: 600; }
-.hintcard-count { font-size: 11.5px; color: var(--muted); }
-.hint {
-  padding: 12px 16px; border-top: 1px solid var(--line);
-  animation: arrive .3s ease; display: flex; gap: 10px;
-}
-.hint-n { font-size: 11px; font-weight: 700; color: var(--accent); flex: none; margin-top: 2px; }
-.hint-text { font-size: 14px; line-height: 1.45; text-wrap: pretty; }
-.hint-text.math { font-size: 15px; }
-.hintbtn {
-  width: 100%; border: 0; border-top: 1px solid var(--line);
-  background: transparent; padding: 14px; font-size: 13.5px;
-  font-weight: 600; color: var(--accent); cursor: pointer;
+/* Hint prose. A sentence the student reads: no stroke. */
+.hint-text { flex: 1; min-width: 0; font-size: 15px; line-height: 1.3; color: #fff; overflow-wrap: break-word; }
+.hint-text--math { font-size: 18px; overflow-x: auto; overflow-y: hidden; }
+#hintList { display: flex; flex-direction: column; gap: 9px; }
+#hintList:empty { display: none; }
+.hint-tex {
+  margin-top: 11px; border: 2px solid #000; background: var(--floor);
+  padding: 13px 12px; font-size: 18px; color: #fff; overflow-x: auto; overflow-y: hidden;
 }
 
 /* --------------------------------------------------------------------------
    Check
+   The photo path's one checkpoint, and it must not feel like one. Restrained on
+   purpose: no cap strip, no big drop shadow, no colour until you touch a line.
+   The mock never drew this screen; the whole treatment is extrapolated.
    -------------------------------------------------------------------------- */
 
-.transcript {
-  margin-top: 20px; border: 1px solid var(--line); border-radius: 20px;
-  background: var(--card); overflow: hidden; flex: none;
-}
-.tline {
-  padding: 15px 18px; border-top: 1px solid var(--line);
-  font-family: var(--math); font-size: 17px; line-height: 1.4;
-  display: flex; justify-content: space-between; gap: 10px; align-items: center;
-}
-.tline:first-child { border-top: 0; }
-.tline-text { flex: 1; outline: none; }
-.tline-text:focus { color: var(--accent); }
-.tline-edit { font-size: 11px; color: var(--muted); font-family: var(--ui); flex: none; }
+.checkhead { display: flex; flex-direction: column; gap: 7px; margin-top: 14px; }
+.transcript { display: flex; flex-direction: column; gap: 9px; }
+
+.tline { filter: drop-shadow(0 3px 0 #000) drop-shadow(0 6px 0 rgba(0, 0, 0, .4)); }
+.tline .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 1px 100%); --face: var(--sunk); --lip: none; }
+.tline-body { display: flex; align-items: center; gap: 12px; padding: 12px 14px 14px; cursor: text; }
+.tline-text { flex: 1; min-width: 0; outline: none; overflow-x: auto; font-size: 17px; line-height: 1.4; color: #fff; }
+.tline-edit { flex: none; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+/* Touching a line is the whole interaction, so it is the only thing that lights up. */
+.tline:focus-within .bev-face { --face: var(--dim); }
+.tline:focus-within .tline-text { color: var(--pale); }
+.tline:focus-within .tline-edit { color: var(--cyan); }
 
 /* --------------------------------------------------------------------------
    Result
+   The most important screen in the product, and it has three states: correct,
+   correct but unsimplified, and incorrect.
+
+   THE READABILITY RULE IS ABSOLUTE HERE. `.diag-prose` is two lines of ordinary
+   sentence and it is the emotional payload of the whole app: plain white on
+   dark, no stroke, ever. The arcade treatment goes on the verdict, the numbers
+   and the buttons, which are the things around it.
+
+   Colour carries the state, and none of it is red: gold for correct, amber for
+   correct-but-unsimplified, purple for incorrect. Purple is already the colour
+   of a blocker everywhere else in the app, which is exactly what an incorrect
+   answer has just turned up.
    -------------------------------------------------------------------------- */
 
-.verdictrow { margin-top: 30px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; flex: none; }
-.verdict { font-size: 25px; font-weight: 600; letter-spacing: -.02em; }
-.verdict.is-correct { color: var(--gold); }
-.expected { font-size: 13px; color: var(--muted); }
+.strip--amber { background: var(--amber); }
 
-.softnote { margin-top: 10px; font-size: 13.5px; line-height: 1.45; color: var(--muted); flex: none; }
+.verdictcard { animation: arrive .3s ease-out both; }
+.verdictcard .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 3px 100%); }
+.verdictcard-body { padding: 15px 18px 18px; }
+.verdictrow { display: flex; align-items: center; gap: 12px; }
+.verdict { flex: 1; min-width: 0; }
+.verdict.is-correct { color: var(--yellow); }
+
+/* A star only ever means "you got it". It is drawn for both correct states,
+   including the unsimplified one, so that screen can never read as a failure. */
+.verdict-mark {
+  flex: none; display: none; width: 30px; height: 32px; background: var(--amber);
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.verdict-mark.is-on { display: block; animation: goldin .6s ease-out both; }
+
+.expected {
+  margin-top: 13px; border: 2px solid #000; background: var(--floor);
+  padding: 9px 12px 11px; font-size: 14px; color: var(--ink);
+  overflow-x: auto; overflow-y: hidden;
+}
+.expected:empty { display: none; }
+
+/* Correct, and it can be simplified. A note in the margin, never a rebuke: the
+   amber edge is the same amber as the star above it, not a warning colour. */
+.softnote {
+  margin-top: 13px; border-left: 5px solid var(--amber);
+  background: rgba(252, 188, 33, .13); padding: 10px 13px 12px;
+}
+
+/* Correct, and that is the whole screen. With nothing under it the card would
+   sit alone at the top of an empty frame and read as unfinished, so the win is
+   centred and set larger instead. `is-lean` is set by renderVerdict and cleared
+   by resetResultScreen. */
+#screen-result.is-lean .verdictcard { margin: auto 0; }
+#screen-result.is-lean .verdictcard-body { padding: 22px 20px 26px; }
+#screen-result.is-lean .verdict { font-size: 34px; -webkit-text-stroke-width: 6px; }
+#screen-result.is-lean .verdict-mark { width: 42px; height: 44px; }
+/* The star lands, then keeps a little life in it. */
+.verdict-mark.is-on { animation: goldin .6s ease-out both, bob 2.8s ease-in-out .6s infinite; }
 
 .workblock {
-  margin-top: 18px; border-radius: 18px; background: var(--sunk);
-  padding: 14px 16px; font-size: 15.5px; line-height: 1.9;
-  display: flex; flex-direction: column; flex: none;
+  border: 2px solid #000; background: var(--floor); box-shadow: 0 3px 0 #000;
+  padding: 13px 14px; font-size: 15.5px; line-height: 1.9;
+  display: flex; flex-direction: column; flex: none; overflow-x: auto;
 }
 .workline {
-  border-radius: 6px; padding: 1px 5px; margin-left: -5px;
-  background: transparent; transition: background .5s ease;
+  padding: 1px 8px; margin-left: -8px; background: transparent;
+  box-shadow: inset 0 0 0 rgba(151, 71, 255, 0);
+  transition: background .5s ease, box-shadow .5s ease;
 }
-.workline.is-hl { background: var(--accent-soft); }
+/* The line the diagnosis blames. It lights AFTER the verdict, with the panel. */
+.workline.is-hl { background: rgba(151, 71, 255, .38); box-shadow: inset 4px 0 0 var(--purple); }
 
+/* The beat between the verdict and the diagnosis. It is a panel rather than a
+   loose line because it is holding a place: something is about to land here. */
 .thinking {
-  margin-top: 26px; display: flex; align-items: center; gap: 9px;
-  color: var(--muted); font-size: 12.5px; flex: none;
+  display: flex; align-items: center; gap: 10px; flex: none;
+  border: 2px solid #000; background: var(--sunk); box-shadow: 0 3px 0 #000;
+  padding: 11px 13px 13px; color: var(--pale); font-size: 13px;
 }
-.blip { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1s infinite; flex: none; }
+.blip { width: 8px; height: 8px; border: 2px solid #000; background: var(--cyan); animation: blink 1s infinite; flex: none; }
 
-.diag { margin-top: 26px; animation: arrive .7s cubic-bezier(.16, .84, .44, 1) both; flex: none; }
-.diag-prose { font-size: 20px; line-height: 1.42; letter-spacing: -.01em; text-wrap: pretty; }
-.diag-prose strong { font-weight: 600; }
-.diag-recurrence { font-size: 20px; line-height: 1.42; margin-top: 10px; color: var(--accent); }
+.diag { animation: arrive .7s cubic-bezier(.16, .84, .44, 1) both; }
+.diag .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 3px 100%); }
+.diag-body { padding: 16px 18px 18px; }
+/* NO STROKE. Read the block comment above before changing anything on this line. */
+.diag-prose { font-size: 19px; line-height: 1.45; color: #fff; }
+.diag-prose strong { font-weight: 400; color: var(--yellow); }
+.diag-recurrence { margin-top: 10px; font-size: 15px; color: var(--pale); }
 .diag-consequence {
-  margin-top: 24px; display: flex; align-items: center; gap: 10px;
-  border-top: 1px solid var(--line); padding-top: 16px;
-  font-size: 13px; line-height: 1.35; color: var(--muted); text-wrap: pretty;
+  margin-top: 17px; display: flex; align-items: center; gap: 10px;
+  border-top: 3px solid var(--line); padding-top: 15px; font-size: 13px; color: var(--muted);
 }
-.diag-consequence .dot { width: 11px; height: 11px; }
 .diag-ask {
-  margin-top: 22px; display: flex; align-items: center;
-  justify-content: space-between; gap: 10px;
+  margin-top: 15px; display: flex; align-items: center; justify-content: space-between;
+  gap: 10px 12px; flex-wrap: wrap; border-top: 3px solid var(--line); padding-top: 15px;
 }
 .diag-ask-label { font-size: 13px; color: var(--muted); }
 .diag-ask-btns { display: flex; gap: 8px; flex: none; }
 
 /* --------------------------------------------------------------------------
    Complete
+   The reward moment, and the right place for the most motion in the app: the
+   spine rises with `riseline`, then the newly mastered nodes take the gold with
+   `goldin`. Extrapolated; the mock has no Complete screen.
    -------------------------------------------------------------------------- */
 
-.completebody {
-  flex: 1; display: flex; flex-direction: column; justify-content: center;
-  padding-left: 8px; min-height: 0;
-}
-.finish { position: relative; padding-left: 30px; }
-.finish-rail { position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
-.finish-fillwrap { position: absolute; left: 5px; top: 8px; width: 2px; height: 0; }
-.finish-fill { width: 2px; height: 0; background: var(--accent); }
-.finish-fillwrap.is-rising .finish-fill { animation: riseline 1.1s ease .1s both; }
-.finish-nodes { position: relative; display: flex; flex-direction: column; gap: 26px; }
-.finish-node { position: relative; display: flex; align-items: center; gap: 12px; }
-.finish-node .dot { position: absolute; left: -30px; }
-.finish-name { font-size: 15px; line-height: 1.3; text-wrap: pretty; }
+/* Auto margins rather than justify-content, so a tall session still scrolls
+   from its top instead of having the first tile clipped off. */
+/* Centred between the status bar and the footer, biased a little above the true
+   middle: the eye reads a reward block as low when it is geometrically centred. */
+.scroll--complete { padding-top: 52px; padding-bottom: 96px; }
+.completebody { margin: auto 0; display: flex; flex-direction: column; gap: 22px; }
+.completebody .eyebrow { margin-bottom: -6px; }
 
-.tomorrow {
-  margin-top: 44px; font-size: 22px; font-weight: 600;
-  letter-spacing: -.02em; line-height: 1.3; text-wrap: pretty;
+.rewardrow { display: flex; gap: 12px; }
+.reward { flex: 1; }
+.reward .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 2px 100%); }
+.reward-num { font-size: 32px; line-height: 1; padding: 15px 15px 0; color: #fff; -webkit-text-stroke: 4.5px #000; paint-order: stroke fill; }
+.reward-label { font-size: 11.5px; line-height: 1.3; padding: 7px 15px 15px; color: var(--ink); }
+.reward--gold .reward-label { color: #3B2606; }
+
+.finish { position: relative; }
+/* Both rails sit at the centre line of a 40px node: 20 - half of 6. */
+.finish-rail { position: absolute; left: 17px; top: 20px; bottom: 20px; width: 6px; background: var(--line); }
+.finish-fillwrap { position: absolute; left: 17px; top: 20px; width: 6px; height: 0; overflow: hidden; }
+.finish-fill { width: 6px; height: 100%; background: var(--gold); transform-origin: top; }
+.finish-fillwrap.is-rising .finish-fill { animation: riseline 1.1s ease .1s both; }
+.finish-nodes { position: relative; display: flex; flex-direction: column; gap: 18px; }
+.finish-node { display: flex; align-items: center; gap: 14px; }
+.finish-name { flex: 1; min-width: 0; font-size: 15px; line-height: 1.3; color: #fff; }
+
+/* A node earned TODAY does not arrive gold, or there is nothing to watch. It is
+   held grey while the spine rises past it, then takes the gold with `goldin`.
+   Nodes that were already mastered are simply gold and do not animate. */
+.finish-node .stage-node--mastered::before { animation: none; }
+.finish-node .stage-node.is-pending { background: var(--line); }
+.finish-node .stage-node.is-pending::before { opacity: 0; }
+.finish-node .stage-node.is-lit { background: var(--amber); }
+.finish-node .stage-node.is-lit::before { opacity: 1; animation: goldin .7s ease-out both; }
+
+.tomorrowcard .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 7px) 100%, 2px 100%); }
+.tomorrowcard-body { padding: 14px 16px 17px; }
+.tomorrow { color: var(--yellow); -webkit-text-stroke-width: 4px; }
+
+/* --------------------------------------------------------------------------
+   Blockers
+   A blocker is a named opponent, not a to-do item: a purple rank plate, the
+   name set as a headline, the student's own failing line struck through above
+   the corrected one, and a gold button to go and beat it. This is the screen
+   where the arcade language actually helps, so it is allowed to.
+   -------------------------------------------------------------------------- */
+
+.blockers { display: flex; flex-direction: column; gap: 20px; margin-top: 8px; }
+.blockercard .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 3px 100%); }
+.blockercard-body { padding: 14px 16px 17px; }
+.blockercard-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+.blockercard-rankplate { flex: none; filter: drop-shadow(0 3px 0 #000); }
+.blockercard-rankplate .bev-face {
+  --sk: polygon(0 0, 100% 0, calc(100% - 3px) 100%, 1px 100%);
+  --face: var(--chip-blocker); --lip: inset 0 -5px 0 #5E2496;
 }
-.xpline { margin-top: 10px; font-size: 12px; color: var(--muted); }
+.blockercard-rank {
+  display: block; padding: 4px 11px 7px;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #fff;
+  -webkit-text-stroke: 2.5px #000; paint-order: stroke fill;
+}
+.blockercard-freq {
+  flex: none; border: 2px solid #000; background: var(--sunk);
+  padding: 3px 8px 5px; font-size: 11.5px; color: var(--ink);
+}
+.blockercard-freq:empty { display: none; }
+
+.blockercard-name {
+  margin-top: 12px; font-size: 22px; line-height: 1.12; color: #fff;
+  -webkit-text-stroke: 4px #000; paint-order: stroke fill; overflow-wrap: break-word;
+}
+
+.blockercard-lines {
+  margin-top: 14px; border: 2px solid #000; background: var(--floor); padding: 11px 12px 13px;
+  font-size: 16px; display: flex; flex-direction: column; gap: 8px;
+}
+.blockercard-line { display: flex; align-items: flex-start; gap: 10px; }
+/* Shape as well as colour, the same rule the four node states follow. */
+.blockercard-mark { flex: none; width: 11px; height: 11px; margin-top: 6px; border: 2px solid #000; box-sizing: border-box; }
+.blockercard-mark--wrong { background: var(--muted); }
+.blockercard-mark--right { background: var(--gold); }
+.blockercard-tex { flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; }
+.blockercard-wrong .blockercard-tex { color: var(--muted); }
+/* The strike is PAINTED, not declared. `text-decoration: line-through` does not
+   cross an atomic inline, and KaTeX renders one, so on a rendered expression the
+   line silently disappears and the wrong step is only a grey step. A background
+   band on an INLINE box is the fix that survives wrapping: it repeats per line
+   fragment, where an absolutely positioned rule would draw one line through the
+   middle of a two-line expression. */
+.blockercard-wrong .blockercard-strike {
+  display: inline;
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  background-image: linear-gradient(
+    to bottom,
+    transparent 0 calc(57% - 1.5px),
+    var(--muted) calc(57% - 1.5px) calc(57% + 1.5px),
+    transparent calc(57% + 1.5px) 100%);
+}
+
+.blockercard-fix { margin-top: 15px; }
+.blockercard-fix .btn-label { font-size: 17px; -webkit-text-stroke-width: 4px; }
+.blockercard-fix .btn-face > .btn-label { padding: 12px 10px 15px; }
+
+/* --------------------------------------------------------------------------
+   You
+   Small honest numbers and no badges. Gold means mastery here as it does
+   everywhere else, so the mastered count takes it and the accuracy does not.
+   -------------------------------------------------------------------------- */
+
+.statrow { display: flex; gap: 12px; margin-top: 10px; }
+.stat { flex: 1; }
+.stat .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 2px 100%); }
+.stat-num { font-size: 34px; line-height: 1; padding: 16px 16px 0; color: #fff; -webkit-text-stroke: 4.5px #000; paint-order: stroke fill; }
+.stat-num--gold { color: var(--yellow); }
+.stat-label { font-size: 11.5px; line-height: 1.3; padding: 7px 16px 16px; color: var(--ink); }
+
+.settings { margin-top: 18px; }
+.settings .bev-face { --sk: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 2px 100%); }
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 16px 15px; }
+.setting-name { font-size: 14px; color: #fff; }
+.seg { display: flex; gap: 7px; flex: none; }
+.seg-btn {
+  border: 2px solid #000; background: var(--sunk); box-shadow: 0 3px 0 #000;
+  padding: 7px 13px 9px; font-size: 13px; color: var(--muted); cursor: pointer;
+}
+.seg-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #000; }
+.seg-btn.is-on {
+  background: var(--gold); color: #fff;
+  box-shadow: 0 3px 0 #000, inset 0 3px 0 var(--gold-top), inset 0 -5px 0 var(--gold-under);
+  -webkit-text-stroke: 2.5px #000; paint-order: stroke fill;
+}
+.setting-link {
+  width: 100%; text-align: left; border: 0; border-top: 3px solid #000;
+  background: transparent; padding: 14px 16px; font-size: 14px; color: var(--pale); cursor: pointer;
+}
+.setting-link:active { background: var(--sunk); }
 
 /* --------------------------------------------------------------------------
    Tab bar
    -------------------------------------------------------------------------- */
 
 .tabbar {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 88px;
-  padding: 10px 12px 0; background: var(--bg);
-  border-top: 1px solid var(--line);
-  display: flex; align-items: flex-start; z-index: 5; box-sizing: border-box;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+  height: var(--tabbar-h);
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px;
+  padding: 11px 14px 26px; background: var(--floor); border-top: 3px solid #000;
+  box-sizing: border-box;
 }
-.tab {
-  flex: 1; border: 0; background: transparent; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 8px 0; color: var(--muted);
+.tab { border: 0; background: none; padding: 0; cursor: pointer; filter: drop-shadow(0 4px 0 #000); }
+.tab:active { transform: translateY(3px); filter: drop-shadow(0 1px 0 #000); }
+/* Fixed height, so the bar is the same 80px in both scripts. See --tabbar-h. */
+.tab-face {
+  --sk: polygon(0 0, 100% 0, calc(100% - 3px) 100%, 1px 100%);
+  --face: var(--card); --lip: inset 0 -6px 0 var(--device);
+  height: 100%; display: grid; place-items: center;
 }
-.tab.is-on { color: var(--ink); }
-.tab-label { font-size: 11px; font-weight: 500; letter-spacing: .01em; }
-.tab.is-on .tab-label { font-weight: 600; }
-.glyph { width: 16px; height: 16px; display: block; }
-.glyph--today { border-radius: 5px; border: 1.8px solid currentColor; }
-.glyph--path { border-left: 1.8px solid currentColor; border-top: 1.8px solid currentColor; transform: rotate(45deg) scale(.8); }
-.glyph--blockers { border: 1.8px solid currentColor; border-radius: 50% 50% 50% 2px; }
-.glyph--you { border: 1.8px solid currentColor; border-radius: 50%; }
+.tab-label {
+  display: block; padding: 0 4px 5px; text-align: center;
+  font-size: 13px; line-height: 1.1; letter-spacing: .05em; color: var(--ink);
+  -webkit-text-stroke: 3px #000; paint-order: stroke fill;
+}
+.tab.is-on .tab-face { --face: var(--gold); --lip: inset 0 4px 0 var(--gold-top), inset 0 -7px 0 var(--gold-under); }
+.tab.is-on .tab-label { color: #fff; }
 
 /* --------------------------------------------------------------------------
    Loading and error
@@ -609,21 +1020,21 @@ input { font-family: inherit; color: inherit; }
 
 .veil {
   position: absolute; inset: 0; z-index: 9;
-  background: var(--bg);
+  background: var(--device);
   display: flex; align-items: center; justify-content: center; gap: 9px;
-  font-size: 12.5px; color: var(--muted);
+  font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--pale);
 }
 .veil[hidden] { display: none; }
 
 .banner {
-  position: absolute; top: 52px; left: 14px; right: 14px; z-index: 7;
-  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
-  padding: 9px 12px; font-size: 11.5px; line-height: 1.35; color: var(--muted);
+  position: absolute; top: 54px; left: 14px; right: 14px; z-index: 7;
+  background: var(--card); border: 2px solid #000; box-shadow: 0 3px 0 #000;
+  padding: 9px 12px; font-size: 11.5px; line-height: 1.35; color: var(--ink);
   display: flex; align-items: center; gap: 8px;
   animation: arrive .4s ease both;
 }
 .banner[hidden] { display: none; }
-.banner-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex: none; }
+.banner-dot { width: 8px; height: 8px; border: 2px solid #000; background: var(--gold); flex: none; }
 
 /* Any class rule that sets `display` would otherwise beat the UA rule for the
    hidden attribute, leaving hidden nodes visible and clickable. */

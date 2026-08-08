@@ -4,12 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Open Tutor</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=STIX+Two+Text:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Everything is vendored under /vendor. The page must make ZERO requests to any
+     external host: the demo runs on venue wifi and a CDN is a single point of failure.
+     display-fonts.css carries Lilita One (Latin) and Baloo 2 (Devanagari + Latin),
+     sliced by unicode-range exactly as Google serves them. -->
+<link rel="stylesheet" href="vendor/display-fonts.css">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body data-theme="light">
+<body>
 
 <div class="stage">
 <div class="frame" id="frame">
@@ -30,219 +33,377 @@
        the student to type what they wanted to understand, and then the very next
        screen made them choose a course, which is the same decision made twice.
        Only the course choice was ever sent anywhere; the typed goal went nowhere.
+
+       The deleted opening screen left its LAYOUT behind, and this screen now wears
+       it: logo lockup, one big stroked question, one chunky field, one gold button.
+       We take the visual impact without restoring an input that goes nowhere.
        ============================================================================ -->
-  <section class="screen screen--pad-flow" id="screen-signup">
+  <section class="screen" id="screen-signup">
+    <span class="orb orb--cyan"></span>
+    <span class="orb orb--purple"></span>
+
+    <div class="lockup">
+      <div class="bev bev--drop-sm logoplate">
+        <span class="bev-face bev-face--gold">
+          <span class="logoplate-word">OPEN TUTOR</span>
+        </span>
+      </div>
+      <div class="lockup-sub">ADAPTIVE MATHS</div>
+    </div>
+
     <div class="onboard">
-      <h1 class="onboard-q" data-t="signupQ"></h1>
-      <label class="onboard-field">
-        <input id="nameInput" class="onboard-input" type="text" autocomplete="name" spellcheck="false">
-      </label>
-      <p class="screen-sub" data-t="signupNote"></p>
-      <div class="spacer"></div>
-      <button class="btn btn--primary" id="btnSignup" data-t="continueWord"></button>
+      <h1 class="hd hd--xl onboard-q" data-t="signupQ"></h1>
+
+      <div class="bev bev--drop-md">
+        <label class="bev-face bev-face--card onboard-field">
+          <span class="eyebrow" data-t="namePlaceholder"></span>
+          <span class="onboard-row">
+            <input id="nameInput" class="onboard-input" type="text" autocomplete="name" spellcheck="false">
+            <span class="caret"></span>
+          </span>
+        </label>
+      </div>
+
+      <p class="prose onboard-note" data-t="signupNote"></p>
+    </div>
+
+    <div class="onboard-foot">
+      <button class="btn btn--primary" id="btnSignup">
+        <span class="bev-face bev-face--gold btn-face"><span class="btn-label" data-t="continueWord"></span></span>
+      </button>
     </div>
   </section>
 
   <!-- ============ COURSE SELECTION ============ -->
   <section class="screen" id="screen-courses">
-    <div class="scroll scroll--plain">
+    <div class="screenhead">
       <div class="eyebrow" data-t="coursesEyebrow"></div>
-      <h1 class="headline" data-t="coursesHead"></h1>
-      <p class="screen-sub" data-t="coursesNote"></p>
+      <h1 class="hd hd--l" data-t="coursesHead"></h1>
+      <p class="prose" data-t="coursesNote"></p>
+    </div>
+    <div class="scroll scroll--plain">
       <div class="courses" id="coursesList"></div>
     </div>
   </section>
 
-  <!-- ============ TODAY ============ -->
-  <section class="screen" id="screen-today">
-    <div class="scroll scroll--tab scroll--today">
-      <div class="eyebrow" data-t="today"></div>
-      <h1 class="headline" id="todayHead"></h1>
+  <!-- ============ TODAY ============
+       The gold button lives in an ANCHORED FOOTER and the list ends above it. It
+       used to float over the scroll area, which cut the fifth card in half; Solve
+       already solved this with `.flowfoot` and this is the same pattern. -->
+  <section class="screen screen--tabbed" id="screen-today">
+    <div class="screenhead">
+      <div class="headrow">
+        <h1 class="hd hd--l" data-t="today"></h1>
+        <span class="streak" id="todayStreak"></span>
+      </div>
+      <div class="bev bev--drop-sm headchip">
+        <span class="bev-face bev-face--cyan"><span class="headchip-text" id="todayHead"></span></span>
+      </div>
+    </div>
+    <div class="scroll scroll--tab">
       <div class="cards" id="todayList"></div>
     </div>
-    <button class="btn btn--primary btn--float" id="btnStartSession" data-t="start"></button>
+    <div class="tabfoot">
+      <button class="btn btn--primary" id="btnStartSession">
+        <span class="bev-face bev-face--gold btn-face"><span class="btn-label" data-t="start"></span></span>
+      </button>
+    </div>
   </section>
 
   <!-- ============ PATH ============ -->
-  <section class="screen" id="screen-path">
-    <div class="scroll scroll--tab">
-      <div class="goalcard">
-        <div class="goalcard-top">
-          <span class="goalcard-title" id="goalTitle"></span>
-          <span class="goalcard-away" id="goalAway"></span>
+  <section class="screen screen--tabbed" id="screen-path">
+    <div class="screenhead">
+      <div class="bev bev--drop-md goalcard">
+        <div class="bev-face bev-face--card">
+          <span class="strip strip--gold"></span>
+          <div class="goalcard-body">
+            <div class="eyebrow" data-t="tabPath"></div>
+            <div class="hd hd--m goalcard-title" id="goalTitle"></div>
+            <div class="pills">
+              <span class="pill" id="goalAway"></span>
+              <span class="pill" id="goalPace"></span>
+            </div>
+          </div>
         </div>
-        <div class="goalcard-pace" id="goalPace"></div>
       </div>
-
+    </div>
+    <div class="scroll scroll--tab">
       <div class="spine-wrap">
         <div class="spine-rail"></div>
         <div class="stages" id="pathStages"></div>
       </div>
-
       <div class="legend" id="pathLegend"></div>
     </div>
   </section>
 
   <!-- ============ BLOCKERS ============ -->
-  <section class="screen" id="screen-blockers">
-    <div class="scroll scroll--tab">
+  <section class="screen screen--tabbed" id="screen-blockers">
+    <div class="screenhead">
       <div class="eyebrow" data-t="blockers"></div>
-      <h1 class="headline" id="blockersHead"></h1>
+      <h1 class="hd hd--l" id="blockersHead"></h1>
+    </div>
+    <div class="scroll scroll--tab">
       <div class="blockers" id="blockersList"></div>
     </div>
   </section>
 
-  <!-- ============ YOU ============ -->
-  <section class="screen" id="screen-you">
-    <div class="scroll scroll--tab">
+  <!-- ============ YOU ============
+       Streak, two honest numbers and the language toggle. No badges, no levels
+       and nothing invented: everything on this screen is a field the server
+       already sends. Gold means mastery here as it does everywhere else, so the
+       mastered count takes it and the accuracy does not. -->
+  <section class="screen screen--tabbed" id="screen-you">
+    <div class="screenhead">
       <div class="eyebrow" data-t="you"></div>
-      <h1 class="headline" id="youStreak"></h1>
+      <h1 class="hd hd--l" id="youStreak"></h1>
+    </div>
+    <div class="scroll scroll--tab">
       <div class="statrow">
-        <div class="stat">
-          <div class="stat-num math" id="statMastered"></div>
-          <div class="stat-label" data-t="mastered"></div>
+        <div class="bev bev--drop-sm stat">
+          <div class="bev-face bev-face--card">
+            <div class="stat-num stat-num--gold" id="statMastered"></div>
+            <div class="stat-label" data-t="mastered"></div>
+          </div>
         </div>
-        <div class="stat">
-          <div class="stat-num math" id="statAccuracy"></div>
-          <div class="stat-label" data-t="accuracy"></div>
+        <div class="bev bev--drop-sm stat">
+          <div class="bev-face bev-face--card">
+            <div class="stat-num" id="statAccuracy"></div>
+            <div class="stat-label" data-t="accuracy"></div>
+          </div>
         </div>
       </div>
-      <div class="settings">
-        <div class="setting-row">
-          <span class="setting-name" data-t="language"></span>
-          <span class="seg">
-            <button class="seg-btn" id="btnLangEn">English</button>
-            <button class="seg-btn" id="btnLangHi">हिंदी</button>
-          </span>
+
+      <!-- The light palette and its toggle are gone: this style is dark only, and
+           there is no mock for a light one. The language toggle stays. -->
+      <div class="bev bev--drop-sm settings">
+        <div class="bev-face bev-face--card">
+          <div class="setting-row">
+            <span class="setting-name" data-t="language"></span>
+            <span class="seg">
+              <button class="seg-btn" id="btnLangEn">English</button>
+              <button class="seg-btn" id="btnLangHi">हिंदी</button>
+            </span>
+          </div>
+          <button class="setting-link" id="btnReplay" data-t="replay"></button>
+          <button class="setting-link" id="btnSignOut" data-t="signOut"></button>
         </div>
-        <div class="setting-row">
-          <span class="setting-name" data-t="appearance"></span>
-          <span class="seg">
-            <button class="seg-btn" id="btnLight" data-t="light"></button>
-            <button class="seg-btn" id="btnDark" data-t="dark"></button>
-          </span>
-        </div>
-        <button class="setting-link" id="btnReplay" data-t="replay"></button>
-        <button class="setting-link" id="btnSignOut" data-t="signOut"></button>
       </div>
     </div>
   </section>
 
   <!-- ============ SOLVE ============ -->
-  <section class="screen screen--pad-flow" id="screen-solve">
+  <section class="screen" id="screen-solve">
     <div class="flowhead">
-      <span class="steps"><span class="stepbars" id="solveSteps"></span><span class="steplabel" id="solveStepLabel"></span></span>
-      <button class="closebtn" data-exit aria-label="Close">&#10005;</button>
+      <button class="iconbtn" data-exit aria-label="Close">
+        <span class="bev-face bev-face--card iconbtn-face"><span class="glyph-x"></span></span>
+      </button>
+      <span class="steps"><span class="stepbars" id="solveSteps"></span></span>
+      <span class="steplabel" id="solveStepLabel"></span>
     </div>
 
     <div class="scroll scroll--flow">
-      <div class="eyebrow eyebrow--tight" id="problemLabel"></div>
-      <div class="problem math" id="problemMath"></div>
+      <div class="bev bev--drop-lg solvecard">
+        <div class="bev-face bev-face--card">
+          <span class="strip strip--purple"></span>
+          <div class="solvecard-body">
+            <div class="eyebrow" id="problemLabel"></div>
+            <div class="problem" id="problemMath"></div>
+          </div>
+        </div>
+      </div>
 
-      <label class="answerbox">
-        <input id="answerInput" class="answerinput math" type="text" autocomplete="off" spellcheck="false" inputmode="text">
-      </label>
+      <div class="answerblock">
+        <div class="bev bev--drop-md">
+          <div class="bev-face bev-face--sunk answerrow">
+            <input id="answerInput" class="answerinput" type="text" autocomplete="off" spellcheck="false" inputmode="text">
+            <button class="photobtn" id="btnPhoto">
+              <span class="camglyph"><span></span></span>
+              <span class="sr-only" data-t="photo"></span>
+            </button>
+          </div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+        <div class="answernote prose" data-t="photo"></div>
+        <div class="inline-note" id="solveNote" hidden></div>
+      </div>
 
-      <button class="photobtn" id="btnPhoto">
-        <span class="camglyph"><span></span></span>
-        <span class="photobtn-label" data-t="photo"></span>
-      </button>
-      <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
-      <div class="inline-note" id="solveNote" hidden></div>
-
-      <button class="btn btn--primary btn--check" id="btnCheckAnswer" data-t="check"></button>
-
-      <div class="spacer"></div>
-
-      <div class="hintcard">
-        <div class="hintcard-top">
-          <span class="hintcard-title" data-t="hints"></span>
-          <span class="hintcard-count math" id="hintCount"></span>
+      <div class="hintblock">
+        <div class="hintblock-top">
+          <span class="eyebrow" data-t="hints"></span>
+          <span class="pips" id="hintPips"></span>
+          <span class="sr-only" id="hintCount"></span>
         </div>
         <div id="hintList"></div>
-        <button class="hintbtn" id="btnNextHint" data-t="hintNext"></button>
+        <button class="btn btn--ghost" id="btnNextHint">
+          <span class="bev-face bev-face--card btn-face"><span class="btn-label btn-label--pale" data-t="hintNext"></span></span>
+        </button>
       </div>
     </div>
-  </section>
 
-  <!-- ============ CHECK ============ -->
-  <section class="screen screen--pad-flow" id="screen-check">
-    <div class="flowhead">
-      <span class="steps"><span class="stepbars" id="checkSteps"></span><span class="steplabel" id="checkStepLabel"></span></span>
-      <button class="closebtn" data-exit aria-label="Close">&#10005;</button>
+    <div class="flowfoot">
+      <button class="btn btn--primary" id="btnCheckAnswer">
+        <span class="bev-face bev-face--gold btn-face"><span class="btn-label" data-t="check"></span></span>
+      </button>
     </div>
-    <h2 class="flowhead-title" data-t="checkHead"></h2>
-    <div class="flowhead-sub" data-t="checkSub"></div>
-    <div class="transcript" id="transcript"></div>
-    <div class="spacer"></div>
-    <button class="btn btn--primary" id="btnConfirmLines" data-t="confirm"></button>
   </section>
 
-  <!-- ============ RESULT ============ -->
-  <section class="screen screen--pad-flow" id="screen-result">
+  <!-- ============ CHECK ============
+       The photo path's only checkpoint, and it must not feel like one: one
+       headline, the lines we read, one confirm. Deliberately the plainest screen
+       in the app. A line lights only when you touch it. -->
+  <section class="screen" id="screen-check">
     <div class="flowhead">
-      <span class="steps"><span class="stepbars" id="resultSteps"></span><span class="steplabel" id="resultStepLabel"></span></span>
-      <button class="closebtn" data-exit aria-label="Close">&#10005;</button>
+      <button class="iconbtn" data-exit aria-label="Close">
+        <span class="bev-face bev-face--card iconbtn-face"><span class="glyph-x"></span></span>
+      </button>
+      <span class="steps"><span class="stepbars" id="checkSteps"></span></span>
+      <span class="steplabel" id="checkStepLabel"></span>
     </div>
 
     <div class="scroll scroll--flow">
-      <div class="verdictrow">
-        <span class="verdict" id="resVerdict"></span>
-        <span class="expected math" id="resExpected"></span>
+      <div class="checkhead">
+        <h2 class="hd hd--m" data-t="checkHead"></h2>
+        <div class="prose" data-t="checkSub"></div>
+      </div>
+      <div class="transcript" id="transcript"></div>
+    </div>
+
+    <div class="flowfoot">
+      <button class="btn btn--primary" id="btnConfirmLines">
+        <span class="bev-face bev-face--gold btn-face"><span class="btn-label" data-t="confirm"></span></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============
+       Three states, all of them driven by /api/solve/grade:
+         correct                -> the verdict card alone. No diagnosis is asked for.
+         correct + unsimplified -> the same card plus one amber note. NEVER reads as wrong.
+         incorrect              -> the working, the thinking indicator, then the
+                                   diagnosis arriving with `arrive`, the blamed line
+                                   lighting in the working, the consequence and the ask.
+       The diagnosis is PROSE and carries no stroke; see the readability rule in
+       styles.css. Everything arcade on this screen is around it, never on it. -->
+  <section class="screen" id="screen-result">
+    <div class="flowhead">
+      <button class="iconbtn" data-exit aria-label="Close">
+        <span class="bev-face bev-face--card iconbtn-face"><span class="glyph-x"></span></span>
+      </button>
+      <span class="steps"><span class="stepbars" id="resultSteps"></span></span>
+      <span class="steplabel" id="resultStepLabel"></span>
+    </div>
+
+    <div class="scroll scroll--flow">
+      <div class="bev bev--drop-lg verdictcard">
+        <div class="bev-face bev-face--card">
+          <span class="strip" id="resStrip"></span>
+          <div class="verdictcard-body">
+            <div class="verdictrow">
+              <span class="verdict hd hd--l" id="resVerdict"></span>
+              <span class="verdict-mark" id="resMark" aria-hidden="true"></span>
+            </div>
+            <div class="expected" id="resExpected"></div>
+            <div class="softnote prose" id="resNote" hidden></div>
+          </div>
+        </div>
       </div>
 
-      <div class="softnote" id="resNote" hidden></div>
-
-      <div class="workblock math" id="resWork" hidden></div>
+      <div class="workblock" id="resWork" hidden></div>
 
       <div class="thinking" id="resWaiting" hidden>
         <span class="blip"></span><span data-t="reading"></span>
       </div>
 
-      <div class="diag" id="resDiag" hidden>
-        <div class="diag-prose">
-          <strong id="diagHeadline"></strong> <span id="diagBody"></span>
-        </div>
-        <div class="diag-recurrence" id="diagRecurrence"></div>
-        <div class="diag-consequence" id="diagConsequenceRow">
-          <span class="dot dot--learning"></span>
-          <span id="diagConsequence"></span>
-        </div>
-        <div class="diag-ask">
-          <span class="diag-ask-label" data-t="ask"></span>
-          <span class="diag-ask-btns">
-            <button class="chipbtn" id="btnBlameYes" data-t="yes"></button>
-            <button class="chipbtn" id="btnBlameNo" data-t="no"></button>
-          </span>
+      <div class="bev bev--drop-lg diag" id="resDiag" hidden>
+        <div class="bev-face bev-face--card">
+          <span class="strip strip--purple"></span>
+          <div class="diag-body">
+            <!-- Prose. No stroke, ever: see the readability rule in styles.css. -->
+            <div class="diag-prose prose">
+              <strong id="diagHeadline"></strong> <span id="diagBody"></span>
+            </div>
+            <div class="diag-recurrence prose" id="diagRecurrence"></div>
+            <div class="diag-consequence prose" id="diagConsequenceRow">
+              <span class="dot dot--learning"></span>
+              <span id="diagConsequence"></span>
+            </div>
+            <div class="diag-ask">
+              <span class="diag-ask-label prose" data-t="ask"></span>
+              <span class="diag-ask-btns">
+                <button class="chipbtn" id="btnBlameYes" data-t="yes"></button>
+                <button class="chipbtn" id="btnBlameNo" data-t="no"></button>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
 
-      <div class="spacer"></div>
-      <button class="btn btn--primary btn--result-next" id="btnResultNext"></button>
+    <!-- Anchored, and hidden entirely until there is a next step to offer: while
+         the diagnosis is being read, the yes/no under it is the only action. -->
+    <div class="flowfoot" id="resultFoot" hidden>
+      <button class="btn btn--primary" id="btnResultNext">
+        <span class="bev-face bev-face--gold btn-face"><span class="btn-label"></span></span>
+      </button>
     </div>
   </section>
 
-  <!-- ============ COMPLETE ============ -->
-  <section class="screen screen--pad-flow" id="screen-complete">
-    <div class="eyebrow" data-t="sessionDone"></div>
-    <div class="completebody">
-      <div class="finish">
-        <div class="finish-rail"></div>
-        <div class="finish-fillwrap" id="spineWrap"><div class="finish-fill" id="spineFill"></div></div>
-        <div class="finish-nodes" id="finishNodes"></div>
+  <!-- ============ COMPLETE ============
+       The reward moment, and the only screen that gets the most motion in the
+       app: the spine rises with `riseline`, then the nodes earned today take the
+       gold with `goldin`. Extrapolated; the mock has no Complete screen. -->
+  <section class="screen" id="screen-complete">
+    <div class="scroll scroll--flow scroll--complete">
+      <!-- The eyebrow travels with the block rather than sitting in a header of
+           its own, so the whole reward centres together instead of stranding one
+           small line at the top of an otherwise empty frame. -->
+      <div class="completebody">
+        <div class="eyebrow" data-t="sessionDone"></div>
+        <div class="rewardrow">
+          <div class="bev bev--drop-sm reward reward--gold">
+            <div class="bev-face bev-face--gold">
+              <div class="reward-num" id="xpNum"></div>
+              <div class="reward-label" id="xpLabel"></div>
+            </div>
+          </div>
+          <div class="bev bev--drop-sm reward">
+            <div class="bev-face bev-face--card">
+              <div class="reward-num" id="unlockedNum"></div>
+              <div class="reward-label" id="unlockedLabel"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="finish">
+          <div class="finish-rail"></div>
+          <div class="finish-fillwrap" id="spineWrap"><div class="finish-fill" id="spineFill"></div></div>
+          <div class="finish-nodes" id="finishNodes"></div>
+        </div>
+
+        <div class="bev bev--drop-md tomorrowcard">
+          <div class="bev-face bev-face--card">
+            <span class="strip strip--gold"></span>
+            <div class="tomorrowcard-body">
+              <div class="hd hd--m tomorrow" id="tomorrowLine"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="tomorrow" id="tomorrowLine"></div>
-      <div class="xpline" id="xpLine"></div>
     </div>
-    <button class="btn btn--primary" id="btnDone" data-t="done"></button>
+
+    <div class="flowfoot">
+      <button class="btn btn--primary" id="btnDone">
+        <span class="bev-face bev-face--gold btn-face"><span class="btn-label" data-t="done"></span></span>
+      </button>
+    </div>
   </section>
 
   <!-- ============ TAB BAR ============ -->
   <nav class="tabbar" id="tabbar" hidden>
-    <button class="tab" data-tab="today"><span class="glyph glyph--today"></span><span class="tab-label" data-t="tabToday"></span></button>
-    <button class="tab" data-tab="path"><span class="glyph glyph--path"></span><span class="tab-label" data-t="tabPath"></span></button>
-    <button class="tab" data-tab="blockers"><span class="glyph glyph--blockers"></span><span class="tab-label" data-t="tabBlockers"></span></button>
-    <button class="tab" data-tab="you"><span class="glyph glyph--you"></span><span class="tab-label" data-t="tabYou"></span></button>
+    <button class="tab" data-tab="today"><span class="bev-face tab-face"><span class="tab-label" data-t="tabToday"></span></span></button>
+    <button class="tab" data-tab="path"><span class="bev-face tab-face"><span class="tab-label" data-t="tabPath"></span></span></button>
+    <button class="tab" data-tab="blockers"><span class="bev-face tab-face"><span class="tab-label" data-t="tabBlockers"></span></span></button>
+    <button class="tab" data-tab="you"><span class="bev-face tab-face"><span class="tab-label" data-t="tabYou"></span></span></button>
   </nav>
 
   <!-- ============ LOADING VEIL ============ -->
@@ -253,6 +414,10 @@
 </div>
 </div>
 
+<!-- Vendored KaTeX. `defer` keeps it ahead of app.js, which is also deferred, so
+     window.katex exists before the first render. If it ever does not, app.js says
+     so in the console and falls back to plain text rather than failing silently. -->
+<script src="vendor/katex/katex.min.js" defer></script>
 <script src="app.js" defer></script>
 </body>
 </html>

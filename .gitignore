@@ -3,3 +3,7 @@ __pycache__/
 .cache/
 .DS_Store
 .env
+
+# Generated: rebuild with scripts/bundle/build_artifact.py. A 1.25 MB bundle that changes on every
+# UI edit would dominate the history, and the shareable copy is the published artifact anyway.
+docs/artifact/*.html

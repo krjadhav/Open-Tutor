@@ -1,16 +1,26 @@
 # Open Tutor frontend
 
-Plain HTML, CSS and vanilla JS. No build step, no framework, no bundler. The only external request
-is the Google Fonts link the design mock already uses (Schibsted Grotesk, STIX Two Text, Noto Sans
-Devanagari).
+Plain HTML, CSS and vanilla JS. No build step, no framework, no bundler. **No external request at
+all**: KaTeX and both display faces are vendored under `vendor/`, because the demo runs on venue
+wifi and a CDN is a single point of failure.
 
 Three files do everything:
 
 | file | holds |
 |---|---|
 | `index.html` | the markup for all ten screens, one `<section class="screen">` each |
-| `styles.css` | the design system: tokens, both palettes, the five keyframes, every component |
-| `app.js` | routing, the API layer, the maths renderer and `MOCK_STATE` |
+| `styles.css` | the design system: tokens, the arcade components, the six keyframes |
+| `app.js` | routing, the API layer, the KaTeX wrapper and `MOCK_STATE` |
+
+| vendored | why |
+|---|---|
+| `vendor/katex/` | `katex.min.js`, `katex.min.css` and its woff2 fonts |
+| `vendor/display-fonts.css` | **Lilita One** for Latin, **Baloo 2** for Devanagari, sliced by unicode-range |
+
+One font stack, `'Lilita One', 'Baloo 2', system-ui, sans-serif`, and the browser picks per glyph.
+Lilita One has no Devanagari at all, so every Hindi string would otherwise fall back to a system
+face and sit next to arcade type looking broken. Weight stays 400 everywhere: Lilita One ships one
+weight, and Baloo 2 resolves 400 to its own 700 without a synthetic bold.
 
 ## Running it
 
@@ -56,6 +66,26 @@ Sign up  -->  Course selection            tab bar hidden throughout
                         +-- photo --> Check ------------+
 ```
 
+### One layout rule: a scroll area ends above its footer
+
+Every screen with a primary action at the bottom is a flex column of **head, scroll, anchored
+footer**, and nothing is ever floated over a list. There are two footer classes and they differ
+only in padding: `.flowfoot` closes a full-screen solve flow (Solve, Check, Result, Complete),
+`.tabfoot` closes a screen under the tab bar (Today).
+
+The tab bar is a *sibling* of the screens pinned to the bottom of the frame, so it covers the last
+`--tabbar-h` of whatever is beneath it. `.screen--tabbed` reserves exactly that as padding and lays
+itself out in what is left, which is what lets Today anchor its own footer above the bar.
+**`--tabbar-h` is a fixed 80px and `.tabbar` is given that height**, because Baloo 2's line box is
+taller than Lilita One's: left to size itself the bar grew 6px in Hindi and swallowed the bottom of
+the footer Today had anchored above it.
+
+This replaced a `position: absolute` gold button on Today that sat over the problem list and cut the
+fifth card in half. Path, Blockers and You had the same reservation expressed as `padding-bottom`
+on the scroller and now share the screen-level one; Result's "Next problem" used to scroll away with
+the content and is now anchored too, hidden entirely (footer and all) while the diagnosis is being
+read, because the yes/no under it is the only action at that moment.
+
 **Sign up is the entry point.** A Welcome screen used to stand in front of it asking "What do
 you want to understand?" and it is gone. It duplicated the course choice on the very next
 screen, and what the student typed into it was never sent anywhere: no endpoint accepted it and
@@ -66,8 +96,7 @@ the experience while the course selection actually determines it is worse than o
 `flow`: `signup`, `courses` or `ready`. Those are facts about the student, not screen names
 ("has not signed up", "signed up but no course", "ready"), and `SCREEN_FOR_FLOW` in `app.js` is
 the one place each becomes a screen. Nothing about the flow is computed in the frontend and
-nothing about it is kept in `localStorage`; only the theme and the language are remembered
-locally, as before.
+nothing about it is kept in `localStorage`; the language is the only thing remembered locally.
 
 `GET /api/state` is always the first call, before Sign up is painted, because these two screens
 have no chrome source of their own: `GET /api/courses` carries no `ui` block, and the translated
@@ -90,6 +119,16 @@ Result has three states, driven by `/api/solve/grade`:
    then the diagnosis arriving with the `arrive` animation and the line at `failed_line_index`
    highlighted.
 
+**Colour carries the Result state, and none of it is red.** Gold cap and a star for correct, amber
+cap and the *same* star for correct-but-unsimplified, purple cap for incorrect. Purple is the
+blocker colour everywhere else in the app, which is exactly what an incorrect answer has just found;
+red would be the only alarm colour in a palette that has none. Drawing the star on both correct
+states is deliberate: a glanced-at unsimplified screen must never read as a failure.
+
+A correct answer puts nothing under the verdict card, so `renderVerdict` adds `is-lean` to the
+screen and the card centres itself and sets larger, rather than sitting alone at the top of an empty
+frame looking unfinished.
+
 ## Where the data comes from
 
 Everything on Path, Today, Blockers and You is read from `GET /api/state`. No skill name, count,
@@ -101,10 +140,18 @@ That now includes the chrome. `state.ui` supplies the tab labels, the eyebrows, 
 rest, so **`data/i18n/hi.json` is the one place a Hindi string is fixed**. See the chrome bullet
 under "Faked, stubbed or deviating" for the 29 strings the server does not own yet.
 
-Mathematics is rendered by a small LaTeX-to-HTML pass in `app.js` (`mathBody`). It is language
+Mathematics is rendered by **KaTeX**, vendored locally, with `throwOnError: false` so a stem it
+cannot parse is drawn in its error colour instead of taking the screen down. It is language
 independent by construction, so maths is byte-identical in English and Hindi and only prose changes.
 Fields named `math` are treated as all maths unless they contain `$...$`; prose fields such as the
 diagnosis body are treated as prose and only render `$...$` spans as maths.
+
+This replaced a hand-rolled LaTeX-to-HTML pass that knew about twenty commands and printed the rest
+as literal words: `\mathbf{u}` drew "mathbfu" and a sympy matrix drew "beginmatrix ... endmatrix",
+and both of those shipped as visible bugs. `RENDERABLE_COMMANDS` in `pipeline/drill_tasks.py` was a
+model of that renderer and is now only a conservative constraint on generated content. If KaTeX
+itself fails to load, `app.js` degrades to readable plain text **and says so with `console.error`**,
+because a silent fallback is how a broken build reaches a demo.
 
 ## Faked, stubbed or deviating
 
@@ -125,9 +172,9 @@ Stated plainly, since none of this is in the contract:
   Non-selectable cards drop the detail line at the foot of the card for the same reason.
 - **`skills_line` is rendered, not `skills`.** The server sends a finished localised string
   ("37 skills", "37 कौशल"); the addendum only promises the bare integer, so composing that with a
-  local word is kept as the fallback. The string is rendered verbatim with one typographic
-  exception: a leading run of digits is set in the maths face, which is how every other number in
-  the app is set. The characters are unchanged.
+  local word is kept as the fallback. On the course card it becomes the corner badge, split at the
+  first run of digits so the number sets large over its word. The characters are unchanged, and a
+  string that does not start with a number is printed whole.
 - **An unknown or missing `flow` lands on Sign up.** `FALLBACK_SCREEN` in `app.js`, and it is a
   fallback rather than a computation: a `flow` the frontend cannot read is a student we know
   nothing about, and the thing to do with a student we know nothing about is ask who they are.
@@ -140,9 +187,9 @@ Stated plainly, since none of this is in the contract:
   longer walk, so it asks for the longer walk.
 - **The server owns the chrome. `CHROME` in `app.js` is the fallback for when it cannot be
   reached.** `GET /api/state` returns a `ui` object keyed by the server's own `<group>.<name>` i18n
-  keys, `CHROME` is flat camelCase, and `SERVER_UI_ALIASES` bridges the two. **33 of the 59 local
-  keys resolve to a server string; the other 26 are listed in `LOCAL_ONLY_CHROME` with a reason
-  each.** A key naming nothing local is ignored rather than added, so the table cannot fill up with
+  keys, `CHROME` is flat camelCase, and `SERVER_UI_ALIASES` bridges the two. **33 of the 56 local
+  keys resolve to a server string; the other 23 are listed in `LOCAL_ONLY_CHROME` with a reason
+  each.** (It was 59 and 26: `appearance`, `light` and `dark` went with the theme toggle.) A key naming nothing local is ignored rather than added, so the table cannot fill up with
   strings nothing renders, and only an existing *string* can be replaced, which is what keeps
   `blockersHead` (a function of the blocker count) from being clobbered.
   On every load `applyServerUI` logs two lines: how many of the server's `ui` keys render as chrome
@@ -177,7 +224,63 @@ Stated plainly, since none of this is in the contract:
   object moves `signup -> courses -> ready` as you walk the screens, so the whole flow is
   developable with the API down and `?mock=1` walks it from the start. The mock also refuses a
   non-selectable id, the same way the endpoint is specified to.
-- **The status bar** ("9:41", "OPEN TUTOR") is decoration from the mock, not live.
+- **The status bar** ("9:41", "OPEN TUTOR") is decoration from the mock, not live. The wordmark
+  hides itself on Sign up, which carries the full gold lockup.
+- **Deliberately not copied from the arcade mock.** The mock is five screens of a twelve screen
+  product and it has no Hindi, no prose and no real data, so some of it does not survive contact:
+  - *The SVG icon kit* (`kit/star-fill.svg`, `kit/back-arrow.svg`, `kit/status-1.svg`). Those files
+    are not in this repo. The star, the padlock, the camera and the close cross are CSS shapes.
+  - *The "THE ROADMAP" caption* on the divider between the playable course and the rest. The server
+    sends no such string and inventing an untranslated one for a rule line is not worth it, so the
+    divider is a plain rule.
+  - *The dimmed Blockers and You tabs.* They are dimmed in the mock because it does not draw those
+    screens. Ours work, so they stay live.
+  - *A back arrow on Course selection.* The mock goes back to a screen we deleted. Sign up is
+    forward only and there is no endpoint to unselect a course.
+  - *A PLAY button inside the course card.* The whole card is already the button; a button inside a
+    button is neither valid nor clickable, so the gold plate is a plate.
+  - *The heavy stroke on everything.* See the readability rule above.
+  - *The mock's own copy* ("PICK YOUR COURSE", "18 DAYS", "1/2"). Every string on screen is still the
+    server's, in the student's language.
+- **Today's header shows the streak line** from `you.streak_line`, which is the same field the You
+  tab renders. It is where the mock puts it, and it is data already in the payload, so no contract
+  change was needed.
+
+### Invented for the seven screens the mock never drew
+
+Check, Result and its three states, Complete, Blockers and You are extrapolated from the phase 2
+vocabulary. None of them has been through design review, so every decision is written down here.
+
+- **The strike-through on a Blockers card is drawn, not declared.** `text-decoration: line-through`
+  does not cross an atomic inline box, and KaTeX renders one, so on a rendered expression the line
+  silently disappears: the "wrong" line was only ever a grey line. `.blockercard-strike` is an
+  inline-block sized to the mathematics carrying the rule as a `::after`.
+- **A blocker's rank is a purple plate and its "Fix this" is a gold button.** Gold is otherwise
+  reserved for the one primary action per screen; on Blockers, going and beating the misconception
+  *is* the primary action, and there are only ever two cards.
+- **The wrong/right pair carries a marker as well as the strike**, grey square and gold square, so
+  the pair is distinguishable by shape and not by the strike alone. Same rule as the four node
+  states.
+- **Complete splits `+N XP · M unlocked` into two plates.** The words are `progress.xp_earned` and
+  `progress.unlocked`, both the server's; only the layout is new. The numbers are the reward, so
+  they are set as numbers.
+- **Complete draws full node shapes, not dots.** The `.stage-node` star, half-disc, ring and padlock
+  from Path, with `--inline` so they sit in the flow. A node earned *today* is held grey while the
+  spine rises past it and then takes the gold with `goldin`; a node that was already mastered is
+  simply gold and does not animate. A gold node that was gold on arrival is nothing to watch.
+- **The spine fill is measured in pixels against the rail**, not as a percentage of the panel, so it
+  cannot run past the last node.
+- **Check is deliberately the plainest screen in the app**: no cap strip, no heavy shadow, no colour
+  until a line is touched, and then only that line lights. It is a one-second confirmation, not a
+  checkpoint, and dressing it up would make it feel like one.
+- **You gets no third number and no badges.** The mastered count takes the yellow because gold means
+  mastery everywhere else in this app; accuracy stays white because it is not a mastery claim.
+- **The diagnosis reveal is still `CONFIG.DIAGNOSIS_MIN_WAIT_MS = 700`.** `docs/demo-runbook.md`
+  describes the diagnosis arriving "about three seconds" after the verdict, which is what a *live*
+  call costs (the cache records latencies of 3.07s to 10.66s). Served from cache it lands in 700ms,
+  which is enough to see the indicator but is not the three-beat pause the screen was designed
+  around. Left alone on purpose: it is a behaviour constant, not a style, and this pass changed no
+  behaviour. It is a one-line change if the pause is wanted on stage.
 
 ## Degradation
 
@@ -186,14 +289,21 @@ back to mock data and raises a small banner reading "Server not responding. Show
 which clears on the next successful call. If the photo endpoint returns no lines, the UI stays on
 Solve and shows a plain message pointing at the typed path rather than dead-ending on Check.
 
-## Accessibility and theming
+## Accessibility and appearance
 
 A course that cannot be selected is a `<div>`, not a `<button>`: there is nothing in the tab order
 to reach, nothing to press, and no `tabindex` juggling to get wrong. It carries `aria-disabled` and
 a visible "Coming soon" pill placed directly after the title, so a screenreader hears the title and
-then hears that it is not available. Visually it drops to a dashed border and muted type, which is
-the same vocabulary the locked node dot already uses, so the group reads as a roadmap rather than
-as five broken buttons. Only the playable card takes a hover state.
+then hears that it is not available. Visually it drops to a dimmer face, muted type and a flatter
+shadow, and the playable card is the only one that takes a press state, so the group reads as a
+roadmap rather than as five broken buttons.
+
+**Readability rule, written into `styles.css` as well:** the black text-stroke goes on headlines,
+numbers, chips and buttons only. Any sentence a student actually has to read is plain white or
+`#C4CBE2` on dark with no stroke. The mock strokes everything because it contains no prose; a 6px
+stroke on the Result diagnosis, which is two lines of ordinary sentence and the emotional payload of
+the whole product, would be unreadable. Devanagari also drops the wide arcade tracking, under
+`html[lang="hi"]`, because spacing out a connected script pulls matras away from their letters.
 
 The whole flow is operable from the keyboard: on Sign up, Enter in the field advances, and on
 Course selection the single playable card is the only tab stop on the screen. A refusal from
@@ -201,10 +311,14 @@ Course selection the single playable card is the only tab stop on the screen. A 
 and is not localised, so it is never put on screen, and it cannot be reached anyway because the
 disabled card is not clickable.
 
-The four node states are distinguishable by shape as well as colour: filled gold disc (mastered),
-half-filled disc (learning), pulsing accent ring (now), dashed grey ring (locked). Dark theme is
-driven by `data-theme` on `<body>` and is remembered in `localStorage`, defaulting to the system
-preference. `prefers-reduced-motion` disables the animations.
+The four node states are distinguishable by shape as well as colour: gold star (mastered),
+half-filled disc (learning), pulsing white dot (now), padlock (locked). The node icons are CSS
+shapes, because the mock's SVG icon kit is not part of this repo.
+
+**Dark only, and there is no appearance toggle.** The arcade style has no light variant in the mock
+and a light Brawl Stars is not a thing, so the light palette, the `data-theme` attribute and the
+Light/Dark segmented control on You were all removed together rather than left as a second palette
+nobody designed. The language toggle stays. `prefers-reduced-motion` disables the animations.
 
 Phone first at 390x844. On desktop the same phone frame is centred. Below 460px wide the frame goes
 full bleed. There is no dashboard variant.

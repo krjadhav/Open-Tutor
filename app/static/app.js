@@ -44,8 +44,7 @@ var CHROME = {
     today: 'Today', start: 'Start session',
     blockers: 'Blockers', fix: 'Fix this →',
     you: 'You', mastered: 'skills mastered', accuracy: 'accuracy this week',
-    language: 'Language', appearance: 'Appearance',
-    light: 'Light', dark: 'Dark', replay: 'Replay onboarding', signOut: 'Sign out',
+    language: 'Language', replay: 'Replay onboarding', signOut: 'Sign out',
     answerPlaceholder: 'Type your answer',
     photo: 'Photograph your working',
     check: 'Check answer',
@@ -86,8 +85,7 @@ var CHROME = {
     today: 'आज', start: 'सत्र शुरू करें',
     blockers: 'रुकावटें', fix: 'इसे ठीक करें →',
     you: 'आप', mastered: 'कौशल में महारत', accuracy: 'इस हफ़्ते सटीकता',
-    language: 'भाषा', appearance: 'रूप',
-    light: 'हल्का', dark: 'गहरा', replay: 'शुरुआत फिर देखें', signOut: 'साइन आउट',
+    language: 'भाषा', replay: 'शुरुआत फिर देखें', signOut: 'साइन आउट',
     answerPlaceholder: 'अपना उत्तर लिखें',
     photo: 'अपना काम फ़ोटो करें',
     check: 'उत्तर जाँचें',
@@ -186,8 +184,7 @@ var LOCAL_ONLY_CHROME = {
   // No server key exists for these.
   coursesEyebrow: 'no server key', skillsWord: 'no server key: server sends skills_line whole',
   fix: 'no server key', mastered: 'no server key', accuracy: 'no server key',
-  language: 'no server key', appearance: 'no server key',
-  light: 'no server key', dark: 'no server key', replay: 'no server key',
+  language: 'no server key', replay: 'no server key',
   hints: 'no server key', hintTwin: 'no server key, and the twin is not wired',
   checkSub: 'no server key', edit: 'no server key', confirm: 'no server key',
   expected: 'no server key', reading: 'no server key', done: 'no server key',
@@ -244,20 +241,18 @@ function reportUnresolvedUI(unresolved, total) {
 }
 
 /* --------------------------------------------------------------------------
-   3. Mathematics rendering
-   No external library is permitted, so this is a deliberately small LaTeX to
-   HTML pass: enough for the item bank's stems and answers. It is language
-   independent by construction, which is what keeps maths identical in Hindi.
-   -------------------------------------------------------------------------- */
+   3. Mathematics rendering, by KaTeX
+   KaTeX is vendored under /vendor/katex and loaded by index.html ahead of this
+   file, so window.katex is already defined by the time anything renders. It
+   replaces a hand-rolled LaTeX pass that knew about twenty commands and printed
+   the rest as literal words: `\mathbf{u}` drew "mathbfu" and a sympy matrix drew
+   "beginmatrix ... endmatrix", and both of those shipped as visible bugs.
 
-var LATEX_SYMBOLS = {
-  to: '→', rightarrow: '→', cdot: '·', times: '×', div: '÷',
-  pi: 'π', theta: 'θ', alpha: 'α', beta: 'β', lambda: 'λ',
-  mu: 'μ', sigma: 'σ', partial: '∂', nabla: '∇', infty: '∞',
-  le: '≤', leq: '≤', ge: '≥', geq: '≥', ne: '≠', neq: '≠',
-  approx: '≈', sum: '∑', prod: '∏', int: '∫',
-  Delta: 'Δ', delta: 'δ', pm: '±', in: '∈'
-};
+   `throwOnError: false` means a stem KaTeX cannot parse is drawn in its error
+   colour rather than taking the screen down with it. If KaTeX itself is missing
+   we degrade to readable plain text AND say so in the console, because a silent
+   fallback is how a broken build reaches a demo.
+   -------------------------------------------------------------------------- */
 
 function escapeHTML(s) {
   return String(s === null || s === undefined ? '' : s)
@@ -267,60 +262,66 @@ function escapeHTML(s) {
     .replace(/"/g, '&quot;');
 }
 
-function mathBody(raw) {
-  var s = escapeHTML(raw);
+var mathFallbackReported = false;
 
-  s = s.replace(/\\(left|right|!|,|;|:)/g, '');
-  s = s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '($1)/($2)');
-  s = s.replace(/\\sqrt\{([^{}]*)\}/g, '√($1)');
-  s = s.replace(/\\text\{([^{}]*)\}/g, '$1');
+function reportMathFallback(why) {
+  if (mathFallbackReported) { return; }
+  mathFallbackReported = true;
+  console.error('[open-tutor] KaTeX is not rendering (' + why + '). ' +
+    'Mathematics is falling back to plain text; check /vendor/katex/katex.min.js.');
+}
 
-  s = s.replace(/\\([a-zA-Z]+)/g, function (m, word) {
-    if (Object.prototype.hasOwnProperty.call(LATEX_SYMBOLS, word)) { return LATEX_SYMBOLS[word]; }
-    return word;                       // \sin, \lim and friends read fine bare
-  });
-
-  s = s.replace(/-&gt;/g, '→');
-  s = s.replace(/&lt;=/g, '≤').replace(/&gt;=/g, '≥');
-  s = s.replace(/!=/g, '≠');
-  s = s.replace(/\*/g, '·');
-
-  s = s.replace(/\^\{([^{}]*)\}/g, '<sup>$1</sup>');
-  s = s.replace(/\^(-?[0-9A-Za-z])/g, '<sup>$1</sup>');
-  s = s.replace(/_\{([^{}]*)\}/g, '<sub>$1</sub>');
-  s = s.replace(/_(-?[0-9A-Za-z])/g, '<sub>$1</sub>');
-
-  s = s.replace(/''/g, '″').replace(/'/g, '′');
-  s = s.replace(/-/g, '−');       // hyphen-minus to the true minus sign
-
+/* Readable text for one TeX string when there is no KaTeX to draw it. Not a
+   renderer and not trying to be one: it strips the syntax so the symbols and
+   numbers survive, which is enough to keep a screen usable. */
+function plainMath(raw) {
+  var s = String(raw === null || raw === undefined ? '' : raw);
+  s = s.replace(/\\(?:left|right|!|,|;|:|quad|qquad)/g, '');
+  s = s.replace(/\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, '($1)/($2)');
+  s = s.replace(/\\sqrt\s*\{([^{}]*)\}/g, '√($1)');
+  s = s.replace(/\\(?:text|mathbf|mathrm|operatorname)\s*\{([^{}]*)\}/g, '$1');
+  s = s.replace(/\\([a-zA-Z]+)/g, '$1');
+  s = s.replace(/[{}]/g, '');
   return s;
 }
 
-/* A whole string that is maths. */
-function mathHTML(raw) {
-  return '<span class="math">' + mathBody(raw) + '</span>';
+/* One TeX string, as an HTML fragment. */
+function texHTML(raw) {
+  var src = String(raw === null || raw === undefined ? '' : raw);
+  if (!src) { return ''; }
+  if (!window.katex) {
+    reportMathFallback('window.katex is undefined');
+    return '<span class="math-fallback">' + escapeHTML(plainMath(src)) + '</span>';
+  }
+  try {
+    return window.katex.renderToString(src, { throwOnError: false, displayMode: false });
+  } catch (err) {
+    // throwOnError:false already covers parse errors, so reaching here means
+    // something worse. Say which string did it rather than blanking the node.
+    console.error('[open-tutor] KaTeX failed on: ' + src, err);
+    return '<span class="math-fallback">' + escapeHTML(plainMath(src)) + '</span>';
+  }
 }
 
-function splitDollars(s, outsideIsMath) {
+/* $...$ spans become mathematics, everything between them stays words. */
+function splitDollars(s) {
   var parts = s.split('$');
   var out = '';
   for (var i = 0; i < parts.length; i++) {
     if (!parts[i]) { continue; }
-    if (i % 2 === 1) {
-      out += '<span class="math">' + mathBody(parts[i]) + '</span>';
-    } else {
-      out += outsideIsMath ? mathBody(parts[i]) : escapeHTML(parts[i]);
-    }
+    out += (i % 2 === 1) ? texHTML(parts[i]) : escapeHTML(parts[i]);
   }
   return out;
 }
 
 /* A `math` field. A string with no $ is treated as all maths, which is how the
-   mock renders "Differentiate f(x) = ...". */
+   contract's "Differentiate f(x) = ..." and every bare answer arrive. With $
+   the words outside stay words: KaTeX would set "Expand and simplify" as a run
+   of italic variables, which is not what that sentence is. */
 function mixedHTML(raw) {
   var s = String(raw === null || raw === undefined ? '' : raw);
-  if (s.indexOf('$') === -1) { return mathBody(s); }
-  return splitDollars(s, true);
+  if (s.indexOf('$') === -1) { return texHTML(s); }
+  return splitDollars(s);
 }
 
 /* A prose field such as the diagnosis body. Plain text stays plain: only the
@@ -328,7 +329,7 @@ function mixedHTML(raw) {
 function proseHTML(raw) {
   var s = String(raw === null || raw === undefined ? '' : raw);
   if (s.indexOf('$') === -1) { return escapeHTML(s); }
-  return splitDollars(s, false);
+  return splitDollars(s);
 }
 
 /* --------------------------------------------------------------------------
@@ -741,7 +742,6 @@ var API = {
 
 var state = {
   lang: 'en',
-  theme: 'light',
   screen: 'signup',
   tab: 'today',
   data: null,          // GET /api/state payload
@@ -781,21 +781,46 @@ function h(tag, cls, text) {
   return n;
 }
 
-/* "37 skills" with the numeral in the maths face, which is how every other
-   number in the app is set. Language independent: "37 कौशल" leads with digits
-   too. Falls back to plain text if the string does not start with a number. */
-function numberFirst(cls, text) {
-  var span = h('span', cls);
-  var m = /^(\d[\d.,]*)([\s\S]*)$/.exec(String(text));
-  if (!m) { span.textContent = text; return span; }
-  span.appendChild(h('span', 'math', m[1]));
-  span.appendChild(document.createTextNode(m[2]));
-  return span;
+/* "37 skills" split into its numeral and its word, so the badge can set the
+   number large and the word small under it. Language independent: "37 कौशल"
+   leads with digits too. Returns nulls if the string does not start with a
+   number, and the caller falls back to printing it whole. */
+function splitCount(text) {
+  var m = /^(\d[\d.,]*)\s*([\s\S]*)$/.exec(String(text === null || text === undefined ? '' : text));
+  return m ? { n: m[1], word: m[2] } : null;
 }
 
-function dotClass(nodeState) {
+/* A bevelled panel: the outer node carries the hard drop shadow, the inner face
+   carries the skew, the black border and the face colour. Two nodes because a
+   filter and a clip-path on one element clip the shadow away. */
+function bevel(wrapTag, wrapCls, faceCls) {
+  var wrap = h(wrapTag, 'bev' + (wrapCls ? ' ' + wrapCls : ''));
+  var face = h(wrapTag === 'div' ? 'div' : 'span', 'bev-face' + (faceCls ? ' ' + faceCls : ''));
+  wrap.appendChild(face);
+  wrap.face = face;
+  return wrap;
+}
+
+/* Buttons carry their label in a stroked span inside the bevelled face, so
+   setting `textContent` on the button itself would throw the face away. */
+function setBtnLabel(id, text) {
+  var label = byId(id).querySelector('.btn-label');
+  if (label) { label.textContent = text; }
+}
+
+function knownState(nodeState) {
   var known = { mastered: 1, learning: 1, now: 1, locked: 1 };
-  return 'dot dot--' + (known[nodeState] ? nodeState : 'locked');
+  return known[nodeState] ? nodeState : 'locked';
+}
+
+function dotClass(nodeState) { return 'dot dot--' + knownState(nodeState); }
+
+/* Locked stages recede, mastered ones take the gold. Everything else is the
+   default white on card. */
+function stageToneClass(nodeState) {
+  if (nodeState === 'locked') { return ' is-locked'; }
+  if (nodeState === 'mastered') { return ' is-mastered'; }
+  return '';
 }
 
 function stateTextClass(nodeState) {
@@ -805,7 +830,10 @@ function stateTextClass(nodeState) {
 }
 
 /* --------------------------------------------------------------------------
-   8. Chrome and theme
+   8. Chrome
+   There is no theme here any more. The arcade style is dark only: there is no
+   light mock, and a light Brawl Stars is not a thing. The language toggle is
+   the only setting left on You.
    -------------------------------------------------------------------------- */
 
 function applyChrome() {
@@ -824,13 +852,6 @@ function applyChrome() {
   byId('bannerText').textContent = t.offline;
   byId('btnLangEn').classList.toggle('is-on', state.lang === 'en');
   byId('btnLangHi').classList.toggle('is-on', state.lang === 'hi');
-  byId('btnLight').classList.toggle('is-on', state.theme === 'light');
-  byId('btnDark').classList.toggle('is-on', state.theme === 'dark');
-}
-
-function applyTheme() {
-  document.body.setAttribute('data-theme', state.theme);
-  try { localStorage.setItem('ot.theme', state.theme); } catch (e) { /* private mode */ }
 }
 
 function setLang(lang) {
@@ -874,6 +895,9 @@ function routeFromFlow(flowName) {
 
 function showScreen(name) {
   state.screen = name;
+  // Purely presentational: it lets the stylesheet dress one screen differently
+  // without a class on every node. Nothing reads it back.
+  document.body.setAttribute('data-screen', name);
   var screens = document.querySelectorAll('.screen');
   for (var i = 0; i < screens.length; i++) {
     screens[i].classList.toggle('is-active', screens[i].id === 'screen-' + name);
@@ -932,12 +956,23 @@ function renderCourses(payload) {
   var courses = (payload && Array.isArray(payload.courses)) ? payload.courses : [];
   var selected = payload ? payload.selected : null;
 
+  var ruled = false;
+
   courses.forEach(function (c) {
     // The server decides what is playable. Never infer this from `c.state`.
     var playable = c.selectable === true;
 
-    var card = h(playable ? 'button' : 'div',
-                 'coursecard' + (playable ? '' : ' coursecard--soon'));
+    // One plain rule between the playable card and the rest. No caption on it:
+    // "the roadmap" is chrome the server does not send, and inventing an
+    // untranslated string for a divider is not worth it.
+    if (!playable && !ruled && list.firstChild) {
+      list.appendChild(h('div', 'rule'));
+      ruled = true;
+    }
+
+    var card = bevel(playable ? 'button' : 'div',
+                     'coursecard ' + (playable ? 'bev--drop-lg' : 'coursecard--soon bev--drop-sm'),
+                     playable ? 'bev-face--card' : 'bev-face--dim');
 
     if (playable) {
       card.type = 'button';
@@ -949,41 +984,69 @@ function renderCourses(payload) {
     } else {
       // A div, so there is no button to focus and nothing to press: it is out
       // of the tab order by construction rather than by tabindex="-1".
-      // aria-disabled states in the accessibility tree what the dashed border
-      // and the "Coming soon" marker say on the screen.
+      // aria-disabled states in the accessibility tree what the dimmed card and
+      // the "Coming soon" marker say on the screen.
       card.setAttribute('aria-disabled', 'true');
     }
 
-    var top = h('span', 'coursecard-top');
-    top.appendChild(h('span', 'coursecard-title', c.title || ''));
-    if (!playable) {
-      // The server's own wording when it sends one, so the marker stays
-      // localised and is read straight after the title.
-      top.appendChild(h('span', 'coursecard-pill', c.detail || t.comingSoon));
-    }
-    card.appendChild(top);
-
-    if (c.subtitle) { card.appendChild(h('span', 'coursecard-sub', c.subtitle)); }
-
-    if (c.ends_at) {
-      var ends = h('span', 'coursecard-ends');
-      ends.appendChild(h('span', 'coursecard-endslabel', t.endsAt + ' '));
-      ends.appendChild(document.createTextNode(c.ends_at));
-      card.appendChild(ends);
-    }
-
-    var meta = h('span', 'coursecard-meta');
     // The server sends a ready-made `skills_line` ("37 skills"). Prefer it, and
     // fall back to composing the count with a local word, because the addendum
     // only promises `skills`.
     var skillsLine = c.skills_line ||
       ((c.skills === undefined || c.skills === null) ? '' : String(c.skills) + ' ' + t.skillsWord);
-    if (skillsLine) { meta.appendChild(numberFirst('coursecard-skills', skillsLine)); }
-    if (playable && c.detail) {
-      if (meta.firstChild) { meta.appendChild(document.createTextNode(' · ')); }
-      meta.appendChild(h('span', 'coursecard-detail', c.detail));
+
+    if (playable) {
+      card.face.appendChild(h('span', 'strip strip--cyan'));
+      var body = h('span', 'coursecard-body');
+      body.appendChild(h('span', 'coursecard-title', c.title || ''));
+      if (c.subtitle) { body.appendChild(h('span', 'coursecard-sub', c.subtitle)); }
+
+      if (c.ends_at) {
+        var ends = bevel('span', 'coursecard-panel', 'bev-face--sunk');
+        var endsBody = h('span', 'coursecard-panelbody');
+        endsBody.appendChild(h('span', 'coursecard-endslabel', t.endsAt));
+        endsBody.appendChild(h('span', 'coursecard-ends', c.ends_at));
+        ends.face.appendChild(endsBody);
+        body.appendChild(ends);
+      }
+
+      if (c.detail) {
+        var meta = bevel('span', 'coursecard-panel', 'bev-face--sunk');
+        var metaBody = h('span', 'coursecard-panelbody');
+        metaBody.appendChild(h('span', 'coursecard-detail', c.detail));
+        meta.face.appendChild(metaBody);
+        body.appendChild(meta);
+      }
+
+      // A plate, not a button: the whole card is already the button, and a
+      // button inside a button is neither valid nor clickable.
+      var play = bevel('span', 'coursecard-play', 'bev-face--gold');
+      play.face.appendChild(h('span', 'coursecard-playlabel', t.start));
+      body.appendChild(play);
+
+      card.face.appendChild(body);
+
+      if (skillsLine) {
+        var counts = splitCount(skillsLine);
+        var badge = bevel('span', 'starbadge', '');
+        var badgeText = h('span', 'starbadge-text', counts ? counts.n : skillsLine);
+        if (counts && counts.word) { badgeText.appendChild(h('span', 'starbadge-word', counts.word)); }
+        badge.face.appendChild(badgeText);
+        card.appendChild(badge);
+      }
+    } else {
+      var soon = h('div', 'coursecard-body');
+      soon.appendChild(h('span', 'coursecard-title', c.title || ''));
+      if (c.subtitle) { soon.appendChild(h('span', 'coursecard-sub', c.subtitle)); }
+      if (c.ends_at) { soon.appendChild(h('span', 'coursecard-endsline', t.endsAt + ' ' + c.ends_at)); }
+      card.face.appendChild(soon);
+
+      // The server's own wording when it sends one, so the marker stays
+      // localised and is read straight after the title.
+      var pill = bevel('div', 'coursecard-pill', 'bev-face--card');
+      pill.face.appendChild(h('span', 'coursecard-pilltext', c.detail || t.comingSoon));
+      card.appendChild(pill);
     }
-    if (meta.firstChild) { card.appendChild(meta); }
 
     list.appendChild(card);
   });
@@ -1030,35 +1093,49 @@ function remainingProblems() {
   return problems().filter(function (p) { return !isDone(p); });
 }
 
+/* The chip colour names the slot the engine put the problem in, so it comes
+   from `slot` and never from the chip text, which is prose and translated. */
+function chipClass(slot) {
+  var known = { blocker: 'blocker', review: 'review', new: 'new', goal_link: 'goal-link' };
+  return 'chip chip--' + (known[slot] || 'review');
+}
+
 function renderToday() {
   var d = state.data, list = byId('todayList');
   byId('todayHead').textContent = (d.today && d.today.headline) || '';
+  // The same streak line the You tab shows, in the header where the mock has it.
+  byId('todayStreak').textContent = (d.you && d.you.streak_line) || '';
   clear(list);
 
   var ps = problems();
   if (!ps.length) {
     list.appendChild(h('div', 'inline-note', T().setDone));
   }
-  ps.forEach(function (p) {
-    var card = h('button', 'problemcard' + (isDone(p) ? ' is-done' : ''));
+  ps.forEach(function (p, i) {
+    var card = bevel('button', 'problemcard' + (isDone(p) ? ' is-done' : ''), 'bev-face--card');
+    var body = h('span', 'problemcard-body');
+
+    var row = h('span', 'problemcard-row');
+    row.appendChild(h('span', 'problemcard-n', String(i + 1)));
     var math = h('span', 'problemcard-math');
     math.innerHTML = mixedHTML(p.math);
-    card.appendChild(math);
+    row.appendChild(math);
+    body.appendChild(row);
 
     var meta = h('span', 'problemcard-meta');
     if (p.is_blocker) { meta.appendChild(h('span', 'problemcard-dot')); }
-    meta.appendChild(h('span', 'problemcard-chip', p.chip || ''));
+    if (p.chip) { meta.appendChild(h('span', chipClass(p.slot), p.chip)); }
     if (isDone(p)) { meta.appendChild(h('span', 'problemcard-tick', '✓')); }
-    card.appendChild(meta);
+    body.appendChild(meta);
 
+    card.face.appendChild(body);
     card.addEventListener('click', function () { startProblem(p.item_id); });
     list.appendChild(card);
   });
 
-  var start = byId('btnStartSession');
   var left = remainingProblems();
-  start.disabled = left.length === 0;
-  start.textContent = left.length === 0 ? T().finish : T().start;
+  byId('btnStartSession').disabled = left.length === 0;
+  setBtnLabel('btnStartSession', left.length === 0 ? T().finish : T().start);
 }
 
 function renderPath() {
@@ -1080,16 +1157,19 @@ function renderPath() {
 
   stages.forEach(function (s) {
     var item = h('div', 'stage-item');
-    item.appendChild(h('span', dotClass(s.state) + ' stage-dot'));
+    item.appendChild(h('span', 'stage-node stage-node--' + knownState(s.state)));
 
     var open = state.openStage === s.id;
-    var btn = h('button', 'stage-btn' + (open ? ' is-open' : '') + (s.state === 'now' ? ' is-now' : ''));
-    btn.appendChild(h('span', 'stage-name' + (s.state === 'locked' ? ' is-locked' : ''), s.name || ''));
-    var meta = h('span', 'stage-meta');
-    var legendLabel = legendLabelFor(s.state);
-    meta.appendChild(h('span', 'stage-state', legendLabel));
-    meta.appendChild(h('span', 'stage-count', s.count || ''));
-    btn.appendChild(meta);
+    var tone = stageToneClass(s.state);
+    var btn = bevel('button', 'stage-btn' + (open ? ' is-open' : '') + (s.state === 'now' ? ' is-now' : ''),
+                    'bev-face--card');
+    var body = h('span', 'stage-body');
+    var row = h('span', 'stage-row');
+    row.appendChild(h('span', 'stage-name' + tone, s.name || ''));
+    row.appendChild(h('span', 'stage-count' + tone, s.count || ''));
+    body.appendChild(row);
+    body.appendChild(h('span', 'stage-state' + tone, legendLabelFor(s.state)));
+    btn.face.appendChild(body);
     btn.addEventListener('click', function () {
       state.openStage = open ? null : s.id;
       renderPath();
@@ -1097,19 +1177,21 @@ function renderPath() {
     item.appendChild(btn);
 
     if (open) {
-      var skills = h('div', 'skills');
+      var skills = bevel('div', 'skills', 'bev-face--sunk');
+      var skillsBody = h('div', 'skills-body');
       (s.skills || []).forEach(function (k) {
-        var row = h('div', 'skill');
-        row.appendChild(h('span', dotClass(k.state)));
-        var body = h('span', 'skill-body');
-        body.appendChild(h('span', 'skill-name ' + stateTextClass(k.state), k.name || ''));
+        var srow = h('div', 'skill');
+        srow.appendChild(h('span', dotClass(k.state)));
+        var sbody = h('span', 'skill-body');
+        sbody.appendChild(h('span', 'skill-name ' + stateTextClass(k.state), k.name || ''));
         var tags = h('span', 'skill-tags');
         tags.appendChild(h('span', 'skill-state ' + stateTextClass(k.state), legendLabelFor(k.state)));
         if (k.needs) { tags.appendChild(h('span', 'skill-needs', k.needs)); }
-        body.appendChild(tags);
-        row.appendChild(body);
-        skills.appendChild(row);
+        sbody.appendChild(tags);
+        srow.appendChild(sbody);
+        skillsBody.appendChild(srow);
       });
+      skills.face.appendChild(skillsBody);
       item.appendChild(skills);
     }
     wrap.appendChild(item);
@@ -1135,6 +1217,24 @@ function legendLabelFor(nodeState) {
   return nodeState || '';
 }
 
+/* One line of the duel: the student's own failing step, then the corrected one.
+   The marker is a shape as well as a colour, the same rule the four node states
+   follow, so the pair is still readable with the strike-through alone. */
+function blockerLine(kind, tex) {
+  var row = h('div', 'blockercard-line blockercard-' + kind);
+  row.appendChild(h('span', 'blockercard-mark blockercard-mark--' + kind));
+  var text = h('span', 'blockercard-tex');
+  // The rule the strike is drawn on. `text-decoration: line-through` does not
+  // cross an atomic inline such as KaTeX's box, so on a rendered expression it
+  // simply vanishes; this inner span is sized to the maths and carries the line
+  // as a ::after instead. Without it the "wrong line" is only a grey line.
+  var inner = h('span', 'blockercard-strike');
+  inner.innerHTML = mixedHTML(tex || '');
+  text.appendChild(inner);
+  row.appendChild(text);
+  return row;
+}
+
 function renderBlockers() {
   var list = byId('blockersList');
   var bs = Array.isArray(state.data.blockers) ? state.data.blockers : [];
@@ -1142,32 +1242,34 @@ function renderBlockers() {
   clear(list);
 
   bs.forEach(function (b, i) {
-    var card = h('div', 'blockercard');
+    var card = bevel('div', 'blockercard bev--drop-lg', 'bev-face--card');
     var body = h('div', 'blockercard-body');
 
+    // The rank is a purple plate rather than a caption, because a blocker is a
+    // named opponent you can beat and not an item on a list.
     var top = h('div', 'blockercard-top');
-    top.appendChild(h('span', 'blockercard-rank', b.rank || ''));
+    var rank = bevel('div', 'blockercard-rankplate', '');
+    rank.face.appendChild(h('span', 'blockercard-rank', b.rank || ''));
+    top.appendChild(rank);
     top.appendChild(h('span', 'blockercard-freq', b.freq || ''));
     body.appendChild(top);
 
     body.appendChild(h('div', 'blockercard-name', b.name || ''));
 
-    // The student's own failing line, struck through, above the corrected one.
     var lines = h('div', 'blockercard-lines');
-    var wrong = h('span', 'blockercard-wrong');
-    wrong.innerHTML = mathBody(b.wrong || '');
-    var right = h('span', 'blockercard-right');
-    right.innerHTML = mathBody(b.right || '');
-    lines.appendChild(wrong);
-    lines.appendChild(right);
+    lines.appendChild(blockerLine('wrong', b.wrong));
+    lines.appendChild(blockerLine('right', b.right));
     body.appendChild(lines);
 
-    card.appendChild(body);
-
-    var fix = h('button', 'blockercard-fix', T().fix);
+    // The one action on the card, so it takes the gold.
+    var fix = h('button', 'btn btn--ghost blockercard-fix');
+    var face = h('span', 'bev-face bev-face--gold btn-face');
+    face.appendChild(h('span', 'btn-label', T().fix));
+    fix.appendChild(face);
     fix.addEventListener('click', function () { fixBlocker(i); });
-    card.appendChild(fix);
+    body.appendChild(fix);
 
+    card.face.appendChild(body);
     list.appendChild(card);
   });
 }
@@ -1237,25 +1339,40 @@ function renderHints() {
   var f = state.flow;
   var all = (f && f.start && Array.isArray(f.start.hints)) ? f.start.hints : [];
   var shown = f ? f.hintLevel : 0;
+  // The rungs are drawn as pips; the count stays for a screenreader, which
+  // cannot see them.
   byId('hintCount').textContent = shown + ' / ' + (all.length || 0);
+
+  var pips = byId('hintPips');
+  clear(pips);
+  for (var i = 0; i < all.length; i++) {
+    pips.appendChild(h('span', 'pip' + (i < shown ? ' is-on' : '')));
+  }
 
   var list = byId('hintList');
   clear(list);
-  all.slice(0, shown).forEach(function (hint, i) {
-    var row = h('div', 'hint');
-    row.appendChild(h('span', 'hint-n', String(hint.n !== undefined ? hint.n : i + 1)));
-    var text = h('span', 'hint-text' + (hint.is_math ? ' math' : ''));
-    if (hint.is_math) { text.innerHTML = mathBody(hint.text); }
+  all.slice(0, shown).forEach(function (hint, idx) {
+    var card = bevel('div', 'hint', 'bev-face--dim');
+    var body = h('div', 'hint-body');
+    var row = h('div', 'hint-row');
+    row.appendChild(h('span', 'hint-n', String(hint.n !== undefined ? hint.n : idx + 1)));
+    var text = h('span', 'hint-text' + (hint.is_math ? ' hint-text--math' : ''));
+    // A maths rung arrives either bare or already wrapped in $...$, and the
+    // second form is what the item bank actually sends. mixedHTML handles both;
+    // handing the dollars straight to KaTeX is a parse error on screen.
+    if (hint.is_math) { text.innerHTML = mixedHTML(hint.text); }
     else { text.innerHTML = proseHTML(hint.text); }
     row.appendChild(text);
-    list.appendChild(row);
+    body.appendChild(row);
+    card.face.appendChild(body);
+    list.appendChild(card);
   });
 
   var btn = byId('btnNextHint');
   // The twin problem in hint rung 4 has no endpoint in the contract, so the
   // ladder simply ends rather than offering something that cannot be served.
   btn.hidden = !all.length || shown >= all.length;
-  btn.textContent = T().hintNext;
+  setBtnLabel('btnNextHint', T().hintNext);
 }
 
 function nextHint() {
@@ -1322,22 +1439,24 @@ function renderCheck() {
   var wrap = byId('transcript');
   clear(wrap);
   f.workLines.forEach(function (line, i) {
-    var row = h('div', 'tline');
+    var row = bevel('div', 'tline', '');
+    var body = h('div', 'tline-body');
     // Rendered as mathematics at rest so OCR errors are easy to spot, but
     // editing happens on the raw transcript text the server sent.
     var text = h('span', 'tline-text');
-    text.innerHTML = mathBody(f.workLines[i]);
+    text.innerHTML = mixedHTML(f.workLines[i]);
     text.contentEditable = 'true';
     text.spellcheck = false;
     text.addEventListener('focus', function () { text.textContent = f.workLines[i]; });
     text.addEventListener('input', function () { f.workLines[i] = text.textContent; });
     text.addEventListener('blur', function () {
       f.workLines[i] = text.textContent;
-      text.innerHTML = mathBody(f.workLines[i]);
+      text.innerHTML = mixedHTML(f.workLines[i]);
     });
-    row.appendChild(text);
-    row.appendChild(h('span', 'tline-edit', T().edit));
-    row.addEventListener('click', function () { text.focus(); });
+    body.appendChild(text);
+    body.appendChild(h('span', 'tline-edit', T().edit));
+    body.addEventListener('click', function () { text.focus(); });
+    row.face.appendChild(body);
     wrap.appendChild(row);
   });
 }
@@ -1380,13 +1499,19 @@ function gradeAndShow(payload) {
 
 function resetResultScreen() {
   byId('resVerdict').textContent = '';
-  byId('resVerdict').className = 'verdict';
+  byId('resVerdict').className = 'verdict hd hd--l';
+  byId('resStrip').className = 'strip';
+  byId('resMark').className = 'verdict-mark';
   byId('resExpected').innerHTML = '';
   byId('resNote').hidden = true;
+  byId('resNote').textContent = '';
   byId('resWork').hidden = true;
   byId('resWaiting').hidden = true;
   byId('resDiag').hidden = true;
-  byId('btnResultNext').hidden = true;
+  byId('screen-result').classList.remove('is-lean');
+  // The footer bar, not the button, is what disappears: an empty anchored bar
+  // at the foot of the screen is worse than no bar at all.
+  byId('resultFoot').hidden = true;
 }
 
 function renderVerdict(g) {
@@ -1395,6 +1520,18 @@ function renderVerdict(g) {
   verdict.textContent = g.verdict || '';
   verdict.classList.toggle('is-correct', !!g.correct);
 
+  // Colour carries the state, and none of it is red. Gold for correct, amber for
+  // correct-but-unsimplified, purple for incorrect: purple is the blocker colour
+  // everywhere else in the app, which is exactly what a wrong answer just found.
+  // The star is drawn for BOTH correct states, so the unsimplified one cannot
+  // read as a failure however fast the screen is glanced at.
+  byId('resStrip').className = 'strip ' +
+    (g.correct ? (g.unsimplified ? 'strip--amber' : 'strip--gold') : 'strip--purple');
+  byId('resMark').className = 'verdict-mark' + (g.correct ? ' is-on' : '');
+  // A correct answer puts nothing under the card, so the card centres itself
+  // rather than leaving three quarters of the screen visibly empty.
+  byId('screen-result').classList.toggle('is-lean', !!g.correct);
+
   // State 1, correct: the verdict and nothing else. No diagnosis is requested.
   // State 2, correct but unsimplified: the verdict plus one light note.
   // State 3, incorrect: expected answer, the working, then the diagnosis.
@@ -1402,12 +1539,12 @@ function renderVerdict(g) {
     var note = byId('resNote');
     note.hidden = false;
     note.innerHTML = escapeHTML(T().unsimplified) +
-      (g.expected_latex ? ' <span class="math">' + mathBody(g.expected_latex) + '</span>' : '');
+      (g.expected_latex ? ' ' + mixedHTML(g.expected_latex) : '');
   }
 
   if (!g.correct) {
     if (g.expected_latex) {
-      byId('resExpected').innerHTML = escapeHTML(T().expected) + ' ' + mathBody(g.expected_latex);
+      byId('resExpected').innerHTML = escapeHTML(T().expected) + ' ' + mixedHTML(g.expected_latex);
     }
     if (f.workLines.length) { renderWork(-1); }
   }
@@ -1420,7 +1557,7 @@ function renderWork(highlightIndex) {
   clear(block);
   f.workLines.forEach(function (line, i) {
     var span = h('span', 'workline' + (i === highlightIndex ? ' is-hl' : ''));
-    span.innerHTML = mathBody(line);
+    span.innerHTML = mixedHTML(line);
     block.appendChild(span);
   });
 }
@@ -1481,9 +1618,8 @@ function renderDiagnosis(dg) {
 }
 
 function showNextButton() {
-  var btn = byId('btnResultNext');
-  btn.hidden = false;
-  btn.textContent = remainingProblems().length > 1 ? T().next : T().finish;
+  byId('resultFoot').hidden = false;
+  setBtnLabel('btnResultNext', remainingProblems().length > 1 ? T().next : T().finish);
 }
 
 function answerBlame(confirmed) {
@@ -1530,39 +1666,56 @@ function goComplete() {
   var wrap = byId('finishNodes');
   clear(wrap);
   byId('tomorrowLine').textContent = '';
-  byId('xpLine').textContent = '';
+  byId('xpNum').textContent = '';
+  byId('xpLabel').textContent = '';
+  byId('unlockedNum').textContent = '';
+  byId('unlockedLabel').textContent = '';
   byId('spineWrap').classList.remove('is-rising');
-  byId('spineWrap').style.height = '0%';
+  byId('spineWrap').style.height = '0px';
 
   API.complete().then(function (c) {
+    var t = T();
     var nodes = Array.isArray(c.nodes) ? c.nodes : [];
     clear(wrap);
     nodes.forEach(function (n) {
       var row = h('div', 'finish-node');
-      var dot = h('span', dotClass(n.state));
-      if (n.state === 'mastered' && n.just_lit) { dot.setAttribute('data-lit', '1'); }
-      row.appendChild(dot);
+      // The full node shape rather than a small dot, because this is the screen
+      // where a node turning gold is the whole point.
+      var justLit = (n.state === 'mastered' && !!n.just_lit);
+      var node = h('span', 'stage-node stage-node--inline stage-node--' + knownState(n.state) +
+                           (justLit ? ' is-pending' : ''));
+      if (justLit) { node.setAttribute('data-lit', '1'); }
+      row.appendChild(node);
       row.appendChild(h('span', 'finish-name ' + stateTextClass(n.state), n.name || ''));
       wrap.appendChild(row);
     });
 
     byId('tomorrowLine').textContent = c.tomorrow || '';
-    var t = T();
-    byId('xpLine').textContent = '+' + (c.xp_total || 0) + ' ' + t.xp + ' · ' +
-      (c.unlocked_count || 0) + ' ' + t.unlockedWord;
+    // Two plates rather than one line: the numbers are the reward, so they are
+    // set as numbers. Both words are chrome the server already owns.
+    byId('xpNum').textContent = '+' + (c.xp_total || 0);
+    byId('xpLabel').textContent = t.xp;
+    byId('unlockedNum').textContent = String(c.unlocked_count || 0);
+    byId('unlockedLabel').textContent = t.unlockedWord;
 
-    // The spine grows from the bottom to the highest lit node, then the newly
-    // mastered nodes take the gold.
+    // The spine grows from the bottom to the highest lit node, THEN the nodes
+    // earned today take the gold. Measured in pixels against the rail rather
+    // than as a percentage of the panel, so the fill cannot run past its end.
     var lit = nodes.filter(function (n) { return n.state === 'mastered'; }).length;
     var frac = nodes.length ? Math.max(0.18, lit / nodes.length) : 0;
+    var finish = document.querySelector('#screen-complete .finish');
+    var railLength = Math.max(0, (finish ? finish.offsetHeight : 0) - 40);
     var wrapEl = byId('spineWrap');
-    wrapEl.style.height = Math.round(frac * 100) + '%';
+    wrapEl.style.height = Math.round(frac * railLength) + 'px';
     setTimeout(function () { wrapEl.classList.add('is-rising'); }, 60);
 
     setTimeout(function () {
       var lits = wrap.querySelectorAll('[data-lit="1"]');
-      for (var i = 0; i < lits.length; i++) { lits[i].classList.add('dot--goldin'); }
-    }, 700);
+      for (var i = 0; i < lits.length; i++) {
+        lits[i].classList.remove('is-pending');
+        lits[i].classList.add('is-lit');
+      }
+    }, 900);
   });
 }
 
@@ -1649,8 +1802,6 @@ function wire() {
 
   byId('btnLangEn').addEventListener('click', function () { setLang('en'); });
   byId('btnLangHi').addEventListener('click', function () { setLang('hi'); });
-  byId('btnLight').addEventListener('click', function () { state.theme = 'light'; applyTheme(); applyChrome(); });
-  byId('btnDark').addEventListener('click', function () { state.theme = 'dark'; applyTheme(); applyChrome(); });
 
   byId('btnSignOut').addEventListener('click', function () {
     // Sign out returns to Sign up. It is a student action, so it clears the session; the demo
@@ -1685,15 +1836,16 @@ function wire() {
 
 function boot() {
   try {
-    var savedTheme = localStorage.getItem('ot.theme');
     var savedLang = localStorage.getItem('ot.lang');
-    if (savedTheme === 'light' || savedTheme === 'dark') { state.theme = savedTheme; }
-    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) { state.theme = 'dark'; }
     if (savedLang === 'en' || savedLang === 'hi') { state.lang = savedLang; }
   } catch (e) { /* private mode */ }
 
+  // Says in the console, once, whether the maths on this page is KaTeX or the
+  // plain-text fallback. A demo that silently drew fractions as "(a)/(b)" is
+  // exactly the failure this line is here to make loud.
+  if (!window.katex) { reportMathFallback('script did not load before app.js'); }
+
   document.documentElement.lang = state.lang;
-  applyTheme();
   applyChrome();
   wire();
   // Sign up is the first thing painted under the veil, and it is also where an
