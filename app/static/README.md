@@ -340,6 +340,15 @@ every rule in it is a modifier on a class that already existed. There is no seco
 second set of screens and no behaviour that differs by width. `docs/audits/desktop-shots/` holds
 every screen at 1440x900 and at 390x844, in both languages.
 
+**The wordmark switches between them on a laptop.** The demo is given from a laptop and both
+layouts are worth showing, so tapping `OPEN TUTOR` moves between them without devtools, a reload,
+or resizing a window in front of an audience. It works by editing that one media block's own
+condition to `not all`, so what is left is the phone layout, unmodified: there is still exactly one
+definition of each layout and no third state either of them could drift into. A test asserts the
+block is unique, because the switch takes the first match and would otherwise turn half a layout
+off. Offered only where `(hover: hover) and (pointer: fine)` holds, so a phone never sees it and
+the markup a phone parses has no button in it.
+
 **The phone layout is untouched, and that is verified rather than asserted.** The 390x844 walk was
 screenshotted before and after the change, in English and Hindi, across sixteen states each,
 including the Path accordion opened, switched and closed. All thirty-two images are byte-identical.

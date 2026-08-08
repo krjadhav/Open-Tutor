@@ -1126,6 +1126,44 @@ def test_static_assets_say_how_long_they_may_be_cached(client, path, expected):
     assert response.headers.get("cache-control") == expected
 
 
+def test_the_desktop_layout_is_exactly_one_media_block():
+    """The layout switch flips the condition on that block, so there had better be one of it.
+
+    `desktopMediaRule()` in app.js walks `document.styleSheets` and takes the FIRST rule whose
+    condition mentions `min-width: 1025px`. Split the desktop layout across two media queries and
+    the switch would turn half of it off, which is a worse state than either layout and would show
+    up on stage rather than here.
+    """
+    # Anchored at the start of a line. The section's own prose mentions the query, and an
+    # unanchored pattern happily runs from that mention forward to the real block's brace and
+    # counts the two as one, which would report exactly the healthy answer for a broken file.
+    css = _static("styles.css")
+    blocks = re.findall(r"(?m)^@media[^{]*min-width:\s*1025px[^{]*\{", css)
+    assert len(blocks) == 1, f"expected one desktop media block, found {len(blocks)}"
+
+    js = _static("app.js")
+    assert "min-width:\\s*1025px" in js, "app.js no longer looks for the block it toggles"
+
+
+def test_the_layout_switch_is_never_offered_on_a_phone():
+    """A phone has neither the width for the desktop layout nor a reason to want it.
+
+    The gate is a media query for a pointer that can hover precisely, which is what actually
+    separates a laptop from a phone. Asserted on the source because the alternatives, a user agent
+    string or a window width, are the two ways this is usually got wrong: a tablet shares a width
+    with a laptop, and a user agent string is a guess.
+    """
+    js = _static("app.js")
+    assert "(hover: hover) and (pointer: fine)" in js
+    assert "navigator.userAgent" not in js, "device class must not be sniffed from the user agent"
+
+    # The control is added by JS, so the markup a phone parses has no button in it.
+    html = _static("index.html")
+    wordmark = re.search(r'<span class="wordmark"[^>]*>', html)
+    assert wordmark, "the wordmark is gone"
+    assert "role=" not in wordmark.group(0), "an inert span must not be announced as a button"
+
+
 def test_api_responses_are_not_given_static_cache_headers(client):
     """The middleware matches on path, and `/api/` is checked before anything else.
 

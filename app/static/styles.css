@@ -177,6 +177,18 @@ html[lang="hi"] .veil { letter-spacing: normal; }
 /* The sign up screen carries the full gold lockup, so the small one stands down. */
 body[data-screen="signup"] .wordmark { visibility: hidden; }
 
+/* On a laptop the wordmark switches between the phone and desktop layouts, added by
+   app.js and only where there is something to switch to. `.statusbar` sets
+   `pointer-events: none` so the fake clock never eats a tap, so the one element that
+   is now a control has to take them back.
+
+   The affordance stays deliberately quiet. This is a presentation control for whoever
+   is driving the demo, not a feature of the product, and a wordmark that advertises
+   itself as a button would be read as one by everyone watching. */
+.wordmark--switch { pointer-events: auto; cursor: pointer; }
+.wordmark--switch:hover { color: var(--pale); }
+.wordmark--switch:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
 /* --------------------------------------------------------------------------
    Screens
    -------------------------------------------------------------------------- */

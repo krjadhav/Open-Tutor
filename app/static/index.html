@@ -17,9 +17,12 @@
 <div class="stage">
 <div class="frame" id="frame">
 
+  <!-- The wordmark doubles as the layout switch on a laptop, wired in app.js. It stays a
+       plain span in the markup: on a phone there is nothing to switch to, and a control
+       that does nothing should not be announced as one. -->
   <div class="statusbar">
     <span>9:41</span>
-    <span class="wordmark">OPEN TUTOR</span>
+    <span class="wordmark" id="wordmark">OPEN TUTOR</span>
   </div>
 
   <!-- offline / error banner -->

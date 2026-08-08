@@ -103,6 +103,7 @@ var CHROME = {
     unsimplified: 'Correct, but it can be simplified further.',
     xp: 'XP', unlockedWord: 'unlocked',
     setDone: 'Today’s set is finished.',
+    layoutToPhone: 'Show the phone layout', layoutToDesktop: 'Show the desktop layout',
     blockersHead: function (n) {
       if (n === 0) { return 'Nothing is blocking you right now'; }
       if (n === 1) { return 'One thing keeps tripping you up'; }
@@ -156,6 +157,7 @@ var CHROME = {
     unsimplified: 'सही है, पर इसे और सरल किया जा सकता है।',
     xp: 'XP', unlockedWord: 'खुले',
     setDone: 'आज का सेट पूरा हो गया।',
+    layoutToPhone: 'फ़ोन लेआउट दिखाइए', layoutToDesktop: 'डेस्कटॉप लेआउट दिखाइए',
     blockersHead: function (n) {
       if (n === 0) { return 'अभी कोई रुकावट नहीं है'; }
       if (n === 1) { return 'एक चीज़ बार-बार अटका रही है'; }
@@ -269,7 +271,12 @@ var LOCAL_ONLY_CHROME = {
   ocrEmpty: 'no server key; error.generic is too generic to explain a failed photo',
   ocrFailed: 'no server key; action.retake_photo is a button, not this message',
   diagFailed: 'no server key; error.generic is too generic to explain a failed diagnosis',
-  offline: 'must not depend on the server: it is the message shown when the server is gone'
+  offline: 'must not depend on the server: it is the message shown when the server is gone',
+
+  // The layout switch is a property of this browser window, not of the student's course.
+  // Nothing on the server knows or should know which layout a laptop is currently showing.
+  layoutToPhone: 'presentation control, local to the browser; the server has no concept of it',
+  layoutToDesktop: 'presentation control, local to the browser; the server has no concept of it'
 };
 
 /* The server owns the chrome whenever it sends any: `ui` on /api/state wins over
@@ -961,6 +968,15 @@ function applyChrome() {
   byId('btnLangHi').classList.toggle('is-on', state.lang === 'hi');
   // The two size lines are interpolated, so `data-t` cannot carry them.
   if (state.screen === 'crop') { renderCropSize(); }
+
+  // The layout switch's label lives in `title`, not in text, so `data-t` cannot carry
+  // it either, and which of the two strings applies depends on the current layout.
+  var mark = byId('wordmark');
+  if (mark && mark.classList.contains('wordmark--switch')) {
+    mark.title = mark.getAttribute('aria-pressed') === 'true'
+      ? t.layoutToDesktop : t.layoutToPhone;
+    mark.setAttribute('aria-label', mark.title);
+  }
 }
 
 function setLang(lang) {
@@ -2593,6 +2609,111 @@ function wire() {
 
 }
 
+/* --------------------------------------------------------------------------
+   20. The layout switch, laptops only
+
+   The demo is given from a laptop, and both layouts are worth showing: the phone
+   is what a student actually holds, and the desktop is what the same engine looks
+   like with room. Tapping the wordmark moves between them without devtools, a
+   reload, or resizing the window in front of an audience.
+   -------------------------------------------------------------------------- */
+
+/* The desktop layout is ONE `@media (min-width: 1025px)` block at the foot of
+   styles.css. The switch edits that block's own condition rather than duplicating
+   the gate as a class on each of its rules: `not all` turns the section off, and
+   what is left underneath is the phone layout, unmodified and undisplaced.
+
+   The alternative was to prefix ~100 selectors with a body attribute, which would
+   have meant two definitions of the desktop layout to keep in step and a second
+   code path that only one of them was ever screenshotted in. There is still
+   exactly one definition of each layout; the switch chooses which one is live. */
+var DESKTOP_QUERY = '(min-width: 1025px)';
+var LAYOUT_OFF = 'not all';
+var LAYOUT_KEY = 'ot.layout';
+
+var _desktopRule;                    // undefined = not looked for yet, null = absent
+
+/* The `CSSMediaRule` guarding the desktop layout, or null.
+
+   Same-origin only, and every sheet is ours, but `.cssRules` throws on a sheet the
+   document is not allowed to read, so the walk cannot assume it will not. Matched on
+   the condition rather than on an index, because the position of a rule in a
+   stylesheet is not a contract and reordering the file must not silently move the
+   switch onto some other media query. */
+function desktopMediaRule() {
+  if (_desktopRule !== undefined) { return _desktopRule; }
+  _desktopRule = null;
+  var sheets = document.styleSheets || [];
+  for (var i = 0; i < sheets.length && !_desktopRule; i++) {
+    var rules;
+    try { rules = sheets[i].cssRules; } catch (e) { continue; }   // not readable, not ours
+    for (var j = 0; rules && j < rules.length; j++) {
+      var rule = rules[j];
+      if (rule.media && /min-width:\s*1025px/.test(rule.media.mediaText)) {
+        _desktopRule = rule;
+        break;
+      }
+    }
+  }
+  if (!_desktopRule) {
+    console.warn('[open-tutor] no ' + DESKTOP_QUERY + ' block found; layout switch is off.');
+  }
+  return _desktopRule;
+}
+
+/* Is this a laptop? The switch exists so a laptop can BORROW the phone layout, and
+   it is meaningless in the other direction: a phone has neither the width to render
+   the desktop layout nor a reason to. Asked as "does this browser have a precise
+   pointer that can hover", which is what actually distinguishes the two, rather than
+   by sniffing the user agent or by guessing from the window size, which a laptop can
+   share with a tablet. Chrome's device emulation reports a coarse pointer, so the
+   switch correctly disappears while the demo is already pretending to be a phone. */
+function isLaptop() {
+  return !!(window.matchMedia
+            && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+}
+
+function applyLayout(phone) {
+  var rule = desktopMediaRule();
+  if (!rule) { return; }
+  rule.media.mediaText = phone ? LAYOUT_OFF : DESKTOP_QUERY;
+
+  var mark = byId('wordmark');
+  if (mark) {
+    mark.setAttribute('aria-pressed', phone ? 'true' : 'false');
+    mark.title = phone ? T().layoutToDesktop : T().layoutToPhone;
+    mark.setAttribute('aria-label', mark.title);
+  }
+  try { localStorage.setItem(LAYOUT_KEY, phone ? 'phone' : 'desktop'); } catch (e) { /* private */ }
+
+  // The crop box is sized against the stage, and the stage just changed width. Every
+  // other screen is laid out by CSS alone, which is why nothing else needs telling:
+  // the Path already renders all eight stages into the DOM at both widths.
+  if (state.screen === 'crop') { layoutCrop(false); }
+}
+
+function initLayoutSwitch() {
+  var mark = byId('wordmark');
+  if (!mark || !isLaptop() || !desktopMediaRule()) { return; }
+
+  mark.classList.add('wordmark--switch');
+  mark.setAttribute('role', 'button');
+  mark.setAttribute('tabindex', '0');
+
+  var phone = false;
+  try { phone = localStorage.getItem(LAYOUT_KEY) === 'phone'; } catch (e) { /* private */ }
+  applyLayout(phone);
+
+  function toggle() { applyLayout(desktopMediaRule().media.mediaText !== LAYOUT_OFF); }
+  mark.addEventListener('click', toggle);
+  mark.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+      ev.preventDefault();
+      toggle();
+    }
+  });
+}
+
 function boot() {
   try {
     var savedLang = localStorage.getItem('ot.lang');
@@ -2607,6 +2728,7 @@ function boot() {
   document.documentElement.lang = state.lang;
   applyChrome();
   wire();
+  initLayoutSwitch();
   // Sign up is the first thing painted under the veil, and it is also where an
   // unreadable `flow` lands, so the two agree by construction.
   showScreen(FALLBACK_SCREEN);

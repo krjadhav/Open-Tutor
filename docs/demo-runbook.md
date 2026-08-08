@@ -19,9 +19,15 @@ Then open **http://localhost:8000**.
 Do NOT export `SARVAM_API_KEY` for the demo. Without it the app is fully cached and deterministic.
 With it, a cache miss silently becomes a live call, which is the one thing we do not want on stage.
 
-**View it as a phone.** The layout is a fixed 390x844 frame, centred on desktop. In Chrome, open
-devtools, toggle device toolbar (cmd+shift+M) and pick iPhone 14 Pro. That is what a judge should
-see over your shoulder.
+**Switching layouts on stage: tap the wordmark.** `OPEN TUTOR`, top left of the rail on desktop and
+top right of the frame on the phone, moves between the desktop layout and the phone layout. No
+devtools, no reload, no resizing a window while people watch. The choice survives a reload, so
+recover from a stray refresh by carrying on rather than by setting it up again. It appears only on
+a laptop; on a phone the wordmark is inert. Chrome's device emulation counts as a phone, so if the
+switch is missing, the device toolbar is already on.
+
+**Or view it as a phone the old way.** In Chrome, open devtools, toggle the device toolbar
+(cmd+shift+M) and pick iPhone 14 Pro.
 
 **On a real phone**, for the camera. `run.sh` already binds `0.0.0.0`, so put the laptop and the
 phone on the same wifi and open `http://<laptop-ip>:8000`:
