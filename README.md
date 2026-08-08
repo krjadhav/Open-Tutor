@@ -1,3 +1,3 @@
-if AI can solve olympiad level problems, could it tutor me to do the same?
+mathacademy for anything.
 
-building this to find out.
+if AI can solve olympiad level problems, could it tutor me to do the same?
