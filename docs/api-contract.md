@@ -145,3 +145,66 @@ Restores the seeded 5-day history. Returns `GET /api/state`.
 Any handled failure returns HTTP 200 with an `error` string alongside a usable payload. The demo
 must degrade, never blank. Unhandled exceptions return 500 with `{"error": "..."}` and the frontend
 shows the last good state.
+
+---
+
+# Addendum: onboarding, sign up, course selection
+
+Added 2026-08-08. The flow before the tabs is now three screens, not one.
+
+```
+Welcome ──→ Sign up ──→ Course selection ──→ [Today]
+(the goal   (placeholder,  (one playable,
+ question)   no real auth)  the rest disabled)
+```
+
+The goal question stays as the first screen because it is the strongest thing we say, and it now
+frames the choice that follows rather than standing alone. Sign up is deliberately a placeholder:
+we are not building auth for a hackathon, and pretending to would be worse than admitting it.
+
+## GET /api/courses
+
+```jsonc
+{ "courses": [
+    { "id": "calculus-for-ai", "title": "Calculus for AI",
+      "subtitle": "From algebra to gradient descent",
+      "ends_at": "The gradient descent update step",
+      "state": "active",                    // active | coming_soon
+      "skills": 37,
+      "detail": "about 18 days at 15 min a day",   // active courses only
+      "selectable": true },
+    { "id": "jee-calculus", "title": "JEE Mains Calculus", "subtitle": "The full calculus syllabus",
+      "ends_at": "Definite integrals and areas", "state": "coming_soon",
+      "skills": 63, "detail": "Coming soon", "selectable": false }
+  ],
+  "selected": "calculus-for-ai" | null }
+```
+
+Strings are localised like everything else. `selectable` is computed server-side, not inferred by
+the frontend from `state`, so the rule for what is playable lives in one place.
+
+## POST /api/session/signup
+
+`{ "name": "Avinash" }`, name optional. Placeholder: it creates or resets the demo session and
+records a display name. **No password, no email verification, no persistence beyond the process.**
+Returns `{ "student_id": "demo", "name": "Avinash", "next": "courses" }`.
+
+Do not add a password field, even a fake one. A form that looks like it takes a credential and
+does not is worse than an honest placeholder.
+
+## POST /api/courses/{course_id}/select
+
+Selects a playable course and installs its seeded history. Returns the full `GET /api/state` body,
+so the frontend can go straight to Today with one call.
+
+A `coming_soon` id returns HTTP 200 with `{ "error": "not available yet", "selected": <unchanged> }`.
+The card should already be non-interactive; the endpoint refusing is the backstop, not the gate.
+
+## Flow rules
+
+- A student with no session lands on Welcome. A student with a session and no course lands on
+  Course selection. A student with both lands on Today. The frontend asks the server which, it does
+  not track this itself.
+- `POST /api/reset` returns to the seeded demo student WITH its course already selected, so demo
+  rehearsals do not walk the onboarding every time. Add `?full=1` to clear the session entirely and
+  land back on Welcome, which is what you want when showing the flow itself.
