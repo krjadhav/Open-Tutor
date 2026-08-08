@@ -166,6 +166,87 @@ body{
 .screen::-webkit-scrollbar{width:6px}
 .screen::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:6px}
 
+/* ===== event-lobby homepage (Brawl "Choose Event" style) ===== */
+.ev-screen{
+  min-height:100%;display:flex;flex-direction:column;
+  background:
+    radial-gradient(60px 60px at 12% 22%, rgba(255,255,255,.05) 40%, transparent 42%),
+    radial-gradient(60px 60px at 78% 12%, rgba(255,255,255,.05) 40%, transparent 42%),
+    radial-gradient(60px 60px at 40% 70%, rgba(255,255,255,.05) 40%, transparent 42%),
+    radial-gradient(60px 60px at 90% 60%, rgba(255,255,255,.05) 40%, transparent 42%),
+    linear-gradient(180deg,#2f84e8 0%, #1f66c9 100%);
+  color:#fff;
+}
+.ev-top{
+  display:flex;align-items:center;gap:14px;padding:11px 18px;
+  background:#131a2e;border-bottom:4px solid #0a0f1e;
+}
+.ev-title{font-family:var(--f-head);font-size:26px;letter-spacing:1px;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.5)}
+.ev-iconbtn{
+  width:48px;height:40px;display:grid;place-items:center;font-size:19px;color:#17213a;cursor:pointer;
+  background:linear-gradient(180deg,#fff,#dfe6f5);border:3px solid #0a0f1e;border-radius:12px;
+  box-shadow:0 4px 0 rgba(0,0,0,.45);transition:.08s;
+  clip-path:polygon(10% 0,100% 0,90% 100%,0 100%);
+}
+.ev-iconbtn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
+.ev-body{flex:1;display:flex;gap:16px;padding:16px 18px}
+.ev-left{flex:0 0 clamp(180px,20%,230px);display:flex;flex-direction:column;gap:10px}
+.ev-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.ev-h{font-family:var(--f-head);font-size:14px;letter-spacing:1.5px;color:#dbe8ff;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.ev-rhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+/* featured left card */
+.ev-feat{background:#141c33;border:4px solid #0a0f1e;border-radius:16px;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.45)}
+.ev-feat .cover{position:relative;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:radial-gradient(circle at 50% 30%, #ffd23f 0%, #ff8a1e 55%, #c85a00 100%)}
+.ev-feat .bookart{font-size:54px;filter:drop-shadow(0 4px 0 rgba(0,0,0,.3))}
+.ev-feat .covname{font-family:var(--f-display);font-size:22px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.ev-feat .covsub{font-size:11px;color:rgba(255,255,255,.9)}
+.ev-feat .fbody{padding:12px}
+.ev-feat .ftime{font-family:var(--f-head);font-size:18px;color:#ffd23f;margin:2px 0 8px}
+.badge-i{position:absolute;top:8px;right:8px}
+.ev-i{width:20px;height:20px;flex:0 0 20px;border-radius:50%;background:linear-gradient(180deg,#4fb0ff,#1c7fe0);
+  border:2px solid #0a0f1e;color:#fff;font-family:var(--f-head);font-size:12px;display:grid;place-items:center;cursor:pointer}
+.ev-mini-bar{height:12px;border-radius:8px;background:rgba(0,0,0,.35);border:2px solid #0a0f1e;overflow:hidden}
+.ev-mini-bar>i{display:block;height:100%;background:linear-gradient(90deg,#18ABEF,#7EDCFD)}
+.ev-btn{width:100%;font-family:var(--f-head);letter-spacing:.5px;color:#fff;border:3px solid #0a0f1e;border-radius:12px;
+  padding:10px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.45);margin-top:10px;font-size:14px;transition:.08s}
+.ev-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
+.ev-btn.play{background:linear-gradient(180deg,#5cf08c,#1f9e46)}
+.ev-btn.up{background:linear-gradient(180deg,#ffd83f,#dd7504);color:#3a2400;margin-top:0}
+
+/* streak badge */
+.ev-streak{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-head);font-size:13px;color:#3a2400;
+  background:linear-gradient(180deg,#ffe066,#e08a00);border:3px solid #0a0f1e;border-radius:22px;padding:4px 14px 4px 4px;
+  box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.ev-streak .cnt{width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#ff5b52,#b3160c);color:#fff;
+  display:grid;place-items:center;border:2px solid #0a0f1e;font-size:14px}
+
+/* course card grid */
+.ev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:1150px){.ev-grid{grid-template-columns:repeat(2,1fr)}}
+.ev-card{background:#141c33;border:4px solid #0a0f1e;border-radius:16px;overflow:hidden;cursor:pointer;
+  box-shadow:0 6px 0 rgba(0,0,0,.45);transition:.12s}
+.ev-card:hover{transform:translateY(-3px)}
+.ev-card .strip{display:flex;align-items:center;gap:8px;background:#1d2848;padding:6px 9px;font-size:11px;color:#9fb0d6}
+.ev-card .strip .ck{color:#5cf08c;font-weight:700}
+.ev-card .band{display:flex;align-items:center;gap:10px;padding:9px 11px;border-bottom:3px solid #0a0f1e}
+.ev-card .band .mi{width:36px;height:36px;flex:0 0 36px;border-radius:9px;background:rgba(0,0,0,.28);
+  display:grid;place-items:center;font-size:19px;border:2px solid rgba(0,0,0,.4)}
+.ev-card .band h5{font-family:var(--f-head);font-size:16px;color:#fff;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-card .band .sub{font-size:11px;color:rgba(255,255,255,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-card .prev{padding:11px}
+.ev-card .dots{display:flex;gap:5px;margin-top:9px}
+.ev-card .dots span{flex:1;height:10px;border-radius:3px;background:rgba(255,255,255,.14);border:1px solid rgba(0,0,0,.4)}
+
+/* bottom tabs */
+.ev-tabs{display:flex;background:#131a2e;border-top:4px solid #0a0f1e}
+.ev-tab{flex:1;text-align:center;padding:13px 8px;font-family:var(--f-head);font-size:14px;letter-spacing:1.5px;
+  color:#7f92bd;cursor:pointer;position:relative;transition:.1s}
+.ev-tab:hover{color:#cdd9f2}
+.ev-tab.active{color:#ffd23f}
+.ev-tab.active::after{content:"";position:absolute;left:22%;right:22%;bottom:6px;height:4px;border-radius:3px;background:#ffd23f}
+
 /* ===== reusable UI ===== */
 .pad{padding:16px}
 .pad-lg{padding:22px}
@@ -436,28 +517,53 @@ const R = {};
 
 /* ---- 1. LIBRARY ---- */
 R.library = {
-  desktop(){return `<div class="pad-lg col">
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <h3 class="sec">📚 Your Library</h3><span class="pill gold">Global knowledge base</span>
+  desktop(){return `<div class="ev-screen">
+    <div class="ev-top">
+      <div class="ev-iconbtn" onclick="toast('Back')">◀</div>
+      <div class="ev-title">CHOOSE A COURSE</div>
+      <div style="flex:1"></div>
+      <div class="ev-iconbtn" onclick="toast('Home')">🏠</div>
     </div>
-    <div class="drop" onclick="toast('📄 textbook.pdf uploaded — hit Next to process')">
-      <div class="ic">📤</div>
-      <div class="display up" style="font-size:18px">Drop a textbook to learn</div>
-      <div class="small muted">PDF · EPUB · lecture notes · a syllabus link — anything</div>
-      <div style="margin-top:12px"><span class="btn blue sm">Browse files</span></div>
+    <div class="ev-body">
+      <div class="ev-left">
+        <div class="ev-h">MY LIBRARY</div>
+        <div class="ev-feat">
+          <div class="cover">
+            <div class="badge-i ev-i" onclick="toast('Textbook info')">i</div>
+            <div class="bookart">📕</div>
+            <div class="covname">CALCULUS</div>
+            <div class="covsub">Stewart · 8e</div>
+          </div>
+          <div class="fbody">
+            <div class="tiny muted">Next review in</div>
+            <div class="ftime">⏳ 2d 8h</div>
+            <div class="ev-mini-bar"><i style="width:82%"></i></div>
+            <div class="tiny muted" style="margin-top:4px">82% complete</div>
+            <button class="ev-btn play" onclick="go(3)">▶ RESUME</button>
+          </div>
+        </div>
+        <button class="ev-btn up" onclick="toast('📄 upload a textbook — PDF, EPUB, notes')">＋ UPLOAD TEXTBOOK</button>
+      </div>
+      <div class="ev-right">
+        <div class="ev-rhead">
+          <span class="ev-streak"><span class="cnt">4</span> DAY STREAK 🔥</span>
+          <span class="ev-h" style="margin:0">MY COURSES</span>
+        </div>
+        <div class="ev-grid">
+          ${evCard('#9be000','#5f9e00','∫','Calculus I','Limits &amp; Derivatives','2h 5m',62,'11/18 topics')}
+          ${evCard('#c58bff','#8a2fe0','⟂','Linear Algebra','Vector Spaces','5h 0m',40,'8/20 topics')}
+          ${evCard('#ff7b7b','#d02020','⚗️','Organic Chem','Reaction Mechanisms','1d 3h',12,'3/24 topics')}
+          ${evCard('#aebeff','#5b73d8','💻','Intro to CS','Recursion','7h 5m',67,'16/24 topics')}
+          ${evCard('#ffb35c','#e07a00','📈','Micro-economics','Supply &amp; Demand','NEW',0,'0/15 topics')}
+          ${evCard('#4fe0d2','#12a99b','🏛️','World History','World War II','3d 1h',5,'1/30 topics')}
+        </div>
+      </div>
     </div>
-    <h4 class="sec">Saved textbooks</h4>
-    <div class="grid3">
-      ${book('#FB1A24','Calculus','Stewart 8e','82%')}
-      ${book('#0084D8','Linear Algebra','Strang','40%')}
-      ${book('#3fd971','Organic Chem','Clayden','12%')}
-      ${book('#8a4bff','Intro to CS','CS50','67%')}
-      ${book('#FEC513','Micro-economics','Mankiw','0%')}
-      ${book('#18ABEF','World History','—','5%')}
-    </div>
-    <h4 class="sec">Trending topics</h4>
-    <div class="row" style="flex-wrap:wrap">
-      ${['Calculus I','Probability','Neural Nets','Thermodynamics','Spanish A1','Music Theory'].map(t=>`<span class="pill" onclick="toast('Loaded topic: ${t}')" style="cursor:pointer">🔖 ${t}</span>`).join('')}
+    <div class="ev-tabs">
+      <div class="ev-tab active">LIBRARY</div>
+      <div class="ev-tab" onclick="go(3)">COURSES</div>
+      <div class="ev-tab" onclick="go(2)">GRAPH</div>
+      <div class="ev-tab" onclick="toast('Community — coming soon')">COMMUNITY</div>
     </div>
   </div>`;},
   phone(){return `<div class="pad col">
@@ -472,6 +578,29 @@ R.library = {
     ${book('#8a4bff','Intro to CS','CS50','67%')}
   </div>`;}
 };
+function evCard(cLight,cDark,ic,name,topic,meta,pct,count){
+  const isNew=meta==='NEW';
+  const dots=[...Array(6)].map((_,k)=>`<span style="${k<Math.round(pct/16.7)?'background:'+cLight:''}"></span>`).join('');
+  return `<div class="ev-card" onclick="go(3)">
+    <div class="strip">
+      <span class="ck">${pct>0?'✓':'▢'}</span>
+      <span>${isNew?'✨ New course':'Next: '+meta}</span>
+      <span class="ev-i" onclick="event.stopPropagation();toast('${name} info')">i</span>
+    </div>
+    <div class="band" style="background:linear-gradient(180deg,${cLight},${cDark})">
+      <div class="mi">${ic}</div>
+      <div style="min-width:0"><h5>${name}</h5><div class="sub">${topic}</div></div>
+    </div>
+    <div class="prev">
+      <div class="ev-mini-bar"><i style="width:${pct}%"></i></div>
+      <div class="row" style="justify-content:space-between;align-items:center;margin-top:6px">
+        <span class="tiny" style="color:#aebbd8">${count}</span>
+        <span class="tiny" style="color:#ffd23f;font-weight:700">${pct}% mastered</span>
+      </div>
+      <div class="dots">${dots}</div>
+    </div>
+  </div>`;
+}
 function book(c,t,a,p){return `<div class="book" onclick="toast('Opened: ${t}')"><span class="spine" style="background:${c}"></span>
   <div style="padding-left:6px"><h5>${t}</h5><div class="tiny" style="color:#555">${a}</div>
   <div class="bar" style="margin-top:6px;border-width:2px;height:10px"><i style="width:${p}"></i></div>
