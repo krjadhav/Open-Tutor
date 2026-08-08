@@ -20,12 +20,15 @@ incidental; see the comments there, especially the blame-discount rule.
 from __future__ import annotations
 
 import math
+from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Iterable, Optional
+from typing import Iterable, Iterator, Optional
 
 from engine.types import (
     BLAME_MAX_B_DELTA,
     BLAME_STABILITY_FACTOR,
+    DEFAULT_CONFIG,
     DUE_RETRIEVABILITY,
     LAMBDA_BLAME,
     LEARNING_FLOOR,
@@ -37,19 +40,71 @@ from engine.types import (
     STABILITY_MIN_DAYS,
     Attempt,
     Graph,
+    MasteryConfig,
     NodeState,
+    clamp_credit,
     days_between,
 )
 
 # How much of the direct negative evidence survives when the failure was blamed on a DIFFERENT
-# node. See `apply_attempt` step 4 for why this exists at all. Local to this module because
-# `types.py` is a frozen contract we do not own.
+# node. See `apply_attempt` step 4 for why this exists at all.
 BLAME_DISCOUNT_KEEP = 0.25
 
 STATUS_LOCKED = "locked"
 STATUS_FRONTIER = "frontier"
 STATUS_LEARNING = "learning"
 STATUS_MASTERED = "mastered"
+
+# The status ladder, as a total order. This is what "one status boundary" is measured in, and it
+# is the only place the ordering of the four statuses is written down.
+STATUS_ORDER: tuple[str, ...] = (STATUS_LOCKED, STATUS_FRONTIER, STATUS_LEARNING, STATUS_MASTERED)
+STATUS_RANK: dict[str, int] = {name: i for i, name in enumerate(STATUS_ORDER)}
+
+# The minimum own-`p` each rung requires. `locked` and `frontier` have no floor (locked is decided
+# by prereqs, frontier is the bottom of the own-mastery ladder), so no amount of blame can push a
+# node below them.
+_MIN_P_FOR_RANK: dict[int, float] = {
+    STATUS_RANK[STATUS_LOCKED]: 0.0,
+    STATUS_RANK[STATUS_FRONTIER]: 0.0,
+    STATUS_RANK[STATUS_LEARNING]: LEARNING_FLOOR,
+    STATUS_RANK[STATUS_MASTERED]: MASTERED_P,
+}
+
+
+# --------------------------------------------------------------------------- behaviour switch
+
+_ACTIVE_CONFIG: MasteryConfig = DEFAULT_CONFIG
+
+
+def active_config() -> MasteryConfig:
+    """The config used when a caller does not pass one explicitly."""
+    return _ACTIVE_CONFIG
+
+
+def _cfg(config: Optional[MasteryConfig]) -> MasteryConfig:
+    return config if config is not None else _ACTIVE_CONFIG
+
+
+@contextmanager
+def using(config: MasteryConfig) -> Iterator[MasteryConfig]:
+    """Run a block with `config` as the default behaviour.
+
+    Every rule below also takes an explicit `config=` argument, which is the honest way to inject
+    one. This context manager exists for the code path where that is not available: `replay.py`
+    and `selection.py` call `apply_attempt` without threading a config through, and
+    `scripts/tune/replay_compare.py` has to replay the SAME log through those exact functions
+    under both behaviours to compare them. Swapping the default around that call is preferable to
+    maintaining a second copy of the replay loop that could quietly drift from the real one.
+
+    Single-threaded use only, and restores the previous default even if the block raises.
+    """
+    global _ACTIVE_CONFIG
+    previous = _ACTIVE_CONFIG
+    _ACTIVE_CONFIG = config
+    try:
+        yield config
+    finally:
+        _ACTIVE_CONFIG = previous
 
 
 # --------------------------------------------------------------------------- state access
@@ -163,6 +218,68 @@ def apply_direct(
 
 # --------------------------------------------------------------------------- rule 2: implicit
 
+def credited_nodes(
+    graph: Graph,
+    node_id: str,
+    used_nodes: Iterable[str],
+    config: Optional[MasteryConfig] = None,
+) -> dict[str, float]:
+    """Which nodes one correct task on `node_id` credits, and at what fraction: `{node: credit}`.
+
+    Two hops with very different rules, and the split is the whole design decision here.
+
+    FIRST HOP, gated on `used_nodes`. A direct child of `node_id` is credited only if it is in
+    BOTH `graph.encompasses(node_id)` (the solution *could* have used it) and `used_nodes` (the
+    diagnosis says it *did*). Crediting everything a node encompasses would inflate skills the
+    student happened to route around.
+
+    BELOW THE FIRST HOP, ungated: credit propagates through `graph.implied_credit`, multiplying
+    along each path and taking the max across paths.
+
+    Why the gate stops after one hop. `used_nodes` comes from the diagnosis, which reads the
+    student's WORKING. A grandchild skill is by construction not visible there: a student who
+    writes `d/dx (3x^5) = 15x^4` exercises the exponent rules, but nothing in that line says so,
+    and the diagnosis will never report it. Filtering every hop on `used_nodes` would therefore
+    kill transitive credit outright, since no transitively reached node is ever in the list. The
+    honest reading is that the diagnosis can only report the skills the working makes visible, and
+    that once a first-hop skill is confirmed used, what THAT skill is built from was used too.
+
+    The result is always a subset of `{first hop in used_nodes} union {their descendants}`, so the
+    existing guarantee still holds in the form that matters: credit only reaches nodes reachable
+    from a skill the diagnosis actually reported. `node_id` itself is never credited; the explicit
+    repetition is rule 1's job.
+
+    With `config.transitive_credit` off this degrades to exactly the old single-hop behaviour,
+    which is what makes the two comparable on one replay.
+    """
+    used = set(used_nodes or ())
+    if not used:
+        return {}
+
+    cfg = _cfg(config)
+    credit: dict[str, float] = {}
+
+    for child_id, raw in graph.encompasses(node_id):
+        if child_id not in used:
+            continue
+        first_hop = clamp_credit(raw)
+        if first_hop <= 0.0:
+            continue
+        if first_hop > credit.get(child_id, 0.0):
+            credit[child_id] = first_hop
+        if not cfg.transitive_credit:
+            continue
+        for deep_id, deep_credit in graph.implied_credit(child_id).items():
+            value = first_hop * deep_credit
+            if value > credit.get(deep_id, 0.0):
+                credit[deep_id] = value
+
+    # The attempted node takes explicit evidence in rule 1; a cyclic authoring mistake in the
+    # encompassing graph must not let it collect implicit credit on top of that.
+    credit.pop(node_id, None)
+    return credit
+
+
 def apply_implicit(
     states: dict[str, NodeState],
     graph: Graph,
@@ -170,16 +287,13 @@ def apply_implicit(
     weight: float,
     used_nodes: Iterable[str],
     now: datetime,
+    config: Optional[MasteryConfig] = None,
 ) -> dict[str, NodeState]:
     """FIRe credit down to the component skills the solution actually exercised.
 
-    A node receives credit only if it is in BOTH `graph.encompasses(node_id)` (the solution
-    *could* have used it) and `used_nodes` (the diagnosis says it *did*). The intersection is the
-    point: crediting everything a node encompasses would inflate skills the student happened to
-    route around.
-
-    An implicit rep affects the SCHEDULE but not the MASTERY GATE. Concretely, for every node
-    that receives credit:
+    `credited_nodes` decides WHO gets credit and HOW MUCH, transitively through the encompassing
+    DAG. This function applies it, and everything it does per credited node is unchanged from the
+    single-hop version:
 
       - `last_seen` IS advanced to `now`. The skill was genuinely exercised, so it must not decay
         as though it were not. Without this, a student doing chain-rule problems every day would
@@ -192,29 +306,135 @@ def apply_implicit(
         retrievals of the skill ITSELF, and implicit credit alone must never reach it. Nor should
         an implicit rep push the review interval further out, because the skill was never tested
         in isolation.
-      - the mastery credit stays hard-discounted by `credit` from the graph.
+      - the mastery credit stays hard-discounted by `credit` from the graph, and transitive credit
+        is discounted further at every hop: it is a product of weights in (0, 1], so a grandchild
+        can never be credited more than its parent was.
 
     Only ever called for correct attempts; incorrect work carries no credit downward, it carries
     blame, which is rule 3.
+
+    Iteration is in sorted node order so replay stays deterministic regardless of dict ordering.
     """
-    used = set(used_nodes or ())
-    if not used:
+    credit = credited_nodes(graph, node_id, used_nodes, config)
+    if not credit:
         return states
 
     w = max(0.0, float(weight))
     new_states = states
-    for child_id, credit in graph.encompasses(node_id):
-        if child_id not in used:
-            continue
+    for child_id in sorted(credit):
         child = get_state(new_states, child_id)
         new_states = _put(new_states, child.with_(
-            a=child.a + credit * w,
+            a=child.a + credit[child_id] * w,
             last_seen=now,          # schedule: keep it warm. Mastery gate: untouched below.
         ))
     return new_states
 
 
 # --------------------------------------------------------------------------- rule 3: blame
+
+@dataclass(frozen=True)
+class BlameDelta:
+    """How big one blame's `b` increment came out, and what limited it.
+
+    Returned rather than just the number so tuning can see WHICH bound bound. A cap nobody can
+    observe engaging is how BLAME_MAX_B_DELTA stayed inert for so long.
+    """
+    requested: float          # LAMBDA_BLAME * confidence, before any limit
+    ceiling: float            # BLAME_MAX_B_DELTA, the absolute backstop
+    boundary: float           # largest delta that keeps the one-boundary property (inf = free)
+    applied: float            # what actually lands on b
+    pre_status: str           # the blamed node's status before the blame
+    floor_status: str         # the status the blame is not allowed to push it below
+
+    @property
+    def bound_by(self) -> str:
+        """"none" | "ceiling" | "boundary", naming the binding constraint."""
+        if self.applied >= self.requested - 1e-12:
+            return "none"
+        return "boundary" if self.boundary <= self.ceiling else "ceiling"
+
+
+def _one_boundary_limit(
+    state: NodeState,
+    graph: Graph,
+    states: dict[str, NodeState],
+    now: datetime,
+) -> tuple[float, str, str]:
+    """Largest `b` increment that leaves the node at most one status boundary lower.
+
+    Returns `(limit, pre_status, floor_status)`, with `limit = inf` when nothing constrains it.
+
+    Two facts do the work. First, `apply_blame` always resets `successes`, so a blamed node can
+    never come out `mastered`: the demotion from `mastered` to `learning` is spent before `b`
+    moves at all, and the increment's whole budget is "do not spend the SECOND boundary too".
+    Second, the blame touches only the blamed node, so its prereqs (and therefore whether it is
+    `locked`) are exactly as they were.
+
+    Given a floor status with a minimum `p`, the algebra is one line:
+        a / (a + b + d) >= min_p   <=>   d <= a/min_p - a - b
+    """
+    pre_status = status(state.node_id, graph, states, now)
+    floor_rank = max(STATUS_RANK[STATUS_LOCKED], STATUS_RANK[pre_status] - 1)
+    # A blamed node cannot be mastered afterwards whatever we do to b, so a `mastered` floor is
+    # not a constraint we can honour with the increment; the binding rung is `learning`.
+    floor_rank = min(floor_rank, STATUS_RANK[STATUS_LEARNING])
+    floor_status = STATUS_ORDER[floor_rank]
+
+    min_p = _MIN_P_FOR_RANK[floor_rank]
+    if min_p <= 0.0:
+        return math.inf, pre_status, floor_status
+    return max(0.0, state.a / min_p - state.a - state.b), pre_status, floor_status
+
+
+def blame_delta(
+    states: dict[str, NodeState],
+    graph: Graph,
+    blamed_node: str,
+    confidence: float,
+    now: datetime,
+    config: Optional[MasteryConfig] = None,
+) -> BlameDelta:
+    """The `b` increment for one blame, and the reasoning behind its size.
+
+    THE PROPERTY: **one blame moves a node down by at most one status boundary.**
+
+    `mastered` may fall to `learning`; `learning` may fall to `frontier`; `frontier` and `locked`
+    are already the bottom of the ladder and are unconstrained. What a single blame may never do
+    is skip a rung, so a student who was solid on a skill this morning is at worst "still learning
+    it" tonight, never "back at the frontier", on the strength of one diagnosis.
+
+    Why a property and not a number. BLAME_MAX_B_DELTA = 2.0 was supposed to be the mitigation for
+    experiment 2 finding 3, that the model's stated confidence is NOT separable between right and
+    wrong diagnoses (0.97 vs 0.93) and so cannot gate anything. It never mitigated anything: at
+    the observed confidence range `LAMBDA_BLAME * confidence` is about 1.4, the 2.0 ceiling never
+    engaged, and the 25% blame discount was silently doing all of the protective work. A fixed
+    ceiling also cannot do the job in principle, because the damage one unit of `b` does depends
+    entirely on how much evidence the node already carries: 1.4 is a scratch on a node with 40
+    reps and a demolition on a node with 3. A boundary is scale-free and, unlike 2.0, is a rule
+    a person can reason about and a test can state.
+
+    BLAME_MAX_B_DELTA survives as an absolute backstop for the case the boundary rule cannot see:
+    a `frontier` node has no rung below it, so nothing else would bound a runaway confidence.
+    """
+    cfg = _cfg(config)
+    state = get_state(states, blamed_node)
+
+    requested = LAMBDA_BLAME * max(0.0, float(confidence))
+    boundary, pre_status, floor_status = (
+        _one_boundary_limit(state, graph, states, now)
+        if cfg.boundary_blame_cap
+        else (math.inf, status(state.node_id, graph, states, now), STATUS_LOCKED)
+    )
+    applied = min(requested, BLAME_MAX_B_DELTA, boundary)
+    return BlameDelta(
+        requested=requested,
+        ceiling=BLAME_MAX_B_DELTA,
+        boundary=boundary,
+        applied=applied,
+        pre_status=pre_status,
+        floor_status=floor_status,
+    )
+
 
 def apply_blame(
     states: dict[str, NodeState],
@@ -223,26 +443,29 @@ def apply_blame(
     confidence: float,
     tag: Optional[str],
     now: datetime,
+    config: Optional[MasteryConfig] = None,
 ) -> dict[str, NodeState]:
     """The backward pass: route a failure to the node that actually caused it.
 
-    b += min(LAMBDA_BLAME * confidence, BLAME_MAX_B_DELTA)
-
-    The cap is not a rounding detail, it is the mitigation for experiment 2 finding 3: the
-    model's stated confidence is NOT separable between right and wrong diagnoses (0.97 vs 0.93),
-    so confidence cannot be used as a gate and a confidently wrong diagnosis must not be able to
-    wipe out a node the student knows. One blame can move b by at most BLAME_MAX_B_DELTA.
+    `b += blame_delta(...).applied`, which is `LAMBDA_BLAME * confidence` limited so that **one
+    blame moves the node down by at most one status boundary**, with BLAME_MAX_B_DELTA as an
+    absolute backstop. See `blame_delta` for why the cap is a property rather than a constant.
 
     Stability collapses (interval halves, floored at STABILITY_MIN_DAYS) so the node comes back
     soon, the misconception tag is recorded for the remediation slot, and the spaced-success
     counter resets: a node with a live misconception has no business being called mastered.
 
-    `graph` is accepted for signature symmetry with the other rules and for future
-    blame-spreading to prereqs; blame currently lands on exactly one node.
+    Note what the boundary rule does NOT cover. It bounds the blamed node's own status. A blamed
+    node is still free to drag its DEPENDANTS from frontier to locked, because that cascade runs
+    on `p_eff = p * R` and the stability collapse above cuts `R` hard, which no bound on `b` can
+    undo. Softening that is a separate change to BLAME_STABILITY_FACTOR, not to this cap.
+
+    `graph` is used to derive the blamed node's status, which is what "one boundary" is measured
+    against; blame still lands on exactly one node.
     """
     state = get_state(states, blamed_node)
 
-    delta_b = min(LAMBDA_BLAME * max(0.0, float(confidence)), BLAME_MAX_B_DELTA)
+    delta_b = blame_delta(states, graph, blamed_node, confidence, now, config).applied
 
     misconceptions = state.misconceptions
     if tag and tag not in misconceptions:
@@ -334,6 +557,7 @@ def apply_attempt(
     graph: Graph,
     attempt: Attempt,
     now: Optional[datetime] = None,
+    config: Optional[MasteryConfig] = None,
 ) -> dict[str, NodeState]:
     """Fold one attempt into state. Pure: returns a new dict, mutates nothing.
 
@@ -357,10 +581,11 @@ def apply_attempt(
     is the honest hedge against a misrouted blame, and it also reflects that the student did fail
     to carry the problem to the end. The full-strength penalty goes to the blamed node instead.
 
-    Uses `attempt.ts` when `now` is not supplied.
+    Uses `attempt.ts` when `now` is not supplied, and `active_config()` when `config` is not.
     """
     if now is None:
         now = attempt.ts
+    cfg = _cfg(config)
 
     node_id = attempt.node_id
     weight = attempt.quality
@@ -375,7 +600,7 @@ def apply_attempt(
     if attempt.correct:
         # 3. Credit down, then consolidate up.
         new_states = apply_implicit(
-            new_states, graph, node_id, weight, attempt.used_nodes, now
+            new_states, graph, node_id, weight, attempt.used_nodes, now, config=cfg
         )
         new_states = apply_consolidation(
             new_states, node_id, True, now, was_due=was_due
@@ -385,7 +610,7 @@ def apply_attempt(
         if blamed:
             new_states = apply_blame(
                 new_states, graph, blamed, attempt.blame_confidence,
-                attempt.misconception_tag, now,
+                attempt.misconception_tag, now, config=cfg,
             )
             if blamed != node_id:
                 # Route the failure to its true cause: give back most of the b step 2 added.

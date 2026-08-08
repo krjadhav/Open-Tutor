@@ -50,8 +50,14 @@ IMPLICIT_CREDIT_DEFAULT = 0.25
 # model's confidence is NOT separable between right and wrong answers, so confidence cannot gate
 # anything and a single blame must never be able to wipe out a node.
 LAMBDA_BLAME = 1.5
-BLAME_MAX_B_DELTA = 2.0         # hard ceiling on one blame update
+BLAME_MAX_B_DELTA = 2.0         # absolute backstop on one blame update, see the note below
 BLAME_STABILITY_FACTOR = 0.5    # S <- max(S * this, STABILITY_MIN_DAYS)
+
+# BLAME_MAX_B_DELTA is a BACKSTOP, not the working cap. At the model's observed confidence
+# (0.93 to 0.97) LAMBDA_BLAME * confidence lands near 1.4, so a fixed ceiling of 2.0 never
+# engages and the protective work falls entirely to the 25% blame discount in `mastery.py`.
+# The cap that actually binds is a PROPERTY, not a magic number: one blame may move a node down
+# by at most one status boundary. See `engine.mastery.blame_delta`.
 
 # Item selection.
 TARGET_SUCCESS_RATE = 0.85      # pick the item whose predicted success is nearest this
@@ -73,6 +79,52 @@ NOVELTY_OVERPRACTICE = 0.15
 QUALITY_XP_CLEAN = 1.0
 QUALITY_XP_HINTED = 0.6
 QUALITY_XP_REVEALED = 0.4
+
+
+# --------------------------------------------------------------------------- behaviour switch
+
+@dataclass(frozen=True)
+class MasteryConfig:
+    """Which VARIANT of the update rules to run.
+
+    This exists for exactly one reason: the event log is only useful as a tuning instrument if the
+    same log can be replayed under the old and the new behaviour and the two results compared.
+    A module-level constant cannot do that, because both variants have to run in one process.
+    So every behaviour change that is still being argued about lands here as a flag, gets measured
+    by `scripts/tune/replay_compare.py`, and only then becomes unconditional.
+
+    A flag's DEFAULT is what the engine ships. A flag defaulting to False is not dead code: it is
+    a behaviour that is implemented, tested and measured, and whose measurement said no.
+    `LEGACY_CONFIG` is the behaviour from before any of this, kept runnable so "is this an
+    improvement" stays a question we answer with numbers rather than opinion.
+    """
+
+    # OFF, and the measurement is the reason. Transitive credit (core_engine.md 2.2, engine.md
+    # section 8) is implemented and correct: multiply along a path, max across paths, gated on
+    # `used_nodes` at the first hop only. Replayed against data/demo/history.json it buys nothing
+    # and costs the demo. It moves no node's status and no daily-set slot, but it stamps
+    # `last_seen` on nodes several hops up, and a node whose `last_seen` was just refreshed is not
+    # DUE, so its next retrieval is not a spaced one, so it earns no `successes` and no stability
+    # growth. On the seeded week one attempt (a0207, a correct der.slope-interpretation) now
+    # credits alg.fraction-arithmetic and alg.sign-distribution two hops down, nine hours before
+    # the evening drills on those exact nodes. Both lose a spaced success, stability falls 6.52 to
+    # 3.43 days, and p_eff on alg.fraction-arithmetic drops from 0.763 to 0.703 against a
+    # PREREQ_READY gate of 0.70. One further day of decay, which is exactly what the API's
+    # day-offset applies, pushes it to 0.694 and LOCKS der.quotient-rule, der.definition and
+    # lim.indeterminate-factoring. That is the demo's climax node, locked.
+    # Flip it on with `MasteryConfig(transitive_credit=True)` and re-measure with
+    # `scripts/tune/replay_compare.py`; it should ship only alongside a fix for the
+    # credit-suppresses-spacing interaction, which is a change to rule 4, not to rule 2.
+    transitive_credit: bool = False    # implicit credit walks the whole encompassing DAG
+
+    # ON. Costs nothing measurable (it changes no number on the seeded history) and replaces an
+    # arbitrary constant with a property a person can reason about. See `mastery.blame_delta`.
+    boundary_blame_cap: bool = True    # one blame moves a node at most one status boundary
+
+
+DEFAULT_CONFIG = MasteryConfig()
+LEGACY_CONFIG = MasteryConfig(transitive_credit=False, boundary_blame_cap=False)
+ALL_ON_CONFIG = MasteryConfig(transitive_credit=True, boundary_blame_cap=True)
 
 
 # --------------------------------------------------------------------------- data
@@ -150,11 +202,32 @@ class SetEntry:
     predicted_success: float = 0.0
 
 
+def clamp_credit(weight: float) -> float:
+    """Force a credit weight into the axiom's range, (0, 1].
+
+    core_engine.md section 2.2 requires every encompassing weight to lie in (0, 1]. That range is
+    what makes composition ATTENUATE: a product of numbers at or below 1 can never exceed the
+    smallest of them, so a long path can only ever dilute credit. A weight above 1 would let a
+    two-hop path pay more than a one-hop path, which is the one thing transitive propagation must
+    never do. A weight at or below 0 is not an edge and is reported as 0 so callers can drop it.
+    """
+    w = float(weight)
+    if w <= 0.0:
+        return 0.0
+    return min(w, 1.0)
+
+
 @dataclass
 class Graph:
     """The knowledge graph. Adjacency is precomputed because selection queries it constantly."""
     nodes: dict[str, dict] = field(default_factory=dict)
     target_node: Optional[str] = None
+    # Memo for `implied_credit`. The graph is static for the whole of a session, so the transitive
+    # credit map of a node is a pure function of the graph and worth computing once. Excluded from
+    # equality and repr: it is derived, so two graphs that differ only in what has been queried
+    # are the same graph.
+    _credit_cache: dict[str, dict[str, float]] = field(
+        default_factory=dict, repr=False, compare=False)
 
     def prereqs(self, node_id: str) -> list[tuple[str, float]]:
         return [(p["id"], p.get("weight", 1.0))
@@ -163,6 +236,54 @@ class Graph:
     def encompasses(self, node_id: str) -> list[tuple[str, float]]:
         return [(e["id"], e.get("credit", IMPLICIT_CREDIT_DEFAULT))
                 for e in self.nodes.get(node_id, {}).get("encompasses", [])]
+
+    def implied_credit(self, node_id: str) -> dict[str, float]:
+        """Transitive credit implied by one completed task on `node_id`: `{node: credit}`.
+
+        This is the static half of implicit credit, per core_engine.md section 2.2. Direct
+        `encompasses` answers "what does one task on v exercise one level down"; this answers the
+        same question all the way down, so a chain-rule task credits the power rule AND the
+        exponent rules the power rule is built from.
+
+        Semantics, and the three properties they are chosen to satisfy:
+
+          - MULTIPLY along a path, take the MAX across paths.
+          - Every credit stays in (0, 1]. Weights are clamped into (0, 1] first, and a product of
+            such weights is in (0, 1].
+          - Credit through a single path never exceeds the smallest weight on that path, because
+            every other factor is at most 1. Composition therefore attenuates and never amplifies.
+          - The map is monotone non-increasing in the edge weights: lowering any weight can only
+            lower the products through the paths that use it, and `max` of non-increasing terms is
+            non-increasing.
+
+        `node_id` itself is never in the result; the caller is responsible for the explicit
+        repetition. Termination does not depend on the graph being acyclic: a node already on the
+        current path is skipped, and credit only ever propagates further when it strictly improves
+        on the best credit found so far, which is a strictly decreasing quantity.
+
+        Cached per node. The returned dict is a copy, so a caller cannot poison the cache.
+        """
+        cached = self._credit_cache.get(node_id)
+        if cached is None:
+            cached = self._compute_implied_credit(node_id)
+            self._credit_cache[node_id] = cached
+        return dict(cached)
+
+    def _compute_implied_credit(self, node_id: str) -> dict[str, float]:
+        credit: dict[str, float] = {}
+        stack: list[tuple[str, float, frozenset[str]]] = [(node_id, 1.0, frozenset({node_id}))]
+        while stack:
+            current, acc, path = stack.pop()
+            for child_id, raw in self.encompasses(current):
+                weight = clamp_credit(raw)
+                if weight <= 0.0 or child_id in path:
+                    continue
+                value = acc * weight
+                if value > credit.get(child_id, 0.0):
+                    credit[child_id] = value
+                    stack.append((child_id, value, path | {child_id}))
+        credit.pop(node_id, None)
+        return credit
 
     def title(self, node_id: str) -> str:
         return self.nodes.get(node_id, {}).get("title", node_id)

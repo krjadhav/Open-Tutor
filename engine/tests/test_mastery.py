@@ -21,21 +21,28 @@ if str(REPO_ROOT) not in sys.path:
 
 from engine.mastery import (  # noqa: E402
     BLAME_DISCOUNT_KEEP,
+    STATUS_ORDER,
+    STATUS_RANK,
     apply_attempt,
     apply_blame,
     apply_consolidation,
     apply_direct,
     apply_implicit,
+    blame_delta,
     clear_misconception,
+    credited_nodes,
     is_due,
     p_eff,
     retrievability,
     status,
+    using,
 )
 from engine.types import (  # noqa: E402
     BLAME_MAX_B_DELTA,
     DUE_RETRIEVABILITY,
+    LAMBDA_BLAME,
     LEARNING_FLOOR,
+    LEGACY_CONFIG,
     MASTERED_MIN_SUCCESSES,
     MASTERED_P,
     PREREQ_READY,
@@ -45,12 +52,17 @@ from engine.types import (  # noqa: E402
     STABILITY_MIN_DAYS,
     Attempt,
     Graph,
+    MasteryConfig,
     NodeState,
     add_days,
+    clamp_credit,
     utc,
 )
 
 T0 = utc(2026, 8, 1)
+
+SINGLE_HOP = MasteryConfig(transitive_credit=False)
+TRANSITIVE = MasteryConfig(transitive_credit=True)
 
 
 # --------------------------------------------------------------------------- fixtures
@@ -99,6 +111,53 @@ def toy_graph() -> Graph:
             "encompasses": [],
         },
     })
+
+
+@pytest.fixture
+def deep_graph() -> Graph:
+    """Four encompassing levels with two competing paths to the same node.
+
+        top --0.5--> mid  --0.4--> low --0.5--> floor
+        top --0.9--> side --0.2--> low
+
+    Chosen so the arithmetic distinguishes the rules that could plausibly be used:
+      max of products  -> low = max(0.5*0.4, 0.9*0.2) = 0.20   (what we implement)
+      sum of products  -> low = 0.38                           (would amplify, forbidden)
+      min along path   -> low = 0.4                            (would not attenuate)
+    and so the LONGER path through the LARGER first weight (0.9) still loses, which is the point
+    of multiplying rather than taking the strongest single edge.
+    """
+    return Graph(nodes={
+        "top": {"id": "top", "prereqs": [],
+                "encompasses": [{"id": "mid", "credit": 0.5}, {"id": "side", "credit": 0.9}]},
+        "mid": {"id": "mid", "prereqs": [], "encompasses": [{"id": "low", "credit": 0.4}]},
+        "side": {"id": "side", "prereqs": [], "encompasses": [{"id": "low", "credit": 0.2}]},
+        "low": {"id": "low", "prereqs": [], "encompasses": [{"id": "floor", "credit": 0.5}]},
+        "floor": {"id": "floor", "prereqs": [], "encompasses": []},
+    })
+
+
+def all_path_credits(graph: Graph, start: str) -> dict[str, list[tuple[float, float]]]:
+    """Brute-force every simple encompassing path out of `start`.
+
+    Returns `{node: [(product_along_path, smallest_weight_on_path), ...]}`. Deliberately a
+    different algorithm from the one under test (exhaustive enumeration, no memo, no max), so a
+    bug in `implied_credit` cannot hide behind a matching bug here.
+    """
+    found: dict[str, list[tuple[float, float]]] = {}
+
+    def walk(node: str, product: float, smallest: float, path: tuple[str, ...]) -> None:
+        for child, raw in graph.encompasses(node):
+            if child in path:
+                continue
+            weight = clamp_credit(raw)
+            if weight <= 0.0:
+                continue
+            found.setdefault(child, []).append((product * weight, min(smallest, weight)))
+            walk(child, product * weight, min(smallest, weight), path + (child,))
+
+    walk(start, 1.0, 1.0, (start,))
+    return found
 
 
 def replay(graph: Graph, attempts, states: dict[str, NodeState] | None = None):
@@ -433,6 +492,232 @@ def test_implicit_credit_alone_can_never_reach_mastered(real_graph):
     assert status("alg.function-composition", real_graph, explicit, now) == "learning"
 
 
+# ------------------------------------------------------ rule 2: transitive implicit credit
+
+def test_implied_credit_reaches_a_grandchild_and_attenuates(deep_graph):
+    """Credit multiplies along a path and takes the max across paths, per core_engine.md 2.2."""
+    implied = deep_graph.implied_credit("top")
+    assert implied == pytest.approx({
+        "mid": 0.5,
+        "side": 0.9,
+        "low": 0.2,        # max(0.5*0.4, 0.9*0.2), NOT the sum 0.38 and NOT the min-weight 0.4
+        "floor": 0.1,      # 0.2 * 0.5, four levels down
+    })
+    # Attenuation is the whole property: every hop can only shrink what it passes on.
+    assert implied["floor"] < implied["low"] < implied["mid"]
+
+
+def test_implied_credit_never_exceeds_the_smallest_weight_on_the_path(deep_graph, real_graph):
+    """Composition attenuates and never amplifies.
+
+    Checked against an independent exhaustive path enumeration, on the toy graph and on the real
+    one, so this is a property of the graph we ship and not just of a fixture.
+    """
+    for graph in (deep_graph, real_graph):
+        for node_id in graph.nodes:
+            implied = graph.implied_credit(node_id)
+            paths = all_path_credits(graph, node_id)
+            paths.pop(node_id, None)
+            assert set(implied) == set(paths), f"{node_id}: reached a different set of nodes"
+            for target, options in paths.items():
+                for product, smallest in options:
+                    assert product <= smallest + 1e-12, (
+                        f"{node_id} -> {target}: {product} exceeds the path's smallest weight "
+                        f"{smallest}, so composition amplified")
+                assert implied[target] == pytest.approx(max(p for p, _ in options))
+
+
+def test_implied_credit_stays_in_the_open_unit_interval(deep_graph, real_graph):
+    """Every credit is in (0, 1]: an edge that pays nothing is not an edge, and one that pays
+    more than a full repetition would make a component skill worth more than the skill itself."""
+    for graph in (deep_graph, real_graph):
+        for node_id in graph.nodes:
+            for target, value in graph.implied_credit(node_id).items():
+                assert 0.0 < value <= 1.0, f"{node_id} -> {target} credited {value}"
+
+
+def test_implied_credit_never_credits_the_node_itself(real_graph):
+    for node_id in real_graph.nodes:
+        assert node_id not in real_graph.implied_credit(node_id)
+
+
+def test_the_walk_terminates_on_the_real_cycle_free_graph(real_graph):
+    """The shipped encompassing graph is a DAG, and the walk over it halts and stays finite."""
+    seen_edges = sum(len(real_graph.encompasses(n)) for n in real_graph.nodes)
+    assert seen_edges > 0
+    for node_id in real_graph.nodes:
+        implied = real_graph.implied_credit(node_id)
+        assert len(implied) < len(real_graph.nodes)
+
+
+def test_the_walk_terminates_even_if_someone_authors_a_cycle():
+    """Mutation guard. Acyclicity is an authoring axiom, not something this walk may ASSUME:
+    a cycle introduced by a bad edit must produce a wrong-ish number, never an infinite loop."""
+    cyclic = Graph(nodes={
+        "a": {"id": "a", "encompasses": [{"id": "b", "credit": 1.0}]},
+        "b": {"id": "b", "encompasses": [{"id": "a", "credit": 1.0},
+                                         {"id": "c", "credit": 0.5}]},
+        "c": {"id": "c", "encompasses": [{"id": "c", "credit": 1.0}]},   # self loop
+    })
+    implied = cyclic.implied_credit("a")
+    assert implied == pytest.approx({"b": 1.0, "c": 0.5})
+    assert "a" not in implied
+    for value in implied.values():
+        assert 0.0 < value <= 1.0
+
+
+def test_weights_outside_the_axiom_are_clamped_so_composition_cannot_amplify():
+    """Mutation guard for the (0, 1] axiom. A weight above 1 would make a two-hop path pay more
+    than its first hop, which is the one thing transitive credit must never do."""
+    assert clamp_credit(2.0) == 1.0
+    assert clamp_credit(0.0) == 0.0
+    assert clamp_credit(-1.0) == 0.0
+
+    bad = Graph(nodes={
+        "v": {"id": "v", "encompasses": [{"id": "u", "credit": 3.0}]},
+        "u": {"id": "u", "encompasses": [{"id": "t", "credit": 5.0}]},
+        "t": {"id": "t", "encompasses": []},
+    })
+    implied = bad.implied_credit("v")
+    assert implied == pytest.approx({"u": 1.0, "t": 1.0})
+    assert implied["t"] <= implied["u"], "a grandchild was paid more than its parent"
+
+
+def test_the_credit_map_is_cached_but_callers_cannot_poison_it(deep_graph):
+    first = deep_graph.implied_credit("top")
+    first["low"] = 99.0
+    assert deep_graph.implied_credit("top")["low"] == pytest.approx(0.2)
+    assert deep_graph.implied_credit("top") is not deep_graph.implied_credit("top")
+
+
+def test_credit_is_gated_on_used_nodes_at_the_first_hop_only(deep_graph):
+    """The decision this feature turns on.
+
+    `used_nodes` comes from reading the student's working, so it can only ever name the skills the
+    working makes visible: the first hop. Filtering every hop on it would credit nothing
+    transitively, because no grandchild is ever in the list. So the gate applies once, and below a
+    confirmed first hop credit flows freely.
+    """
+    # "mid" was reported used; "side" was not. Only mid's subtree is credited.
+    through_mid = credited_nodes(deep_graph, "top", ("mid",), TRANSITIVE)
+    assert through_mid == pytest.approx({"mid": 0.5, "low": 0.2, "floor": 0.1})
+    assert "side" not in through_mid
+
+    # The other branch alone gives the other path's product, which is strictly worse for "low".
+    through_side = credited_nodes(deep_graph, "top", ("side",), TRANSITIVE)
+    assert through_side == pytest.approx({"side": 0.9, "low": 0.18, "floor": 0.09})
+
+    # Both reported: max across paths, not sum.
+    both = credited_nodes(deep_graph, "top", ("mid", "side"), TRANSITIVE)
+    assert both["low"] == pytest.approx(0.2)
+
+    # A node not in encompasses(top) at all is never a first hop, however loudly it is reported.
+    assert credited_nodes(deep_graph, "top", ("low",), TRANSITIVE) == {}
+    assert credited_nodes(deep_graph, "top", (), TRANSITIVE) == {}
+
+
+def test_transitive_credit_is_a_superset_of_single_hop_and_only_below_used_nodes(real_graph):
+    """Every existing credit is unchanged; the new ones all hang under a reported first hop."""
+    for node_id in real_graph.nodes:
+        used = tuple(c for c, _ in real_graph.encompasses(node_id))
+        if not used:
+            continue
+        old = credited_nodes(real_graph, node_id, used, SINGLE_HOP)
+        new = credited_nodes(real_graph, node_id, used, TRANSITIVE)
+        assert set(old) <= set(new)
+        for child, credit in old.items():
+            assert new[child] == pytest.approx(credit), "a first-hop credit changed"
+        reachable = set()
+        for child in used:
+            reachable |= {child} | set(real_graph.implied_credit(child))
+        assert set(new) <= reachable, "credit reached a node no reported skill can reach"
+
+
+def test_transitive_credit_on_the_real_graph_reaches_the_exponent_rules(real_graph):
+    """The concrete case engine.md section 8 names: a quotient-rule solution exercises the power
+    rule, and the power rule is exponent rules wearing a calculus hat."""
+    assert credited_nodes(real_graph, "der.quotient-rule", ("der.power-rule",), TRANSITIVE) == (
+        pytest.approx({"der.power-rule": 0.3, "alg.exponent-rules": 0.3 * 0.35}))
+    # Single-hop stops dead one level down, which is the gap being closed.
+    assert credited_nodes(real_graph, "der.quotient-rule", ("der.power-rule",), SINGLE_HOP) == (
+        pytest.approx({"der.power-rule": 0.3}))
+
+
+def test_transitive_credit_keeps_every_property_of_the_single_hop_rule(real_graph):
+    """last_seen refreshed on credited nodes; successes and stability untouched; nothing else."""
+    now = add_days(T0, 10)
+    start = {
+        "der.power-rule": known("der.power-rule", p=0.9, stability=8.0,
+                                last_seen=T0, successes=3),
+        "alg.exponent-rules": known("alg.exponent-rules", p=0.9, stability=8.0,
+                                    last_seen=T0, successes=3),
+    }
+    out = apply_implicit(start, real_graph, "der.quotient-rule", QUALITY_PHOTO,
+                         ("der.power-rule",), now, config=TRANSITIVE)
+
+    for node_id, credit in (("der.power-rule", 0.3), ("alg.exponent-rules", 0.105)):
+        after = out[node_id]
+        assert after.a == pytest.approx(start[node_id].a + credit * QUALITY_PHOTO)
+        assert after.b == pytest.approx(start[node_id].b)          # credit is never negative
+        assert after.last_seen == now                              # schedule: kept warm
+        assert after.successes == start[node_id].successes         # mastery gate: untouched
+        assert after.stability == pytest.approx(start[node_id].stability)
+    assert start["alg.exponent-rules"].last_seen == T0, "the caller's state was mutated"
+
+
+def test_transitive_credit_alone_still_cannot_reach_mastered(real_graph):
+    """The gate the whole rule is fenced by, restated for the transitive case: a grandchild that
+    is only ever credited implicitly can climb p as high as it likes and stays out of mastered."""
+    log = [
+        make_attempt("der.quotient-rule", True, ts=add_days(T0, i * 2), channel="photo",
+                     used_nodes=("der.power-rule",))
+        for i in range(1, 121)
+    ]
+    with using(TRANSITIVE):
+        out = replay(real_graph, log)
+    grandchild = out["alg.exponent-rules"]
+    assert grandchild.p >= MASTERED_P
+    assert grandchild.successes == 0
+    assert status("alg.exponent-rules", real_graph, out, add_days(T0, 241)) != "mastered"
+
+
+def test_transitive_credit_is_deterministic_and_order_independent(real_graph):
+    """Replay determinism is what makes any of this measurable, so it is asserted, not assumed."""
+    attempt = make_attempt("der.definition", True, channel="photo",
+                           used_nodes=("lim.indeterminate-factoring", "alg.sign-distribution"))
+    reordered = make_attempt(
+        "der.definition", True, channel="photo",
+        used_nodes=("alg.sign-distribution", "lim.indeterminate-factoring"))
+    with using(TRANSITIVE):
+        first = apply_attempt({}, real_graph, attempt)
+        assert apply_attempt({}, real_graph, attempt) == first
+        assert apply_attempt({}, real_graph, reordered) == first
+    assert len(first) > 4, "the transitive walk reached nothing, so this proves nothing"
+
+
+def test_both_behaviours_stay_runnable_side_by_side(real_graph):
+    """The old rule has to stay RUNNABLE, or "is the new one better" is not a question we can
+    answer from the log. This is the guarantee scripts/tune/replay_compare.py rests on, and it is
+    also why `transitive_credit` is a flag that currently ships OFF rather than deleted code."""
+    attempt = make_attempt("der.quotient-rule", True, channel="photo",
+                           used_nodes=("der.power-rule", "alg.sign-distribution"))
+    new = apply_attempt({}, real_graph, attempt, config=TRANSITIVE)
+    old = apply_attempt({}, real_graph, attempt, config=SINGLE_HOP)
+
+    assert "alg.exponent-rules" in new
+    assert "alg.exponent-rules" not in old
+    assert old["der.power-rule"] == new["der.power-rule"]
+
+    # The shipped default is single-hop, per the measurement recorded on MasteryConfig.
+    assert not MasteryConfig().transitive_credit
+    assert apply_attempt({}, real_graph, attempt) == old
+
+    # And the context manager, which is how the config reaches code that does not take one.
+    with using(TRANSITIVE):
+        assert apply_attempt({}, real_graph, attempt) == new
+    assert apply_attempt({}, real_graph, attempt) == old      # default restored
+
+
 # --------------------------------------------------------------------------- rule 3: blame
 
 def test_blame_on_prereq_spares_the_attempted_topic(real_graph):
@@ -544,6 +829,164 @@ def test_undiagnosed_failure_falls_back_to_the_attempted_node(toy_graph):
     out = apply_attempt(states, toy_graph, make_attempt("root", False, ts=add_days(T0, 4)))
     assert out["root"].p < states["root"].p
     assert out["root"].stability == pytest.approx(4.0)
+
+
+# ------------------------------------------------- rule 3: the one-boundary blame cap
+
+def solo_graph() -> Graph:
+    """One node, no prereqs, so `status` is decided purely by the node's own p and successes.
+    That isolates the blame cap from the locked cascade, which it does not claim to control."""
+    return Graph(nodes={"x": {"id": "x", "prereqs": [], "encompasses": []}})
+
+
+def blame_sweep():
+    """Reachable-ish (a, b, successes, confidence) combinations.
+
+    `b` starts at 1 from the prior and only ever grows (`apply_attempt` even floors the
+    blame-discount give-back at 1.0), so b >= 1 is the reachable region and the sweep says so.
+    """
+    for a in (1.0, 2.0, 3.0, 4.5, 9.0, 12.0, 20.0, 40.0):
+        for b in (1.0, 1.5, 2.0, 3.5, 6.0):
+            for successes in (0, MASTERED_MIN_SUCCESSES):
+                for confidence in (0.0, 0.5, 0.93, 0.97, 1.0, 10.0):
+                    yield a, b, successes, confidence
+
+
+def test_one_blame_never_crosses_two_status_boundaries():
+    """THE new property. `mastered` may fall to `learning` and `learning` to `frontier`; nothing
+    may skip a rung. One diagnosis, at most one boundary, whatever the model claims to believe.
+
+    This is the rule that replaces BLAME_MAX_B_DELTA = 2.0. A fixed ceiling cannot express it,
+    because the damage one unit of b does depends entirely on how much evidence the node already
+    carries: 1.4 is a scratch at 40 reps and a demolition at 3.
+    """
+    graph = solo_graph()
+    for a, b, successes, confidence in blame_sweep():
+        states = {"x": NodeState("x", a=a, b=b, successes=successes)}
+        pre = status("x", graph, states, T0)
+        out = apply_blame(states, graph, "x", confidence, None, T0)
+        post = status("x", graph, out, T0)
+        assert STATUS_RANK[post] >= STATUS_RANK[pre] - 1, (
+            f"a={a} b={b} succ={successes} conf={confidence}: {pre} -> {post} skipped a rung")
+        assert out["x"].b >= b, "blame must never reduce b"
+
+
+def test_the_boundary_clamp_is_live_code_and_the_old_cap_would_violate_the_property():
+    """Mutation test for the clamp.
+
+    A node with b below the prior is not reachable through `apply_attempt`, which is exactly why
+    it is the right probe: it isolates the clamp from the BLAME_MAX_B_DELTA backstop that happens
+    to cover the reachable region. Under the old fixed cap this node falls mastered -> frontier,
+    two rungs, on one diagnosis. Under the property it stops at learning.
+    """
+    graph = solo_graph()
+    states = {"x": NodeState("x", a=2.76, b=0.24, successes=MASTERED_MIN_SUCCESSES)}
+    assert status("x", graph, states, T0) == "mastered"
+
+    old = apply_blame(states, graph, "x", 0.97, None, T0, config=LEGACY_CONFIG)
+    assert status("x", graph, old, T0) == "frontier", "the old cap used to skip a rung here"
+
+    new = apply_blame(states, graph, "x", 0.97, None, T0)
+    assert status("x", graph, new, T0) == "learning"
+    assert new["x"].p == pytest.approx(LEARNING_FLOOR)      # clamped to the boundary, not past it
+    assert new["x"].b < old["x"].b
+
+    detail = blame_delta(states, graph, "x", 0.97, T0)
+    assert detail.bound_by == "boundary"
+    assert detail.applied < detail.requested
+    assert detail.pre_status == "mastered" and detail.floor_status == "learning"
+
+
+def test_on_reachable_states_the_absolute_backstop_is_the_tighter_of_the_two():
+    """Honest accounting, so nobody claims a win the numbers do not support.
+
+    For any node the engine can actually produce, b >= 1, and `mastered` needs p >= 0.90, so
+    a >= 9b. The one-boundary limit is then a/0.70 - a - b >= (27/7)b - b = 2.857b >= 2.857,
+    which is always above BLAME_MAX_B_DELTA = 2.0. So on real histories the backstop still binds
+    first and the property changes no number. What it changes is that the cap is now a rule with
+    a reason, and it will keep holding if LAMBDA_BLAME is ever retuned upward.
+    """
+    graph = solo_graph()
+    boundary_ever_bound = False
+    for a, b, successes, confidence in blame_sweep():
+        states = {"x": NodeState("x", a=a, b=b, successes=successes)}
+        detail = blame_delta(states, graph, "x", confidence, T0)
+        assert detail.applied == pytest.approx(min(detail.requested, BLAME_MAX_B_DELTA))
+        if detail.bound_by == "boundary":
+            boundary_ever_bound = True
+    assert not boundary_ever_bound, (
+        "the boundary now binds on a reachable state; re-read the arithmetic above")
+
+    # And the arithmetic itself, stated directly rather than inferred from the sweep.
+    mastered = {"x": NodeState("x", a=9.0, b=1.0, successes=MASTERED_MIN_SUCCESSES)}
+    assert status("x", graph, mastered, T0) == "mastered"
+    assert blame_delta(mastered, graph, "x", 1.0, T0).boundary == pytest.approx(9.0 / 0.7 - 10.0)
+    assert blame_delta(mastered, graph, "x", 1.0, T0).boundary > BLAME_MAX_B_DELTA
+
+
+def test_the_cap_only_starts_to_matter_if_lambda_blame_is_retuned_upward():
+    """At LAMBDA_BLAME = 1.5 and the model's measured confidence (0.93 to 0.97), the requested
+    increment is about 1.4 and NO cap engages. Both caps are guards on a future retune, not on
+    today's behaviour, and this test pins the threshold at which that stops being true."""
+    graph = solo_graph()
+    states = {"x": NodeState("x", a=9.0, b=1.0, successes=MASTERED_MIN_SUCCESSES)}
+    for confidence in (0.93, 0.97):
+        detail = blame_delta(states, graph, "x", confidence, T0)
+        assert detail.bound_by == "none"
+        assert detail.applied == pytest.approx(LAMBDA_BLAME * confidence)
+        assert detail.applied < BLAME_MAX_B_DELTA
+
+
+def test_frontier_and_locked_nodes_have_no_rung_below_them_so_the_backstop_is_all_they_get():
+    """The boundary rule cannot bound a node that is already at the bottom of the ladder, which
+    is precisely why BLAME_MAX_B_DELTA survives as an absolute backstop."""
+    graph = solo_graph()
+    frontier = {"x": NodeState("x")}                      # p = 0.5
+    assert status("x", graph, frontier, T0) == "frontier"
+    detail = blame_delta(frontier, graph, "x", 10.0, T0)
+    assert detail.boundary == math.inf
+    assert detail.applied == pytest.approx(BLAME_MAX_B_DELTA)
+    assert detail.bound_by == "ceiling"
+
+
+def test_the_blame_cap_change_does_not_touch_the_blame_discount_guarantee(real_graph):
+    """The load-bearing property, re-checked under BOTH behaviours.
+
+    Whatever the cap does, a student who failed a quotient-rule problem on a sign error must not
+    be marked down on the quotient rule: exactly BLAME_DISCOUNT_KEEP of the direct negative
+    evidence survives on the attempted node, and its review interval is not collapsed.
+    """
+    states = {
+        "der.quotient-rule": known("der.quotient-rule", p=0.80, evidence=10.0,
+                                   stability=9.0, last_seen=T0),
+        "alg.sign-distribution": known("alg.sign-distribution", p=0.85, evidence=8.0,
+                                       stability=12.0, last_seen=T0, successes=3),
+    }
+    attempt = make_attempt(
+        "der.quotient-rule", False, ts=add_days(T0, 5), channel="photo",
+        blamed_node="alg.sign-distribution", blame_confidence=0.95,
+        misconception_tag="drops-sign-on-second-term",
+    )
+    expected_b = states["der.quotient-rule"].b + BLAME_DISCOUNT_KEEP * QUALITY_PHOTO
+
+    for config in (LEGACY_CONFIG, MasteryConfig(), None):
+        out = apply_attempt(states, real_graph, attempt, config=config)
+        assert out["der.quotient-rule"].b == pytest.approx(expected_b)
+        assert out["der.quotient-rule"].stability == pytest.approx(9.0)
+        assert states["der.quotient-rule"].p - out["der.quotient-rule"].p < 0.03
+
+
+def test_the_status_ladder_is_the_one_the_engine_actually_derives():
+    """STATUS_ORDER is the only place the four statuses are ranked, and `status` must only ever
+    return one of them, or "one boundary" would be measured against a ladder with a missing rung.
+    """
+    assert STATUS_ORDER == ("locked", "frontier", "learning", "mastered")
+    graph = solo_graph()
+    produced = set()
+    for a, b, successes, _confidence in blame_sweep():
+        produced.add(status("x", graph, {"x": NodeState("x", a=a, b=b, successes=successes)}, T0))
+    assert produced <= set(STATUS_ORDER)
+    assert {"frontier", "learning", "mastered"} <= produced
 
 
 # ------------------------------------------------------------------ rule 4: consolidation
