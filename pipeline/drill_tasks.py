@@ -77,6 +77,27 @@ def _same(a, b):
 _FUNCS_TEX = ("arcsin", "arccos", "arctan", "sinh", "cosh", "tanh",
               "sin", "cos", "tan", "sec", "csc", "cot", "log", "exp", "sqrt")
 
+#: Every LaTeX command the app's renderer (`app/static/app.js`, section 3) actually draws. There
+#: is no LaTeX library on the page: unknown commands lose their backslash and print as a literal
+#: word. `\mathbf{u}` prints "mathbfu" and a sympy Matrix prints "beginmatrix ... endmatrix", and
+#: both of those have reached a card. So this list is a hard constraint on what a task may emit,
+#: not a style preference, and `unsupported_commands` is asserted over the whole generated bank in
+#: pipeline/tests/test_drill_tasks.py.
+#:
+#: Vectors are written as tuples by `_row` and a norm as ||u||, which need no command at all.
+RENDERABLE_COMMANDS = frozenset({
+    "cdot", "nabla", "partial", "frac", "sqrt", "text", "alpha", "pi", "left", "right",
+    "to", "infty", "times", "div", "sin", "cos", "tan", "log", "exp", "lim",
+})
+
+_COMMAND_RE = re.compile(r"\\([a-zA-Z]+)")
+
+
+def unsupported_commands(text):
+    """The LaTeX commands in `text` that the app cannot draw, as a sorted list."""
+    return sorted({c for c in _COMMAND_RE.findall(str(text or ""))
+                   if c not in RENDERABLE_COMMANDS})
+
 
 def source_to_latex(src):
     """Prettify a sympy-syntax source string for display, preserving structure exactly."""
@@ -179,6 +200,62 @@ def t_limit(p):
     return f"Evaluate $\\lim_{{{v} \\to {L(a)}}} {source_to_latex(p['expr'])}$.", sp.limit(e, v, a)
 
 
+# The three limit nodes are separated by *what the substitution does*, not by how the stem is
+# worded, so each one gets a task whose precondition the CAS checks:
+#
+#   lim.direct-substitution     f(a) exists and is the limit
+#   lim.concept                 f(a) does not exist, yet the limit does
+#   lim.indeterminate-factoring f(a) is 0/0 specifically, so there is a factor to cancel
+#
+# Without those checks the same expression could be filed under any of the three, and a student
+# blamed on the wrong node is exactly the failure the graph exists to prevent.
+
+def _limit_spec(p):
+    e, v, a = P(p["expr"]), S(p.get("var", "x")), P(p["at"])
+    if v not in e.free_symbols:
+        raise ValueError("the expression does not involve the limit variable")
+    if e.is_Symbol:
+        raise ValueError("nothing to evaluate")
+    value = e.subs(v, a)
+    limit = sp.limit(e, v, a)
+    return e, v, a, value, limit
+
+
+def _finite(x):
+    return bool(x.is_number and x.is_finite)
+
+
+def t_limit_substitution(p):
+    e, v, a, value, limit = _limit_spec(p)
+    if not _finite(value):
+        raise ValueError("substitution does not give a value, so this is not that skill")
+    if sp.simplify(value - limit) != 0:
+        raise ValueError("substituting does not give the limit")
+    return (f"Evaluate $\\lim_{{{v} \\to {L(a)}}} {source_to_latex(p['expr'])}$ "
+            f"by direct substitution.", sp.simplify(limit))
+
+
+def t_limit_informal(p):
+    e, v, a, value, limit = _limit_spec(p)
+    if _finite(value):
+        raise ValueError("the function has a value there, so nothing distinguishes the limit")
+    if not _finite(limit):
+        raise ValueError("the limit is not a finite value")
+    return (f"$f({v}) = {source_to_latex(p['expr'])}$ has no value at ${v} = {L(a)}$. What value "
+            f"does $f({v})$ approach as ${v} \\to {L(a)}$?", sp.simplify(limit))
+
+
+def t_limit_indeterminate(p):
+    e, v, a, _value, limit = _limit_spec(p)
+    num, den = sp.fraction(sp.together(e))
+    if sp.simplify(den.subs(v, a)) != 0 or sp.simplify(num.subs(v, a)) != 0:
+        raise ValueError("substitution does not give 0/0, so there is no factor to cancel")
+    if not _finite(limit):
+        raise ValueError("the limit is not a finite value")
+    return (f"Direct substitution gives $0/0$. Evaluate "
+            f"$\\lim_{{{v} \\to {L(a)}}} {source_to_latex(p['expr'])}$.", sp.simplify(limit))
+
+
 def t_gd_step(p):
     """One gradient descent update. Answer computed, so the descent sign is right by construction."""
     loss, w = P(p["expr"]), S(p.get("var", "w"))
@@ -218,35 +295,171 @@ def _vec(s):
 
 
 def _row(v):
-    return sp.latex(v.T)
+    """Vectors render as (a, b, c), not as a LaTeX matrix.
+
+    sympy's latex() emits \\left[\\begin{matrix}...\\end{matrix}\\right], which the app's small
+    LaTeX renderer cannot draw, so it leaked the command names as literal words onto the card.
+    Tuple notation is standard for a coordinate vector, reads correctly at card size, and needs
+    no renderer support at all. The answer is a vector too, so it goes through the same path.
+    """
+    return "(" + ", ".join(sp.latex(x) for x in v) + ")"
 
 
 def t_dot_product(p):
     u, v = _vec(p["expr"]), _vec(p["expr2"])
     if len(u) != len(v):
         raise ValueError("dot product needs vectors of equal length")
-    return (f"Given $\\mathbf{{u}} = {_row(u)}$ and $\\mathbf{{v}} = {_row(v)}$, "
-            f"find $\\mathbf{{u}} \\cdot \\mathbf{{v}}$.", sp.simplify(u.dot(v)))
+    return (f"Given $u = {_row(u)}$ and $v = {_row(v)}$, "
+            f"find $u \\cdot v$.", sp.simplify(u.dot(v)))
 
 
 def t_scalar_multiple(p):
     k, u = P(p["expr"]), _vec(p["expr2"])
-    return (f"Compute ${sp.latex(k)}\\,{_row(u)}$.", sp.simplify(k * u))
+    return (f"Compute ${sp.latex(k)} {_row(u)}$.", sp.simplify(k * u))
 
 
 def t_vector_magnitude(p):
     u = _vec(p["expr"])
-    return (f"Find $\\lVert\\mathbf{{u}}\\rVert$ for $\\mathbf{{u}} = {_row(u)}$.",
+    return (f"Find $||u||$ for $u = {_row(u)}$.",
             sp.simplify(sp.sqrt(sum(x ** 2 for x in u))))
 
 
 def t_vector_update(p):
     """Exactly the gradient descent update, done on numbers before it is done on a loss."""
     w, grad, a = _vec(p["expr"]), _vec(p["expr2"]), P(p["lr"])
-    return (f"A parameter vector is $\\mathbf{{w}} = {_row(w)}$ and the gradient is "
+    return (f"A parameter vector is $w = {_row(w)}$ and the gradient is "
             f"$\\nabla L = {_row(grad)}$. With a learning rate of $\\alpha = {sp.latex(a)}$, "
-            f"compute $\\mathbf{{w}} - \\alpha\\,\\nabla L$.", sp.simplify(w - a * grad))
+            f"compute $w - \\alpha \\nabla L$.", sp.simplify(w - a * grad))
 
+
+
+def t_derivative_from_definition(p):
+    """der.definition, without asking a student to type a symbolic difference quotient.
+
+    The node is "the derivative as a limit of the difference quotient", and the honest way to
+    keep the drill about that and still have a typeable answer is to ask for f'(x) and let the
+    CAS take the limit of the quotient itself. sp.diff is checked against that limit rather than
+    trusted, so a spec where the two disagree (a function with a corner, say) is rejected instead
+    of shipping a stem that says "use the definition" above an answer the definition does not
+    give.
+    """
+    e, v = P(p["expr"]), S(p.get("var", "x"))
+    h = sp.Symbol("h")
+    quotient_limit = sp.simplify(sp.limit((e.subs(v, v + h) - e) / h, h, 0))
+    if sp.simplify(quotient_limit - sp.diff(e, v)) != 0:
+        raise ValueError("the difference quotient limit disagrees with the derivative")
+    if quotient_limit == 0:
+        raise ValueError("derivative is zero, nothing to find")
+    return (f"Use the limit definition of the derivative to find $f'({v})$ for "
+            f"$f({v}) = {source_to_latex(p['expr'])}$.", quotient_limit)
+
+
+def _needs_chain_rule(e, v):
+    """True if some subexpression is a genuine composition in v, not just a power of v.
+
+    x**5 and sin(x) are power-rule and trig-rule drills wearing a chain rule label. What makes a
+    chain rule drill is an inner function that is not the bare variable: (3x**2+1)**5, sin(2x),
+    sqrt(x**2+1), exp(-x**2). Checked structurally so a spec cannot be mis-tagged by its author.
+    """
+    for sub in sp.preorder_traversal(e):
+        if isinstance(sub, sp.Pow):
+            base = sub.base
+            if v in base.free_symbols and not base.is_Symbol and sub.exp != 1:
+                return True
+        elif isinstance(sub, sp.Function) and sub.args:
+            inner = sub.args[0]
+            if v in inner.free_symbols and not inner.is_Symbol:
+                return True
+    return False
+
+
+def t_chain_rule(p):
+    """der.chain-rule. Same computation as `differentiate`, but the spec has to earn the node."""
+    e, v = P(p["expr"]), S(p.get("var", "x"))
+    if not _needs_chain_rule(e, v):
+        raise ValueError("no composition here, so the chain rule is not needed")
+    return (f"Use the chain rule to differentiate $f({v}) = {source_to_latex(p['expr'])}$.",
+            sp.diff(e, v))
+
+
+def t_implicit_dydx(p):
+    """der.implicit. F(x, y) = 0 gives dy/dx = -F_x / F_y.
+
+    The variables are fixed as x and y rather than taken from the spec: implicit differentiation
+    is written in those letters everywhere, and a free choice of names is one more thing an
+    author can get wrong. `expr` is the left side of the equation and `expr2` the right, both
+    rendered exactly as written.
+    """
+    x, y = S("x"), S("y")
+    lhs_src, rhs_src = p["expr"], str(p.get("expr2", "0"))
+    F = P(lhs_src) - P(rhs_src)
+    if not {x, y} <= F.free_symbols:
+        raise ValueError("an implicit equation must involve both x and y")
+    Fx, Fy = sp.diff(F, x), sp.diff(F, y)
+    if Fy == 0:
+        raise ValueError("the equation does not determine y")
+    if not Fy.free_symbols:
+        # x**2 + y = 5 has F_y = 1: you would solve for y and differentiate. That is not the skill.
+        raise ValueError("linear in y, so this is explicit differentiation in disguise")
+    return (f"Find $\\frac{{dy}}{{dx}}$ for "
+            f"${source_to_latex(lhs_src)} = {source_to_latex(rhs_src)}$.",
+            sp.simplify(-Fx / Fy))
+
+
+def t_chain_rule_multivar(p):
+    """mv.chain-rule-multivar: z = f(x, y) with x and y both functions of t, so dz/dt sums two
+    paths. `partial` on a composed expression would not do: a single partial derivative never
+    forces the student to add the paths up, which is the whole content of the node and the exact
+    thing its blame_hint fences off ("omitting one path").
+
+    `expr2` carries the two inner functions as "x(t), y(t)", the same comma form `_vec` uses.
+    """
+    z = P(p["expr"])
+    x, y, t = S("x"), S("y"), S(p.get("var", "t"))
+    inner_src = [s.strip() for s in str(p["expr2"]).split(",")]
+    if len(inner_src) != 2:
+        raise ValueError("expr2 must be two comma-separated functions of the parameter")
+    gx, gy = P(inner_src[0]), P(inner_src[1])
+    if not {x, y} <= z.free_symbols:
+        raise ValueError("z must depend on both x and y, or there is only one path")
+    if t not in gx.free_symbols or t not in gy.free_symbols:
+        raise ValueError("both inner functions must depend on the parameter")
+    total = sp.diff(z, x) * sp.diff(gx, t) + sp.diff(z, y) * sp.diff(gy, t)
+    answer = sp.simplify(total.subs({x: gx, y: gy}, simultaneous=True))
+    return (f"For $z = {source_to_latex(p['expr'])}$ with $x = {source_to_latex(inner_src[0])}$ "
+            f"and $y = {source_to_latex(inner_src[1])}$, find $\\frac{{dz}}{{d{t}}}$.", answer)
+
+
+def t_directional_derivative(p):
+    """mv.directional-derivative: grad f at a point, dotted with a UNIT direction.
+
+    The direction in the spec is deliberately NOT assumed to be a unit vector, and a spec that
+    supplies one is rejected. Forgetting to normalise is the named misconception for this node
+    (see its blame_hint), so a drill whose direction is already unit length cannot detect it: the
+    student who divides by ||u|| and the student who does not both write the same answer.
+
+    `at` is the point and `expr2` the direction, both as comma-separated components, and the
+    variables are x, y, z in that order, taken to match the number of components.
+    """
+    e = P(p["expr"])
+    point, direction = _vec(p["at"]), _vec(p["expr2"])
+    if len(point) != len(direction):
+        raise ValueError("the point and the direction need the same number of components")
+    names = [S(n) for n in ("x", "y", "z")][:len(point)]
+    if not e.free_symbols <= set(names):
+        raise ValueError("f uses a variable the point does not give a value for")
+    norm = sp.sqrt(sum(c ** 2 for c in direction))
+    if norm == 0:
+        raise ValueError("the direction vector is zero")
+    if sp.simplify(norm - 1) == 0:
+        raise ValueError("the direction is already a unit vector, so normalising is not exercised")
+    where = {n: point[i] for i, n in enumerate(names)}
+    grad = sp.Matrix([sp.diff(e, n).subs(where, simultaneous=True) for n in names])
+    if all(g == 0 for g in grad):
+        raise ValueError("the gradient vanishes at the point, so every direction gives zero")
+    return (f"Find the directional derivative of $f = {source_to_latex(p['expr'])}$ at "
+            f"${_row(point)}$ in the direction $u = {_row(direction)}$.",
+            sp.simplify(grad.dot(direction) / norm))
 
 
 def t_nth_derivative(p):
@@ -272,6 +485,14 @@ def t_critical_points(p):
 TASKS = {
     "differentiate": t_differentiate,
     "derivative_at": t_derivative_at,
+    "derivative_from_definition": t_derivative_from_definition,
+    "chain_rule": t_chain_rule,
+    "chain_rule_multivar": t_chain_rule_multivar,
+    "implicit_dydx": t_implicit_dydx,
+    "directional_derivative": t_directional_derivative,
+    "limit_substitution": t_limit_substitution,
+    "limit_informal": t_limit_informal,
+    "limit_indeterminate": t_limit_indeterminate,
     "partial": t_partial,
     "gradient": t_gradient,
     "expand": t_expand,
@@ -306,7 +527,7 @@ def _nontrivial(task, params, answer):
             return False, "answer identical to the question as displayed, no work to do"
         if isinstance(answer, sp.MatrixBase):
             return (True, None) if any(x != 0 for x in answer) else (False, "zero vector")
-        if task == "differentiate" and answer.is_number:
+        if task in ("differentiate", "chain_rule") and answer.is_number:
             return False, "derivative is a constant, too trivial"
         if answer is None:
             return False, "no answer"
@@ -319,6 +540,13 @@ def _nontrivial(task, params, answer):
     return True, None
 
 
+def _fmt_answer(ans):
+    """Same tuple form for a vector answer, so the question and the answer look alike."""
+    if isinstance(ans, sp.MatrixBase):
+        return "(" + ", ".join(sp.latex(x) for x in ans) + ")"
+    return sp.latex(ans)
+
+
 def build(task, params):
     """Returns (stem_latex, answer_latex, answer_sympy) or raises."""
     if task not in TASKS:
@@ -327,7 +555,13 @@ def build(task, params):
     ok, why = _nontrivial(task, params, answer)
     if not ok:
         raise ValueError(why)
-    return stem, sp.latex(answer), answer
+    answer_latex = _fmt_answer(answer)
+    # A drill the app cannot draw is not a drill. Refusing here, rather than checking the bank
+    # afterwards, is what stopped `\begin{matrix}` reaching a card a second time.
+    bad = sorted(set(unsupported_commands(stem)) | set(unsupported_commands(answer_latex)))
+    if bad:
+        raise ValueError("latex the app cannot render: " + ", ".join(bad))
+    return stem, answer_latex, answer
 
 
 def serialize_answer(ans):
