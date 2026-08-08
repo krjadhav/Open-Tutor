@@ -165,12 +165,22 @@ def test_rung_four_offers_a_twin_exactly_where_a_twin_is_possible(hints, node_id
             f"spec={twinnable}")
 
 
-def test_openstax_only_nodes_have_hand_authored_rungs_three_and_four(node_ids):
+def test_every_node_without_a_drill_task_has_hand_authored_rungs_three_and_four(node_ids):
+    """The guarantee is coverage, not exclusivity.
+
+    This used to assert equality, on the assumption that a node has hand-written rungs 3 and 4
+    only because it has no drill to template from. That stopped being true when the nine
+    OpenStax-only nodes were given generated drills: they now have both, and the hand-written copy
+    is better than any template, so it stays. Equality would force us to delete good sentences to
+    satisfy an assertion about where they came from.
+
+    What must never happen is a node with neither, which is what this now checks.
+    """
     tasks = node_tasks()
     no_drills = {n for n in node_ids if not tasks.get(n)}
-    assert set(HAND_RUNGS_34) == no_drills, (
-        "the hand-authored rung 3 and 4 set must be exactly the nodes with no drill task to "
-        "template from")
+    assert no_drills <= set(HAND_RUNGS_34), (
+        f"nodes with no drill and no hand-authored rungs: {sorted(no_drills - set(HAND_RUNGS_34))}")
+    assert set(HAND_RUNGS_34) <= set(node_ids), "hand-authored rungs for a node that does not exist"
 
 
 def test_every_drill_task_in_the_bank_has_a_rung_three_and_four_template():

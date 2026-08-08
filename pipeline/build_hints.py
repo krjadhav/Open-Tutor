@@ -229,6 +229,38 @@ TWIN_OFFER = "Then try a twin problem with new numbers."
 
 #: task -> (rung 3, rung 4 method). The twin offer is appended to the rung 4 method by `build`.
 RUNGS_34_BY_TASK: dict[str, tuple[str, str]] = {
+    "limit_substitution": (
+        "Put the value straight in and read off what the function gives you.",
+        "Substitute the value; if nothing breaks, that is the limit.",
+    ),
+    "limit_informal": (
+        "The function has no value there, so ask where it is heading instead.",
+        "Approach from both sides and see what value they agree on.",
+    ),
+    "limit_indeterminate": (
+        "Substituting gives 0/0, which is a signal to rewrite, not an answer.",
+        "Factor top and bottom, cancel the shared factor, then substitute.",
+    ),
+    "derivative_from_definition": (
+        "Write the difference quotient out in full before simplifying anything.",
+        "Expand, cancel the h, then let h go to zero.",
+    ),
+    "chain_rule": (
+        "Name the outer function and the inner one before differentiating either.",
+        "Differentiate the outer at the inner, then multiply by the inner derivative.",
+    ),
+    "implicit_dydx": (
+        "Differentiate both sides in x, attaching dy/dx every time you pass a y.",
+        "Gather the dy/dx terms on one side, then solve for dy/dx.",
+    ),
+    "chain_rule_multivar": (
+        "Every route from the variable to the output contributes its own term.",
+        "Multiply along each route, then add the routes together.",
+    ),
+    "directional_derivative": (
+        "Make the direction a unit vector first, or the rate will be scaled wrongly.",
+        "Dot the gradient at the point with that unit direction.",
+    ),
     "expand": (
         "Take what is outside the bracket into each term inside, one term at a time.",
         "Distribute across every term, then collect like terms.",
@@ -426,9 +458,14 @@ def rungs_for(node_id: str, tasks: Counter | None) -> tuple[list[dict], str]:
     r1, r2 = HAND_RUNGS_12[node_id]
 
     if node_id in HAND_RUNGS_34:
+        # Hand-written copy stays: it is better than any template. But the twin offer is a
+        # statement about the DATA, not about who wrote the sentence, so it is decided by whether
+        # the node actually has a twinnable drill. These nine nodes were OpenStax-only when their
+        # rungs were written and now have generated drills, so rung 4 must offer the twin or the
+        # ladder promises less than the app can deliver.
         r3, r4 = HAND_RUNGS_34[node_id]
         source = "hand"
-        offer_twin = False
+        offer_twin = bool(tasks)
     else:
         if not tasks:
             raise KeyError(f"{node_id} has no drill task to template from and no hand-authored "

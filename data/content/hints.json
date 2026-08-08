@@ -234,7 +234,7 @@
         "is_math": false
       },
       {
-        "text": "Both sides must approach the same number, and that number is the limit.",
+        "text": "Both sides must approach the same number, and that number is the limit. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
@@ -254,7 +254,7 @@
         "is_math": false
       },
       {
-        "text": "If the function is continuous there, the substituted value is the limit.",
+        "text": "If the function is continuous there, the substituted value is the limit. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
@@ -274,7 +274,7 @@
         "is_math": false
       },
       {
-        "text": "Cancel the common factor, then substitute into what is left.",
+        "text": "Cancel the common factor, then substitute into what is left. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
@@ -314,7 +314,7 @@
         "is_math": false
       },
       {
-        "text": "Expand the difference quotient, cancel the h, then let h go to zero.",
+        "text": "Expand the difference quotient, cancel the h, then let h go to zero. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
@@ -474,7 +474,7 @@
         "is_math": false
       },
       {
-        "text": "Outer derivative at the inner function, multiplied by the inner derivative.",
+        "text": "Outer derivative at the inner function, multiplied by the inner derivative. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
@@ -494,7 +494,7 @@
         "is_math": false
       },
       {
-        "text": "Differentiate both sides, gather the dy/dx terms, then solve for dy/dx.",
+        "text": "Differentiate both sides, gather the dy/dx terms, then solve for dy/dx. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
@@ -554,7 +554,7 @@
         "is_math": false
       },
       {
-        "text": "Hold the other variables constant and differentiate in the named one.",
+        "text": "Hold the other variables constant and differentiate in the named one. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
@@ -574,7 +574,7 @@
         "is_math": false
       },
       {
-        "text": "Multiply along each route, then add the routes together.",
+        "text": "Multiply along each route, then add the routes together. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
@@ -614,7 +614,7 @@
         "is_math": false
       },
       {
-        "text": "Dot the gradient with the unit direction vector.",
+        "text": "Dot the gradient with the unit direction vector. Then try a twin problem with new numbers.",
         "is_math": false
       }
     ]
