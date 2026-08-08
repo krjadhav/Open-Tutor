@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OpenTutor — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#FEC513; --gold-d:#DD7504; --red:#FB1A24; --red-d:#9F0113;
+  --blue:#0084D8; --cyan:#18ABEF; --cyan-l:#7EDCFD; --ink:#151319;
+  --paper:#fff; --violet:#3b2a86; --violet-d:#241a52; --violet-dd:#160f38;
+  --green:#3fd971; --green-d:#1f9e46; --purple:#8a4bff;
+  --panel:#2c2065; --panel-l:#3a2c82;
+  --out:4px solid var(--ink);
+  --shadow:0 8px 0 rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Fredoka',system-ui,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, #4a2fae 0%, transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, #7a2fae 0%, transparent 55%),
+    linear-gradient(180deg,#241a52 0%, #160f38 100%);
+  background-attachment:fixed;
+  color:#fff; min-height:100vh; overflow-x:hidden;
+}
+.display{font-family:'Lilita One',cursive;letter-spacing:.5px}
+.up{text-transform:uppercase}
+
+/* ===== top app bar ===== */
+.appbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:16px;
+  padding:12px 22px;
+  background:linear-gradient(180deg,#2a1d63,#1c1447);
+  border-bottom:4px solid var(--ink);
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{width:44px;height:auto;filter:drop-shadow(0 3px 0 rgba(0,0,0,.4))}
+.brand .name{font-family:'Lilita One';font-size:26px;line-height:1}
+.brand .name b{color:var(--gold)}
+.brand .tag{font-size:11px;color:#b9a6ff;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+
+.spacer{flex:1}
+.hint{font-size:12px;color:#c9bcff;text-align:right;line-height:1.4}
+.hint b{color:var(--gold)}
+
+/* ===== stage stepper ===== */
+.stepper{
+  display:flex;gap:8px;align-items:center;overflow-x:auto;
+  padding:12px 22px;background:rgba(0,0,0,.18);
+  border-bottom:3px solid rgba(0,0,0,.35);
+}
+.stepper::-webkit-scrollbar{height:6px}
+.stepper::-webkit-scrollbar-thumb{background:var(--gold);border-radius:6px}
+.step{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;cursor:pointer;
+  padding:8px 14px;border-radius:14px;border:3px solid rgba(0,0,0,.4);
+  background:rgba(255,255,255,.06);color:#cfc3ff;font-weight:600;font-size:13px;
+  transition:.15s;white-space:nowrap;
+}
+.step .num{
+  width:22px;height:22px;border-radius:8px;display:grid;place-items:center;
+  background:rgba(255,255,255,.15);font-family:'Lilita One';font-size:12px;
+}
+.step:hover{transform:translateY(-2px)}
+.step.active{
+  background:linear-gradient(180deg,var(--gold),var(--gold-d));
+  color:var(--ink);border-color:var(--ink);box-shadow:0 4px 0 rgba(0,0,0,.4);
+}
+.step.active .num{background:rgba(0,0,0,.25);color:#fff}
+.step.done{color:#fff;border-color:rgba(63,217,113,.6)}
+.step.done .num{background:var(--green);color:var(--ink)}
+
+/* ===== nav controls ===== */
+.nav{display:flex;gap:10px;padding:16px 22px 6px;align-items:center}
+.btn{
+  font-family:'Lilita One';letter-spacing:.5px;text-transform:uppercase;
+  border:var(--out);border-radius:16px;cursor:pointer;color:#fff;
+  padding:12px 22px;font-size:15px;position:relative;top:0;
+  box-shadow:0 6px 0 rgba(0,0,0,.4);transition:.08s;user-select:none;
+}
+.btn:active{top:5px;box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.btn.gold{background:linear-gradient(180deg,#ffd83f,var(--gold-d));color:var(--ink)}
+.btn.blue{background:linear-gradient(180deg,var(--cyan),var(--blue))}
+.btn.red{background:linear-gradient(180deg,#ff4b52,var(--red-d))}
+.btn.green{background:linear-gradient(180deg,#5cf08c,var(--green-d))}
+.btn.ghost{background:rgba(255,255,255,.08);box-shadow:0 6px 0 rgba(0,0,0,.3)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sm{padding:8px 14px;font-size:12px;border-width:3px;box-shadow:0 4px 0 rgba(0,0,0,.4)}
+
+/* ===== stage layout: two frames ===== */
+.stage-title{padding:6px 24px 0}
+.stage-title h2{font-family:'Lilita One';font-size:22px;color:var(--gold)}
+.stage-title p{font-size:13px;color:#ccbfff;max-width:900px;margin-top:2px}
+
+.frames{
+  display:flex;gap:28px;justify-content:center;align-items:flex-start;
+  padding:18px 24px 60px;flex-wrap:wrap;
+}
+.device-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.device-label{
+  font-family:'Lilita One';font-size:13px;letter-spacing:1px;text-transform:uppercase;
+  color:#fff;background:rgba(0,0,0,.3);padding:5px 14px;border-radius:20px;border:3px solid rgba(0,0,0,.4);
+}
+.device-label.primary{background:linear-gradient(180deg,var(--gold),var(--gold-d));color:var(--ink);border-color:var(--ink)}
+
+/* desktop chrome */
+.desktop{
+  width:720px;max-width:92vw;
+}
+.desktop .bezel{
+  background:#0e0a26;border:6px solid var(--ink);border-radius:18px;
+  box-shadow:0 18px 40px rgba(0,0,0,.5);overflow:hidden;
+}
+.desktop .titlebar{
+  height:30px;background:#1c1540;display:flex;align-items:center;gap:7px;padding:0 12px;
+  border-bottom:3px solid rgba(0,0,0,.4);
+}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.desktop .screen{height:470px;overflow:auto;background:linear-gradient(180deg,#2a1d63,#1a1244)}
+
+/* phone chrome */
+.phone{width:290px}
+.phone .bezel{
+  background:var(--ink);border-radius:44px;padding:12px;
+  box-shadow:0 18px 40px rgba(0,0,0,.55);border:3px solid #000;
+}
+.phone .notch{height:22px;display:flex;justify-content:center}
+.phone .notch::after{content:"";width:120px;height:22px;background:#000;border-radius:0 0 16px 16px}
+.phone .screen{
+  height:560px;overflow:auto;border-radius:32px;
+  background:linear-gradient(180deg,#2a1d63,#160f38);position:relative;
+}
+.screen::-webkit-scrollbar{width:6px}
+.screen::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:6px}
+
+/* ===== reusable UI ===== */
+.pad{padding:16px}
+.pad-lg{padding:22px}
+.card{
+  background:linear-gradient(180deg,#3a2c82,#2c2065);
+  border:4px solid var(--ink);border-radius:18px;padding:16px;
+  box-shadow:0 6px 0 rgba(0,0,0,.35);
+}
+.card.light{background:linear-gradient(180deg,#fff,#f0ecff);color:var(--ink)}
+.row{display:flex;gap:12px}
+.col{display:flex;flex-direction:column;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.center{display:grid;place-items:center;text-align:center}
+.muted{color:#cbbdff}.small{font-size:12px}.tiny{font-size:11px}
+h3.sec{font-family:'Lilita One';font-size:17px;margin-bottom:8px;color:#fff}
+h4.sec{font-family:'Lilita One';font-size:14px;color:var(--gold);margin-bottom:6px}
+
+.pill{
+  display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12px;
+  background:rgba(255,255,255,.12);padding:5px 12px;border-radius:20px;border:2px solid rgba(0,0,0,.35);
+}
+.pill.gold{background:linear-gradient(180deg,var(--gold),var(--gold-d));color:var(--ink);border-color:var(--ink)}
+.pill.green{background:var(--green);color:var(--ink);border-color:var(--ink)}
+.pill.red{background:var(--red);border-color:var(--ink)}
+.pill.cyan{background:var(--cyan);color:var(--ink);border-color:var(--ink)}
+
+/* upload dropzone */
+.drop{
+  border:4px dashed var(--cyan);border-radius:20px;padding:26px;text-align:center;
+  background:rgba(24,171,239,.08);cursor:pointer;transition:.15s;
+}
+.drop:hover{background:rgba(24,171,239,.16);transform:translateY(-2px)}
+.drop .ic{font-size:44px}
+.book{
+  border:4px solid var(--ink);border-radius:14px;padding:12px;cursor:pointer;
+  background:linear-gradient(180deg,#fff,#eee);color:var(--ink);box-shadow:0 5px 0 rgba(0,0,0,.35);
+  transition:.12s;position:relative;overflow:hidden;
+}
+.book:hover{transform:translateY(-3px)}
+.book .spine{position:absolute;left:0;top:0;bottom:0;width:10px}
+.book h5{font-family:'Lilita One';font-size:14px;margin-bottom:2px}
+
+/* progress bars */
+.bar{height:16px;border-radius:12px;background:rgba(0,0,0,.35);overflow:hidden;border:3px solid var(--ink)}
+.bar > i{display:block;height:100%;background:linear-gradient(180deg,#ffe066,var(--gold-d));width:0;transition:width .8s cubic-bezier(.2,.9,.2,1)}
+.bar.xp > i{background:linear-gradient(90deg,var(--cyan),#6ee7ff)}
+.bar.big{height:26px}
+
+/* processing steps */
+.pstep{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:3px solid rgba(0,0,0,.3)}
+.pstep .tick{width:30px;height:30px;border-radius:10px;flex:0 0 30px;display:grid;place-items:center;background:rgba(255,255,255,.12);font-size:16px}
+.pstep.done .tick{background:var(--green);color:var(--ink)}
+.pstep.run .tick{background:var(--gold);color:var(--ink);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.pstep.wait{opacity:.5}
+
+/* knowledge graph svg */
+.graph-wrap{position:relative;background:rgba(0,0,0,.22);border:4px solid var(--ink);border-radius:16px;overflow:hidden}
+.gnode{cursor:pointer;transition:.12s}
+.gnode:hover{filter:brightness(1.15)}
+.gnode.sel rect{stroke:var(--gold);stroke-width:5}
+.gnode text{font-family:'Fredoka';font-weight:600;fill:var(--ink)}
+.edge{stroke:rgba(255,255,255,.35);stroke-width:3;fill:none;marker-end:url(#arw)}
+.edge.hi{stroke:var(--gold);stroke-width:4}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.inspector{background:rgba(0,0,0,.25);border:3px solid rgba(0,0,0,.4);border-radius:14px;padding:12px}
+.field{width:100%;padding:9px 12px;border-radius:10px;border:3px solid var(--ink);background:#fff;color:var(--ink);font-family:'Fredoka';font-weight:600;font-size:13px}
+.ai-box{background:linear-gradient(180deg,rgba(138,75,255,.25),rgba(138,75,255,.1));border:3px solid var(--purple);border-radius:14px;padding:12px}
+
+/* battlepass */
+.season{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:linear-gradient(120deg,#6a2fae,#b3358f);border:4px solid var(--ink);
+  border-radius:18px;padding:14px 18px;box-shadow:0 6px 0 rgba(0,0,0,.35);
+}
+.track{display:flex;gap:14px;overflow-x:auto;padding:12px 4px 18px}
+.track::-webkit-scrollbar{height:8px}
+.track::-webkit-scrollbar-thumb{background:var(--gold);border-radius:8px}
+.tier{flex:0 0 auto;width:118px;text-align:center}
+.tier .lvl{font-family:'Lilita One';font-size:13px;color:#cbbdff;margin-bottom:4px}
+.reward{
+  height:118px;border-radius:16px;border:4px solid var(--ink);display:grid;place-items:center;
+  font-size:44px;position:relative;box-shadow:0 6px 0 rgba(0,0,0,.35);
+  background:linear-gradient(180deg,#3a2c82,#241a52);
+}
+.reward.unlocked{background:linear-gradient(180deg,#ffe066,var(--gold-d))}
+.reward.locked{filter:grayscale(.6) brightness(.7)}
+.reward .lock{position:absolute;bottom:6px;right:6px;font-size:16px}
+.reward.current{outline:5px solid var(--gold);outline-offset:3px;animation:glow 1.4s infinite}
+@keyframes glow{0%,100%{outline-color:var(--gold)}50%{outline-color:#fff}}
+.badge{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;font-size:30px;border:4px solid var(--ink);box-shadow:0 5px 0 rgba(0,0,0,.35)}
+
+/* assignment map */
+.map{position:relative;padding:8px}
+.assign{
+  display:flex;align-items:center;gap:14px;padding:12px;border-radius:16px;margin-bottom:12px;
+  border:4px solid var(--ink);box-shadow:0 5px 0 rgba(0,0,0,.35);cursor:pointer;transition:.12s;
+}
+.assign:hover{transform:translateY(-2px)}
+.assign.review{background:linear-gradient(180deg,#3aa0ff,#0064c8)}
+.assign.assess{background:linear-gradient(180deg,#ff5b61,#9f0113)}
+.assign.locked{filter:grayscale(.5) brightness(.7);cursor:not-allowed}
+.assign .ic{width:48px;height:48px;flex:0 0 48px;border-radius:12px;background:rgba(0,0,0,.25);display:grid;place-items:center;font-size:24px}
+
+/* quiz */
+.qcard{background:linear-gradient(180deg,#fff,#f2eeff);color:var(--ink);border:4px solid var(--ink);border-radius:18px;padding:16px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.qnum{font-family:'Lilita One';font-size:13px;color:var(--blue)}
+.opt{
+  display:block;width:100%;text-align:left;padding:12px 14px;border-radius:12px;border:3px solid var(--ink);
+  background:#fff;color:var(--ink);font-family:'Fredoka';font-weight:600;cursor:pointer;margin-top:8px;transition:.1s;
+}
+.opt:hover{background:#f0ecff}
+.opt.correct{background:var(--green);color:var(--ink)}
+.opt.wrong{background:var(--red);color:#fff}
+.opt.sel{outline:4px solid var(--gold);outline-offset:1px}
+.explain{margin-top:12px;background:rgba(24,171,239,.12);border:3px solid var(--cyan);border-radius:12px;padding:12px;color:var(--ink);background:#eaf7ff}
+.timer{font-family:'Lilita One';font-size:18px;background:var(--red);color:#fff;padding:5px 14px;border-radius:12px;border:3px solid var(--ink)}
+.timer.calm{background:var(--green);color:var(--ink)}
+
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qtile{
+  aspect-ratio:1;border-radius:14px;border:4px solid var(--ink);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:'Lilita One';
+  background:linear-gradient(180deg,#fff,#eee);color:var(--ink);box-shadow:0 5px 0 rgba(0,0,0,.3);transition:.12s;
+}
+.qtile:hover{transform:translateY(-3px)}
+.qtile.answered{background:linear-gradient(180deg,#5cf08c,var(--green-d));color:var(--ink)}
+.qtile.flagged{outline:4px solid var(--gold)}
+.qtile .qn{font-size:26px}
+
+/* camera / crop */
+.camera{
+  position:relative;background:#111;border-radius:16px;overflow:hidden;border:4px solid var(--ink);
+  aspect-ratio:3/4;
+}
+.viewfind{position:absolute;inset:0;background:
+  repeating-linear-gradient(0deg, #fbfaf5 0 30px, #ece7d8 30px 32px);}
+.hw{position:absolute;color:#1a237e;font-family:'Comic Sans MS','Segoe Print',cursive;transform:rotate(-3deg)}
+.crop{
+  position:absolute;border:3px dashed var(--gold);background:rgba(254,197,19,.12);
+  box-shadow:0 0 0 9999px rgba(0,0,0,.45);cursor:move;
+}
+.crop .h{position:absolute;width:16px;height:16px;background:var(--gold);border:2px solid var(--ink);border-radius:4px}
+.crop .h.tl{left:-9px;top:-9px}.crop .h.tr{right:-9px;top:-9px}
+.crop .h.bl{left:-9px;bottom:-9px}.crop .h.br{right:-9px;bottom:-9px}
+.shutter{width:64px;height:64px;border-radius:50%;background:#fff;border:5px solid var(--gold);cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.4);margin:0 auto}
+.shutter:active{transform:translateY(3px)}
+
+/* xp reward */
+.burst{
+  text-align:center;padding:20px;position:relative;
+}
+.xp-num{font-family:'Lilita One';font-size:52px;color:var(--gold);text-shadow:0 4px 0 var(--gold-d),0 6px 8px rgba(0,0,0,.4)}
+.confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;width:10px;height:14px;top:-20px;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(620px) rotate(540deg)}}
+.levelup{font-family:'Lilita One';font-size:20px;color:#fff;animation:pop .5s}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes fadeup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.fadeup{animation:fadeup .4s both}
+.dstat{background:rgba(0,0,0,.25);border:3px solid rgba(0,0,0,.4);border-radius:12px;padding:10px;text-align:center}
+.dstat b{font-family:'Lilita One';font-size:20px;color:var(--gold);display:block}
+
+.mobile-only-note{
+  border:3px dashed var(--gold);border-radius:14px;padding:14px;text-align:center;color:#ffe9a8;
+  background:rgba(254,197,19,.08);
+}
+.footer{padding:26px;text-align:center;color:#8f7fd6;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="brand">
+    <span id="logoSlot"></span>
+    <div>
+      <div class="name">Open<b>Tutor</b></div>
+      <div class="tag">MathAcademy for anything</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="hint">Desktop + Mobile shown <b>side-by-side</b>, synced to the same stage.<br>Use the stepper or ◀ ▶ to walk the full flow.</div>
+</div>
+
+<div class="stepper" id="stepper"></div>
+
+<div class="nav">
+  <button class="btn ghost sm" id="prevBtn">◀ Prev</button>
+  <button class="btn gold sm" id="nextBtn">Next ▶</button>
+  <div class="spacer"></div>
+  <span class="pill gold" id="xpPill">⭐ 0 XP</span>
+  <span class="pill cyan" id="lvlPill">LVL 4</span>
+</div>
+
+<div class="stage-title" id="stageTitle"></div>
+
+<div class="frames">
+  <div class="device-wrap">
+    <div class="device-label" id="deskLabel">🖥️ Desktop</div>
+    <div class="desktop">
+      <div class="bezel">
+        <div class="titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+        <div class="screen" id="desktopScreen"></div>
+      </div>
+    </div>
+  </div>
+  <div class="device-wrap">
+    <div class="device-label" id="phoneLabel">📱 Mobile</div>
+    <div class="phone">
+      <div class="bezel">
+        <div class="notch"></div>
+        <div class="screen" id="phoneScreen"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">OpenTutor prototype · Brawl Stars–style UI · all data is mock · click things — most are interactive</div>
+
+<script>
+/* ---------- logo (metadata stripped) ---------- */
+const LOGO = `<svg xmlns="http://www.w3.org/2000/svg" width="44" viewBox="0 0 324 280"><defs><linearGradient id="g0" gradientUnits="userSpaceOnUse" x1="99.6" y1="73.8" x2="86.7" y2="85.3"><stop offset="0" stop-color="#69000F"/><stop offset="1" stop-color="#DE192A"/></linearGradient><linearGradient id="g2" gradientUnits="userSpaceOnUse" x1="126.3" y1="84.2" x2="148.3" y2="48.2"><stop offset="0" stop-color="#DA121F"/><stop offset="1" stop-color="#FF212D"/></linearGradient><linearGradient id="g3" gradientUnits="userSpaceOnUse" x1="171.1" y1="58.8" x2="202.1" y2="54.8"><stop offset="0" stop-color="#69000B"/><stop offset="1" stop-color="#C90A17"/></linearGradient><linearGradient id="g4" gradientUnits="userSpaceOnUse" x1="201.3" y1="56.1" x2="227" y2="58.4"><stop offset="0" stop-color="#D90C1B"/><stop offset="1" stop-color="#FF262D"/></linearGradient></defs><path fill="#151319" d="M101 64.8c0 1.6.1 3.1 0 4.1-2.9.8-5.7 1-8.5 1.8-7.5 2.3-16 3.8-23.1 7.1-2.9 1.3-5.1 6-5.3 8.9-.3 5.7-.2 11.5-.1 17.3 0 2.4.1 4.7.1 7.1l0 18.4c0 1.6 0 3-.1 4.2-.1 5.6-.2 8.5 2.8 15.2l-.1.2c-.6 1.9-2.5 5.2-2.5 6.9-.2 13.5-.3 27.2.6 40.7 0 1.1.1 2.4.1 3.8.1 4.4.2 9.7 1.9 12.9 2.5 4.7 14.3 8.8 19.2 10.7 4.4 1.7 8.7 3.6 13 5.4l24.7 10.4c5.8 2.4 11.2 5.6 17.6 5.8 4.9 0 10.3-1.8 15.4-3.6 1.7-.6 3.3-1.1 4.9-1.6 14.7-4.5 29.3-9.3 43.8-14.2 6.2-2.1 12.5-4.5 18.8-6.5 8.3-2.4 16.4-5.4 24.6-8.2 7.4-2.5 15.1-4.4 22.2-7.7 5-2.2 6.6-6.6 6.6-11.8 0-7.1-.1-14.3-.3-21.5-.2-6.9-.3-13.8-.3-20.7 0-3.6-.3-7-.5-10.5-.2-3-.5-6-.5-9-.2-16.9-.1-33.8-.2-50.8 0-.9 0-2 0-3 .1-4.1.1-8.8-.7-12.1-1.9-7.3-14.3-9.5-20.7-11.5-7.3-2.3-14.7-4.7-22-7.2 0-.4 0-.8-.1-1.2-.1-3.5-.2-7.4-3.1-9.7-9.3-7.2-26.7-7.8-38-7.2-7 .4-19.5 2.6-24.5 7.9-2.1 2.3-1.9 7.2-1.7 11.4.1 1.5.2 2.9.1 4.1 0 .4.1.5 0 .5 0 0-.1.1-.3.1-3.1-1.9-10.7-5.1-15.3-5.4-.9-.1-1.9-.1-3-.2-14-.9-35.4-2.3-44.5 8.4-1.2 1.4-1.1 6.3-1.1 10.2Z"/><path fill="#FB1A24" d="M245.2 55.9c-4.1-1.4-8.2-3.2-12.4-4.4.3 3.7.3 7.7.4 11.4 0 4.1-3.6 6.8-7.1 8.2-11.3 4.8-23.8 4.7-35.7 3.9-6.4-1.1-12.8-2.3-19-4.2-.1 0-.3-.1-.5-.1-.7-.2-1.4-.5-1.9-.2-.2.8.1 1.6.8 2-.8.4-.7.2-1 .9.2.2.3.3.5.3 8.7 3.1 20.4 7.7 28.9 10.2.4.2 1.1.6 1.4.7l1 .8.2-.1-.7-1.3c1 .6 2.3 1.3 2.4 2.5.5 3.4.6 7.6.6 11.4l0 2.2.2 24 .2 13.2c0 .1 0 .3 0 .6 0 1.4.1 4.2 0 4.7.2 1.8.2 4 .2 5.9 0 .5 0 1 0 1.5l44.1-13.5c4-1.2 16.6-4.9 19.4-6.6.6-1.2.7-3.1.8-4.5.2-5.3.2-59.3-.6-61.3-.3-.8-2.7-1.7-3.6-2-6-2.4-12.4-4.2-18.6-6.2Z"/><path fill="#FEC513" d="M245.2 55.9c-4.1-1.4-8.2-3.2-12.4-4.4.3 3.7.3 7.7.4 11.4 0 4.1-3.6 6.8-7.1 8.2-11.3 4.8-23.8 4.7-35.7 3.9-6.4-1.1-12.8-2.3-19-4.2-.1 0-.3-.1-.5-.1-.7-.2-1.4-.5-1.9-.2-.2.8.1 1.6.8 2-.8.4-.7.2-1 .9.2.2.3.3.5.3 8.7 3.1 20.4 7.7 28.9 10.2.4.2 1.1.6 1.4.7l1 .8.2-.1-.7-1.3c1 .6 2.3 1.3 2.4 2.5.5 3.4.6 7.6.6 11.4l0 2.2.2 24 .2 13.2c0 .1 0 .3 0 .6 0 1.4.1 4.2 0 4.7.2 1.8.2 4 .2 5.9 0 .5 0 1 0 1.5l44.1-13.5c4-1.2 16.6-4.9 19.4-6.6.6-1.2.7-3.1.8-4.5.2-5.3.2-59.3-.6-61.3-.3-.8-2.7-1.7-3.6-2-6-2.4-12.4-4.2-18.6-6.2Z"/><path fill="#0084D8" d="M155.7 171.4c-5.7 1.7-10.2 3.5-16.1 4.4-.7 1.6-1.2 4.4.4 5.7l.1.3c-.7.1-1.2-.1-1.8-.4-.1 0-.2-.1-.3-.1.7 2.5.4 6.5.2 10-.2 2.4-.4 4.6-.1 5.8.7 4.2.1 38 1.2 40.2.3 0 .7 0 1 0 2.3 0 4.5-.3 6.7-.9 4.9-1.4 11.6-3.8 16.7-5.5l38.1-12.4 35.3-11.5c9.3-3 18.6-5.9 27.9-9.1 1.9-.7 4.4-1.5 4.7-3.8.6-5.5.4-11.3.3-16.9 0-1.6-.1-3.3-.1-4.9-.2-10.3-.3-20.6-.2-30.9-.9-2.1-1.8-4-4.5-3.1-11.2 3.6-22.5 6.9-33.7 10.4l-32.5 9.8c-5.2 1.5-10.5 2.9-15.8 4.5l-27.5 8.5Z"/><path fill="#18ABEF" d="M155.7 171.4c-5.7 1.7-10.2 3.5-16.1 4.4-.7 1.6-1.2 4.4.4 5.7l.1.3c.1.1.2.2.3.3.7.7 1.1 1.1 2.3.7 14.4-5.2 29.3-9.3 44-13.8l41.9-12.9 20.7-6.3c4.9-1.5 10.9-3.2 15.5-5.2.3-.1 1.3-.5 1.7-.6l2.9-1.1.3-.8v-.7c-.9-2.1-1.8-4-4.5-3.1-11.2 3.6-22.5 6.9-33.7 10.4l-32.5 9.8c-5.2 1.5-10.5 2.9-15.8 4.5l-27.5 8.5Z"/><path fill="#014C91" d="M91.2 159.1c-6-1.9-11.9-4.6-17.9-6.5-.6.9-1.3 1.9-1.8 2.8-.1 3.2 0 6.6.1 9.9 0 1.1.1 2.2.1 3.2l.5 20.9c.2 5.4.3 15.2 1.2 20.1 4.2 3 15.7 7.2 20.8 9.3l26.4 11.1c3.5 1.4 15.6 6.7 18.7 7.3-1.1-2.1-.5-35.9-1.3-40.1-.2-1.2 0-3.4.1-5.8.3-3.5.6-7.5-.2-10-.1 0 .2.1.3.1.6.3 1.1.5 1.8.4l-.1-.3c-1.6-1.3-1.2-4-.4-5.7-1.4-.1-1.7-.2-3-.7-3.1-1.5-7.1-2.6-10.3-3.8-11.7-4.1-23.2-8.5-35-12.2Z"/><path fill="url(#g2)" d="M112.1 53.3c-2.7 1.2-4.3 2.6-5.3 5.4-.4 4.2-.4 20.1.4 23.9 5.3 4.2 22.4 6.7 29.1 6 .3 0 .5-.1.8-.1 6.8 0 14.5-.8 20.9-3.3 2-.8 4.8-1.9 5.7-4 .8-1.9.4-20.8-.4-22.8-1.3-3-5.2-4.8-8-5.9-12.2-4.7-31.1-4.6-43.1.8Z"/><path fill="url(#g3)" d="M172 40.5c0-.2 0-.4 0-.5-.5 4-.5 7.8-.5 11.8 0 1.2 0 2.3 0 3.5 0 .9 0 1.9-.1 3-.1 2 0 4.2.1 5.9 9.1 5.5 15 6.4 25.9 6.9 1.8.1 6.5.1 8.2-.3-.3 0-.7 0-1 0-1.2 0-2.4 0-3-.9.7-2.4.5-10.7.8-13.5 0-.5 0-1.2-.1-2-.1-1-.1-2.1 0-3.1l.8-.3c-1.6-.2-4.7-.4-6-.8-5.5-.4-15.8-3.4-20.8-5.9-1-.5-2.4-1.1-3.2-1.7-.8-.6-.8-1.1-.8-1.9Z"/><path fill="url(#g4)" d="M226.1 42.3c-.1 0-.2.2-.6.5-.2 3.2-7.1 5.3-9.8 6-3.7.9-7.5.8-11.3.7l0 0c-1.9 1.1-3.3.9-4.8.7-.9-.1-1.7-.2-2.7-.1 1.3.4 4.4.6 6 .8l-.8.3c-.1 1 0 2.1.1 3.1 0 .8.1 1.5 0 2-.3 2.9-.1 11.2-.8 13.5.7.9 1.9.9 3 .9.4 0 .7 0 1 .1 5.8 0 17.2-2.4 21.8-6.4.1-3.7 0-8.1-.1-12.3-.1-2.8-.1-5.6-.1-8.2-.1-.7-.2-.9-.4-1.5-.3 0-.4-.1-.5 0Z"/><path fill="#FB1A24" d="M211.5 32.5c-7.9-2-36-1.5-39.6 7.4-.5 4-.5 7.8-.5 11.8 0 1.2 0 2.3 0 3.5 0 .9 0 1.9-.1 2.9-.1 2.1-.1 4.3 0 6 9.1 5.5 15 6.4 25.9 6.9 1.8.1 6.5.1 8.2-.3 5.8.1 17.2-2.4 21.8-6.4.1-3.7 0-8.1-.1-12.3-.1-2.8-.1-5.6-.1-8.2.5-7.7-6.7-9.3-13-10.8-.9-.2-1.7-.4-2.5-.6Z"/></svg>`;
+document.getElementById('logoSlot').innerHTML = LOGO;
+
+/* ---------- app state ---------- */
+const state = { xp: 2450, level: 4, stage: 0,
+  reviewDone:[false,false,false,false], graphNodes:null };
+
+/* ---------- stages ---------- */
+const STAGES = [
+  {key:'library', name:'Upload / Library', title:'1 · Choose what to learn',
+   desc:'Upload a textbook (PDF/EPUB) or pick a saved textbook or topic. This is where every course begins.'},
+  {key:'processing', name:'Processing', title:'2 · Building the knowledge graph',
+   desc:'OpenTutor decomposes the book into topics, links prerequisites and constructs a DAG. Watch it think.'},
+  {key:'graph', name:'Knowledge Graph', title:'3 · The DAG (editable on desktop)',
+   desc:'Directed acyclic graph of topics → prerequisites. Global by default. Split nodes, add topics — manual or AI-assisted. Editing is desktop-only.'},
+  {key:'course', name:'Pick Course', title:'4 · Student picks a course',
+   desc:'From the graph, students select a slice to study. Here: Calculus I.'},
+  {key:'battlepass', name:'Battlepass', title:'5 · Battlepass & progression',
+   desc:'Earn XP, climb tiers, unlock badges for missions & milestones. Seasonal theme keeps them grinding.'},
+  {key:'assignments', name:'Assignments', title:'6 · Review & Assessment map',
+   desc:'~4 review assignments (any order) per 1 assessment. Reviews = untimed practice. Assessment = timed test.'},
+  {key:'review', name:'Review Quiz', title:'7 · Review assignment (untimed)',
+   desc:'5 questions, one at a time, each followed by an explanation. XP for completion, bonus for a perfect score.'},
+  {key:'assessment', name:'Assessment', title:'8 · Assessment (timed)',
+   desc:'10 questions, timer runs once started, solve in any order. XP scales with performance; penalty for poor scores.'},
+  {key:'camera', name:'Camera Upload', title:'9 · Handwritten solution (mobile only)',
+   desc:'Every answer is a photo of handwritten work. Snap it, crop to the note, submit, advance. Quiz is taken on the phone.'},
+  {key:'reward', name:'XP Reward', title:'10 · XP reward & battlepass bump',
+   desc:'Results, XP earned, and the battlepass tier progression — celebrated on both mobile and desktop.'},
+];
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function setXP(){ $('xpPill').textContent='⭐ '+state.xp.toLocaleString()+' XP'; $('lvlPill').textContent='LVL '+state.level; }
+function confetti(host,n=40){
+  const cols=['#FEC513','#FB1A24','#18ABEF','#3fd971','#8a4bff','#fff'];
+  let h='<div class="confetti">';
+  for(let i=0;i<n;i++){const l=Math.floor((i/n)*100);const d=(1.4+((i%7)*0.28)).toFixed(2);const de=((i%9)*0.15).toFixed(2);
+    h+=`<i style="left:${l}%;background:${cols[i%cols.length]};animation-duration:${d}s;animation-delay:${de}s"></i>`;}
+  h+='</div>'; host.insertAdjacentHTML('afterbegin',h);
+}
+
+/* ================= STAGE RENDERERS ================= */
+const R = {};
+
+/* ---- 1. LIBRARY ---- */
+R.library = {
+  desktop(){return `<div class="pad-lg col">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 class="sec">📚 Your Library</h3><span class="pill gold">Global knowledge base</span>
+    </div>
+    <div class="drop" onclick="toast('📄 textbook.pdf uploaded — hit Next to process')">
+      <div class="ic">📤</div>
+      <div class="display up" style="font-size:18px">Drop a textbook to learn</div>
+      <div class="small muted">PDF · EPUB · lecture notes · a syllabus link — anything</div>
+      <div style="margin-top:12px"><span class="btn blue sm">Browse files</span></div>
+    </div>
+    <h4 class="sec">Saved textbooks</h4>
+    <div class="grid3">
+      ${book('#FB1A24','Calculus','Stewart 8e','82%')}
+      ${book('#0084D8','Linear Algebra','Strang','40%')}
+      ${book('#3fd971','Organic Chem','Clayden','12%')}
+      ${book('#8a4bff','Intro to CS','CS50','67%')}
+      ${book('#FEC513','Micro-economics','Mankiw','0%')}
+      ${book('#18ABEF','World History','—','5%')}
+    </div>
+    <h4 class="sec">Trending topics</h4>
+    <div class="row" style="flex-wrap:wrap">
+      ${['Calculus I','Probability','Neural Nets','Thermodynamics','Spanish A1','Music Theory'].map(t=>`<span class="pill" onclick="toast('Loaded topic: ${t}')" style="cursor:pointer">🔖 ${t}</span>`).join('')}
+    </div>
+  </div>`;},
+  phone(){return `<div class="pad col">
+    <h3 class="sec">📚 Library</h3>
+    <div class="drop" onclick="toast('Use camera to scan pages')">
+      <div class="ic">📸</div><div class="display up" style="font-size:15px">Scan / upload book</div>
+      <div class="tiny muted">Snap pages or import a file</div>
+    </div>
+    <h4 class="sec">Continue</h4>
+    ${book('#FB1A24','Calculus','Stewart 8e','82%')}
+    ${book('#0084D8','Linear Algebra','Strang','40%')}
+    ${book('#8a4bff','Intro to CS','CS50','67%')}
+  </div>`;}
+};
+function book(c,t,a,p){return `<div class="book" onclick="toast('Opened: ${t}')"><span class="spine" style="background:${c}"></span>
+  <div style="padding-left:6px"><h5>${t}</h5><div class="tiny" style="color:#555">${a}</div>
+  <div class="bar" style="margin-top:6px;border-width:2px;height:10px"><i style="width:${p}"></i></div>
+  <div class="tiny" style="color:#555;margin-top:3px">${p} complete</div></div></div>`;}
+
+/* ---- 2. PROCESSING ---- */
+const PROC=[
+  {t:'Parsing textbook & OCR',ic:'📖'},
+  {t:'Extracting concepts (312 found)',ic:'🧩'},
+  {t:'Decomposing into topics',ic:'✂️'},
+  {t:'Linking prerequisites',ic:'🔗'},
+  {t:'Detecting cycles → enforce DAG',ic:'🔄'},
+  {t:'Constructing knowledge graph',ic:'🕸️'},
+];
+R.processing = {
+  desktop(){return `<div class="pad-lg col">
+    <h3 class="sec">⚙️ Processing “Calculus — Stewart 8e”</h3>
+    <div class="grid2">
+      <div class="col" id="procList">${PROC.map((s,i)=>pstep(s,i)).join('')}</div>
+      <div class="card" style="background:rgba(0,0,0,.25)">
+        <h4 class="sec">Live graph forming</h4>
+        <div id="procGraph">${miniGraph(true)}</div>
+        <div class="bar big" style="margin-top:12px"><i id="procBar" style="width:6%"></i></div>
+        <div class="small muted" style="margin-top:6px" id="procPct">6% · analysing chapter 1 of 14</div>
+      </div>
+    </div></div>`;},
+  phone(){return `<div class="pad col center">
+    <div style="font-size:52px;animation:pulse 1s infinite">🧠</div>
+    <div class="display up" style="font-size:15px">Building your graph…</div>
+    <div class="bar" style="width:100%"><i id="procBarM" style="width:6%"></i></div>
+    <div class="col" style="width:100%">${PROC.slice(0,4).map((s,i)=>pstep(s,i)).join('')}</div>
+    <div class="mobile-only-note tiny">Heavy graph editing lives on desktop — you'll study here.</div>
+  </div>`;},
+  after(){ animateProcessing(); }
+};
+function pstep(s,i){return `<div class="pstep wait" data-i="${i}"><div class="tick">${s.ic}</div>
+  <div><div style="font-weight:600">${s.t}</div><div class="tiny muted status">queued</div></div></div>`;}
+function animateProcessing(){
+  const nodes=document.querySelectorAll('.pstep');
+  const bar=$('procBar'), barM=$('procBarM'), pct=$('procPct');
+  let i=0;
+  const run=()=>{
+    if(i>0){nodes.forEach(n=>{if(+n.dataset.i===i-1){n.className='pstep done';n.querySelector('.status').textContent='done';}});}
+    if(i<nodes.length){
+      nodes.forEach(n=>{if(+n.dataset.i===i){n.className='pstep run';n.querySelector('.status').textContent='working…';}});
+      const p=Math.round(((i+1)/nodes.length)*100);
+      if(bar)bar.style.width=p+'%'; if(barM)barM.style.width=p+'%';
+      if(pct)pct.textContent=p+'% · '+PROC[i].t;
+      i++; setTimeout(run,850);
+    }
+  };
+  setTimeout(run,300);
+}
+
+/* ---- 3. KNOWLEDGE GRAPH ---- */
+const GNODES=[
+  {id:'lim',x:60,y:40,t:'Limits',c:'#18ABEF'},
+  {id:'cont',x:250,y:40,t:'Continuity',c:'#18ABEF'},
+  {id:'der',x:150,y:150,t:'Derivatives',c:'#FB1A24'},
+  {id:'rules',x:340,y:150,t:'Diff. Rules',c:'#FB1A24'},
+  {id:'app',x:80,y:260,t:'Applications',c:'#3fd971'},
+  {id:'int',x:300,y:270,t:'Integrals',c:'#FEC513'},
+];
+const GEDGES=[['lim','der'],['cont','der'],['der','rules'],['der','app'],['rules','int'],['app','int']];
+R.graph = {
+  desktop(){return `<div class="pad-lg col">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 class="sec">🕸️ Calculus Knowledge Graph (DAG)</h3>
+      <span class="pill green">✎ Editable · Global</span>
+    </div>
+    <div class="row" style="align-items:flex-start;gap:14px">
+      <div style="flex:1.6">
+        <div class="toolbar" style="margin-bottom:8px">
+          <button class="btn blue sm" onclick="toast('Click a node, then Split')">✂️ Split node</button>
+          <button class="btn green sm" onclick="gAdd()">➕ Add topic</button>
+          <button class="btn ghost sm" onclick="toast('Drag to reconnect prerequisites')">🔗 Link</button>
+          <button class="btn red sm" onclick="toast('Node deleted (mock)')">🗑️ Delete</button>
+        </div>
+        <div class="graph-wrap" style="height:340px">${graphSVG(false)}</div>
+      </div>
+      <div style="flex:1" class="col">
+        <div class="inspector">
+          <h4 class="sec">Inspector</h4>
+          <div class="small muted" id="gsel">Selected: <b style="color:#fff">Derivatives</b></div>
+          <div style="margin-top:8px" class="col">
+            <input class="field" value="Derivatives" />
+            <input class="field" value="Prereqs: Limits, Continuity" />
+            <input class="field" value="Mastery weight: 1.0" />
+          </div>
+        </div>
+        <div class="ai-box">
+          <h4 class="sec" style="color:#c9a6ff">🤖 AI-assisted editing</h4>
+          <div class="small muted" style="margin-bottom:8px">“Derivatives” looks broad. Suggested split:</div>
+          <span class="pill" style="margin:2px">Definition of derivative</span>
+          <span class="pill" style="margin:2px">Chain rule</span>
+          <span class="pill" style="margin:2px">Implicit diff.</span>
+          <div style="margin-top:10px"><button class="btn gold sm" onclick="gAI()">✨ Apply AI split</button></div>
+        </div>
+      </div>
+    </div></div>`;},
+  phone(){return `<div class="pad col">
+    <h3 class="sec">🕸️ Graph</h3>
+    <div class="graph-wrap" style="height:260px">${graphSVG(true)}</div>
+    <div class="mobile-only-note">
+      <div style="font-size:26px">🔒</div>
+      <b>View-only on mobile</b>
+      <div class="tiny muted">Editing the knowledge graph is a desktop feature.</div>
+    </div>
+  </div>`;},
+  after(){ bindGraph(); }
+};
+function graphSVG(small){
+  const s=small?0.62:1;
+  return `<svg viewBox="0 0 ${small?260:430} ${small?230:340}" style="width:100%;height:100%">
+    <defs><marker id="arw" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="rgba(255,255,255,.5)"/></marker></defs>
+    ${GEDGES.map(([a,b])=>{const A=gpos(a,s),B=gpos(b,s);return `<line class="edge" x1="${A.x+45*s}" y1="${A.y+16*s}" x2="${B.x+5*s}" y2="${B.y+16*s}"/>`;}).join('')}
+    ${GNODES.map(n=>{const p=gpos(n.id,s);return `<g class="gnode" data-id="${n.id}" transform="translate(${p.x},${p.y})">
+      <rect width="${92*s}" height="${34*s}" rx="10" fill="${n.c}" stroke="#151319" stroke-width="3"/>
+      <text x="${46*s}" y="${22*s}" text-anchor="middle" font-size="${13*s}">${n.t}</text></g>`;}).join('')}
+  </svg>`;
+}
+function gpos(id,s){const n=GNODES.find(x=>x.id===id);return {x:n.x*s,y:n.y*s};}
+function bindGraph(){
+  document.querySelectorAll('#desktopScreen .gnode').forEach(g=>{
+    g.onclick=()=>{document.querySelectorAll('#desktopScreen .gnode').forEach(x=>x.classList.remove('sel'));
+      g.classList.add('sel');
+      const t=GNODES.find(n=>n.id===g.dataset.id).t;
+      const sel=$('gsel'); if(sel)sel.innerHTML='Selected: <b style="color:#fff">'+t+'</b>';};
+  });
+}
+function gAdd(){toast('New topic node added to graph ➕');}
+function gAI(){toast('✨ AI split “Derivatives” into 3 sub-topics');}
+function miniGraph(){return graphSVG(true);}
+
+/* ---- 4. COURSE ---- */
+R.course = {
+  desktop(){return `<div class="pad-lg col">
+    <h3 class="sec">🎯 Pick a course to study</h3>
+    <div class="grid3">
+      ${course('Calculus I','∫','#FB1A24','Ready',true)}
+      ${course('Calculus II','∑','#FEC513','Locked',false)}
+      ${course('Linear Algebra','⟂','#0084D8','Ready',true)}
+      ${course('Probability','🎲','#3fd971','Ready',true)}
+      ${course('Diff. Equations','𝑑y','#8a4bff','Locked',false)}
+      ${course('Real Analysis','ℝ','#18ABEF','Locked',false)}
+    </div>
+    <div class="card light" style="margin-top:4px">
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <div><h4 class="sec">Calculus I</h4><div class="small">14 topics · est. 22h · builds on Precalculus</div></div>
+        <button class="btn red" onclick="go(4)">Study this ▶</button>
+      </div>
+    </div>
+  </div>`;},
+  phone(){return `<div class="pad col">
+    <h3 class="sec">🎯 Study</h3>
+    ${course('Calculus I','∫','#FB1A24','Ready',true,true)}
+    ${course('Linear Algebra','⟂','#0084D8','Ready',true,true)}
+    ${course('Probability','🎲','#3fd971','Ready',true,true)}
+  </div>`;}
+};
+function course(t,ic,c,tag,ready,mobile){return `<div class="card" style="${ready?'':'filter:grayscale(.5) brightness(.7)'};cursor:${ready?'pointer':'default'}" ${ready?`onclick="go(4)"`:''}>
+  <div class="row" style="align-items:center;gap:10px">
+    <div style="width:${mobile?40:52}px;height:${mobile?40:52}px;border-radius:12px;background:${c};display:grid;place-items:center;font-size:${mobile?20:26}px;border:3px solid #151319">${ic}</div>
+    <div><div class="display" style="font-size:${mobile?14:16}px">${t}</div>
+    <span class="pill ${ready?'green':''} tiny">${ready?'▶ '+tag:'🔒 '+tag}</span></div>
+  </div></div>`;}
+
+/* ---- 5. BATTLEPASS ---- */
+const TIERS=[
+  {r:'🎟️',u:1},{r:'⭐',u:1},{r:'🥉',u:1},{r:'🎨',u:1,cur:1},{r:'🥈',u:0},
+  {r:'🏅',u:0},{r:'💎',u:0},{r:'🥇',u:0},{r:'👑',u:0},{r:'🏆',u:0}];
+R.battlepass = {
+  desktop(){return `<div class="pad-lg col">
+    <div class="season">
+      <div><div class="tiny up" style="letter-spacing:2px;color:#ffd">Season 3 · ends in 12d</div>
+        <div class="display" style="font-size:24px">🌌 COSMIC CALCULUS</div>
+        <div class="small">Solve problems → earn XP → climb the pass</div></div>
+      <div class="center"><div class="display" style="font-size:30px;color:#ffe066">LVL ${state.level}</div>
+        <div class="bar xp" style="width:180px"><i style="width:${xpPctInLevel()}%"></i></div>
+        <div class="tiny">${state.xp.toLocaleString()} XP · ${xpToNext()} to LVL ${state.level+1}</div></div>
+    </div>
+    <h4 class="sec">Reward track</h4>
+    <div class="track">${TIERS.map((t,i)=>tier(t,i)).join('')}</div>
+    <div class="grid2">
+      <div class="card"><h4 class="sec">🎯 Missions</h4>
+        ${mission('Complete 3 reviews','2/3',66)}
+        ${mission('Perfect score on any quiz','0/1',0)}
+        ${mission('7-day study streak','4/7',57)}
+      </div>
+      <div class="card"><h4 class="sec">🏆 Badges & Milestones</h4>
+        <div class="row" style="flex-wrap:wrap">
+          <div class="badge" style="background:#FEC513">🔥</div>
+          <div class="badge" style="background:#18ABEF">⚡</div>
+          <div class="badge" style="background:#3fd971">🧠</div>
+          <div class="badge" style="background:#333;filter:grayscale(1)">🔒</div>
+          <div class="badge" style="background:#333;filter:grayscale(1)">🔒</div>
+        </div>
+        <div class="tiny muted" style="margin-top:8px">Streak Master · Quick Thinker · Concept King unlocked</div>
+      </div>
+    </div>
+  </div>`;},
+  phone(){return `<div class="pad col">
+    <div class="season" style="flex-direction:column;text-align:center;padding:12px">
+      <div class="tiny up" style="letter-spacing:2px;color:#ffd">Season 3</div>
+      <div class="display" style="font-size:17px">🌌 COSMIC CALCULUS</div>
+      <div class="display" style="font-size:22px;color:#ffe066">LVL ${state.level}</div>
+      <div class="bar xp" style="width:100%"><i style="width:${xpPctInLevel()}%"></i></div>
+      <div class="tiny">${xpToNext()} XP to next tier</div>
+    </div>
+    <h4 class="sec">Reward track</h4>
+    <div class="track">${TIERS.slice(2,7).map((t,i)=>tier(t,i+2)).join('')}</div>
+    <div class="card"><h4 class="sec">🎯 Daily missions</h4>
+      ${mission('Do 1 review','0/1',0)}${mission('Keep your streak','✓',100)}</div>
+  </div>`;}
+};
+function tier(t,i){const cls=t.cur?'current':(t.u?'unlocked':'locked');
+  return `<div class="tier"><div class="lvl">TIER ${i+1}</div>
+    <div class="reward ${cls}">${t.r}${t.u?'':'<span class="lock">🔒</span>'}</div>
+    <div class="tiny muted" style="margin-top:4px">${t.cur?'You are here':(t.u?'Claimed':(i+1)*300+' XP')}</div></div>`;}
+function mission(t,v,p){return `<div style="margin-bottom:10px">
+  <div class="row" style="justify-content:space-between"><span class="small">${t}</span><span class="tiny muted">${v}</span></div>
+  <div class="bar" style="height:12px;border-width:2px"><i style="width:${p}%"></i></div></div>`;}
+function xpPctInLevel(){return Math.min(100,Math.round(((state.xp%1000)/1000)*100));}
+function xpToNext(){return (1000-(state.xp%1000)).toLocaleString();}
+
+/* ---- 6. ASSIGNMENTS ---- */
+R.assignments = {
+  desktop(){return `<div class="pad-lg col">
+    <h3 class="sec">🗺️ Calculus I · Unit 1 map</h3>
+    <div class="small muted">Do the 4 reviews in any order, then unlock the assessment. ${state.reviewDone.filter(Boolean).length}/4 reviews complete.</div>
+    <div class="grid2" style="align-items:start">
+      <div class="map">
+        ${assign('review','Review · Limits','5 Q · untimed · +150 XP',0)}
+        ${assign('review','Review · Continuity','5 Q · untimed · +150 XP',1)}
+        ${assign('review','Review · Derivatives','5 Q · untimed · +150 XP',2)}
+        ${assign('review','Review · Diff. Rules','5 Q · untimed · +150 XP',3)}
+      </div>
+      <div class="map">
+        ${assignAssess()}
+        <div class="card" style="margin-top:8px"><h4 class="sec">Rules</h4>
+          <div class="small muted col" style="gap:6px">
+            <div>🔵 <b>Review</b>: untimed, 5 Q, one-at-a-time + explanation. Bonus XP for perfect.</div>
+            <div>🔴 <b>Assessment</b>: timed, 10 Q, any order. XP scales with score; poor score = XP penalty (bigger miss = bigger penalty).</div>
+            <div>📱 Answers are handwritten & photographed on mobile.</div>
+          </div>
+        </div>
+      </div>
+    </div></div>`;},
+  phone(){return `<div class="pad col">
+    <h3 class="sec">🗺️ Unit 1</h3>
+    ${assign('review','Review · Limits','5 Q · +150 XP',0,true)}
+    ${assign('review','Review · Continuity','5 Q · +150 XP',1,true)}
+    ${assign('review','Review · Derivatives','5 Q · +150 XP',2,true)}
+    ${assign('review','Review · Diff. Rules','5 Q · +150 XP',3,true)}
+    ${assignAssess(true)}
+  </div>`;}
+};
+function assign(type,t,sub,idx,mobile){
+  const done=state.reviewDone[idx];
+  return `<div class="assign ${type}" onclick="go(6)">
+    <div class="ic">${done?'✅':'📝'}</div>
+    <div style="flex:1"><div class="display" style="font-size:${mobile?14:16}px">${t}</div>
+      <div class="tiny" style="opacity:.9">${sub}</div></div>
+    <div class="pill ${done?'green':'gold'} tiny">${done?'DONE':'START'}</div></div>`;}
+function assignAssess(mobile){
+  const ready=state.reviewDone.filter(Boolean).length>=4;
+  return `<div class="assign assess ${ready?'':'locked'}" ${ready?'onclick="go(7)"':''}>
+    <div class="ic">${ready?'⚔️':'🔒'}</div>
+    <div style="flex:1"><div class="display" style="font-size:${mobile?14:16}px">Assessment · Unit 1</div>
+      <div class="tiny" style="opacity:.9">10 Q · ⏱ timed · up to +500 XP</div></div>
+    <div class="pill ${ready?'red':''} tiny">${ready?'START':'LOCKED'}</div></div>`;}
+
+/* ---- 7. REVIEW QUIZ ---- */
+const RQ=[
+ {q:'lim(x→2) of (x²−4)/(x−2) = ?',o:['0','2','4','undefined'],a:2,
+  e:'Factor: (x−2)(x+2)/(x−2)=x+2 → at x=2 gives 4. The hole is removable.'},
+ {q:'d/dx [ sin(x) ] = ?',o:['cos(x)','−cos(x)','−sin(x)','sec²(x)'],a:0,
+  e:'The derivative of sin is cos. A cornerstone rule you\'ll reuse everywhere.'},
+];
+const rqState={i:0,answered:false,picked:null,correct:0};
+R.review = {
+  desktop(){return `<div class="pad-lg col center" style="justify-content:center;height:100%">
+    <div class="card" style="max-width:460px;width:100%">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <span class="pill cyan">📘 Review · Untimed</span>
+        <span class="pill gold">Q ${rqState.i+1} / 5</span></div>
+      <div class="bar" style="margin:10px 0"><i style="width:${((rqState.i)/5)*100}%"></i></div>
+      <div class="mobile-only-note" style="margin-top:6px">
+        <div style="font-size:30px">📱➡️</div>
+        <b>Answer on your phone</b>
+        <div class="tiny muted">Desktop mirrors progress. Handwrite + snap each solution on mobile.</div>
+      </div>
+    </div></div>`;},
+  phone(){return `<div class="pad col" id="rqHost">${rqRender()}</div>`;},
+  after(){ /* handled inline */ }
+};
+function rqRender(){
+  const q=RQ[rqState.i%RQ.length];
+  return `<div class="row" style="justify-content:space-between;align-items:center">
+      <span class="pill cyan tiny">📘 Review</span><span class="pill gold tiny">Q ${rqState.i+1}/5</span></div>
+    <div class="bar" style="height:12px;border-width:2px"><i style="width:${(rqState.i/5)*100}%"></i></div>
+    <div class="qcard">
+      <div class="qnum">QUESTION ${rqState.i+1}</div>
+      <div style="font-weight:600;margin:6px 0 4px;font-size:15px">${q.q}</div>
+      ${q.o.map((o,k)=>`<button class="opt" data-k="${k}" onclick="rqPick(${k})">${o}</button>`).join('')}
+      <div id="rqEx"></div>
+    </div>`;
+}
+function rqPick(k){
+  if(rqState.answered)return;
+  rqState.answered=true;rqState.picked=k;
+  const q=RQ[rqState.i%RQ.length];
+  if(k===q.a)rqState.correct++;
+  document.querySelectorAll('#rqHost .opt').forEach(o=>{
+    const kk=+o.dataset.k;
+    if(kk===q.a)o.classList.add('correct');
+    if(kk===k&&k!==q.a)o.classList.add('wrong');
+    o.style.pointerEvents='none';
+  });
+  const nextTxt = rqState.i>=4 ? 'Finish review ✅' : 'Next question ▶';
+  $('rqEx').innerHTML=`<div class="explain fadeup"><b>${k===q.a?'✅ Correct!':'❌ Not quite.'}</b> ${q.e}</div>
+    <button class="btn green sm" style="margin-top:10px;width:100%" onclick="rqNext()">${nextTxt}</button>`;
+}
+function rqNext(){
+  if(rqState.i>=4){ // finished
+    state.reviewDone[0]=true;
+    const bonus=rqState.correct>=5?100:0;
+    state.xp+=150+bonus; setXP();
+    toast('Review complete! +150 XP'+(bonus?' +100 perfect bonus':''));
+    go(9); return;
+  }
+  rqState.i++;rqState.answered=false;rqState.picked=null;
+  $('rqHost').innerHTML=rqRender();
+}
+
+/* ---- 8. ASSESSMENT ---- */
+const asState={time:600,started:false,answered:{},timer:null};
+R.assessment = {
+  desktop(){return `<div class="pad-lg col">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 class="sec">⚔️ Assessment · Unit 1</h3>
+      <span class="timer ${asState.time>120?'':'calm'}" id="deskTimer">⏱ ${fmt(asState.time)}</span>
+    </div>
+    <div class="small muted">10 questions · solve in any order · timer keeps running once started · answer each on mobile.</div>
+    <div class="card">
+      <h4 class="sec">Question board</h4>
+      <div class="qgrid" style="grid-template-columns:repeat(5,1fr)" id="asBoard">${asBoard()}</div>
+      <div class="row" style="margin-top:12px;justify-content:space-between;align-items:center">
+        <span class="small muted"><b id="asCount">0</b>/10 answered</span>
+        <button class="btn red" onclick="asStart()">${asState.started?'Submit test':'Start timer'}</button>
+      </div>
+    </div>
+    <div class="card"><h4 class="sec">XP model</h4>
+      <div class="small muted">100% → <b style="color:#3fd971">+500 XP</b> · 70% → +250 · 50% → +50 · &lt;40% → <b style="color:#FB1A24">−120 penalty</b> (worse score → bigger penalty).</div>
+    </div>
+  </div>`;},
+  phone(){return `<div class="pad col">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <span class="pill red tiny">⚔️ Timed</span>
+      <span class="timer ${asState.time>120?'':'calm'}" id="phoneTimer" style="font-size:14px">⏱ ${fmt(asState.time)}</span></div>
+    <div class="qcard">
+      <div class="qnum">PICK ANY QUESTION</div>
+      <div class="qgrid" id="asBoardM">${asBoard(true)}</div>
+    </div>
+    <button class="btn red sm" onclick="asStart()" style="width:100%">${asState.started?'Submit test':'▶ Start timer'}</button>
+  </div>`;},
+  after(){ if(asState.started) asTick(); }
+};
+function asBoard(mobile){let h='';for(let i=1;i<=10;i++){const a=asState.answered[i];
+  h+=`<div class="qtile ${a?'answered':''}" onclick="asAnswer(${i})"><span class="qn">${a?'✓':i}</span>
+    <span class="tiny">${a?'done':'Q'+i}</span></div>`;}return h;}
+function asStart(){
+  if(!asState.started){asState.started=true;asTick();render();toast('⏱ Timer started — it will not pause');}
+  else{ // submit
+    const correct=Object.keys(asState.answered).length;
+    let xp=correct>=10?500:correct>=7?250:correct>=5?50:-120;
+    state.xp=Math.max(0,state.xp+xp); setXP();
+    clearInterval(asState.timer);
+    toast((xp>=0?'+':'')+xp+' XP · '+correct+'/10 correct');
+    go(9);
+  }
+}
+function asTick(){
+  clearInterval(asState.timer);
+  asState.timer=setInterval(()=>{
+    if(state.stage!==7){clearInterval(asState.timer);return;}
+    asState.time--; if(asState.time<=0){asState.time=0;clearInterval(asState.timer);}
+    const t=fmt(asState.time);
+    ['deskTimer','phoneTimer'].forEach(id=>{const el=$(id);if(el){el.textContent='⏱ '+t;el.classList.toggle('calm',asState.time>120?false:false);}});
+  },1000);
+}
+function asAnswer(i){
+  if(!asState.started){toast('Hit “Start timer” first');return;}
+  asState._target=i; go(8); // jump to camera to "answer"
+}
+function fmt(s){const m=Math.floor(s/60),ss=s%60;return m+':'+(ss<10?'0':'')+ss;}
+
+/* ---- 9. CAMERA ---- */
+R.camera = {
+  desktop(){return `<div class="pad-lg col center" style="justify-content:center;height:100%">
+    <div class="card" style="max-width:440px">
+      <div style="font-size:56px">📱</div>
+      <h3 class="sec">Answering on mobile</h3>
+      <div class="small muted">The student handwrites the solution, photographs it, and crops to the note. Desktop just watches the live status.</div>
+      <div class="row" style="margin-top:14px;justify-content:center">
+        <div class="dstat"><b>Q${asState._target||3}</b>capturing</div>
+        <div class="dstat"><b>3/10</b>answered</div>
+        <div class="dstat"><b>⏱ ${fmt(asState.time)}</b>left</div>
+      </div>
+    </div></div>`;},
+  phone(){return `<div class="pad col">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <span class="pill red tiny">⚔️ Q${asState._target||3}</span>
+      <span class="timer calm" style="font-size:13px">⏱ ${fmt(asState.time)}</span></div>
+    <div class="qcard" style="padding:10px">
+      <div class="qnum">SNAP YOUR HANDWRITTEN SOLUTION</div>
+      <div class="camera" id="cam" style="margin-top:8px">
+        <div class="viewfind">
+          <div class="hw" style="top:24px;left:18px;font-size:20px">lim x→2</div>
+          <div class="hw" style="top:70px;left:24px;font-size:16px">(x²−4)/(x−2)</div>
+          <div class="hw" style="top:110px;left:30px;font-size:16px">= (x+2)</div>
+          <div class="hw" style="top:150px;left:40px;font-size:18px;color:#c62828">= 4 ✓</div>
+        </div>
+        <div class="crop" id="crop" style="left:8%;top:8%;width:70%;height:52%">
+          <span class="h tl"></span><span class="h tr"></span><span class="h bl"></span><span class="h br"></span>
+        </div>
+      </div>
+      <div class="tiny muted center" style="margin:8px 0">Drag the gold box to crop just your working</div>
+      <div id="camActions">
+        <div class="shutter" onclick="camShot()"></div>
+      </div>
+    </div>
+  </div>`;},
+  after(){ dragCrop(); }
+};
+function camShot(){
+  const cam=$('cam'); if(cam){cam.style.transition='.15s';cam.style.filter='brightness(2)';setTimeout(()=>cam.style.filter='',150);}
+  $('camActions').innerHTML=`<div class="fadeup center">
+    <div class="pill green" style="margin:6px auto">✂️ Cropped & recognized</div>
+    <div class="small muted tiny" style="margin:6px 0">OCR: “lim x→2 (x²−4)/(x−2)=4” — matches expected ✅</div>
+    <div class="row" style="gap:8px">
+      <button class="btn ghost sm" style="flex:1" onclick="R.camera.afterRetake()">Retake</button>
+      <button class="btn green sm" style="flex:1" onclick="camSubmit()">Submit ▶</button>
+    </div></div>`;
+}
+R.camera.afterRetake=function(){ $('phoneScreen').innerHTML=R.camera.phone(); dragCrop(); };
+function camSubmit(){
+  const i=asState._target||3; asState.answered[i]=true;
+  toast('Answer submitted for Q'+i);
+  // go back to assessment board
+  go(7);
+}
+function dragCrop(){
+  const crop=$('crop'),cam=$('cam'); if(!crop||!cam)return;
+  let drag=false,ox,oy;
+  const start=e=>{drag=true;const p=pt(e);ox=p.x-crop.offsetLeft;oy=p.y-crop.offsetTop;e.preventDefault();};
+  const move=e=>{if(!drag)return;const p=pt(e);let x=p.x-ox,y=p.y-oy;
+    x=Math.max(0,Math.min(x,cam.clientWidth-crop.clientWidth));
+    y=Math.max(0,Math.min(y,cam.clientHeight-crop.clientHeight));
+    crop.style.left=x+'px';crop.style.top=y+'px';};
+  const end=()=>drag=false;
+  const pt=e=>{const r=cam.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};};
+  crop.addEventListener('mousedown',start);crop.addEventListener('touchstart',start,{passive:false});
+  window.addEventListener('mousemove',move);window.addEventListener('touchmove',move,{passive:false});
+  window.addEventListener('mouseup',end);window.addEventListener('touchend',end);
+}
+
+/* ---- 10. REWARD ---- */
+R.reward = {
+  desktop(){return `<div class="pad-lg col center burst" style="justify-content:center;height:100%">
+    <div class="levelup">⚔️ ASSESSMENT COMPLETE</div>
+    <div class="xp-num">+500 XP</div>
+    <div class="row" style="justify-content:center">
+      <div class="dstat"><b>9/10</b>correct</div>
+      <div class="dstat"><b>+100</b>perfect streak</div>
+      <div class="dstat"><b>6:12</b>time</div>
+    </div>
+    <div style="max-width:420px;width:100%;margin-top:6px">
+      <div class="row" style="justify-content:space-between"><span class="small">LVL ${state.level}</span><span class="small">LVL ${state.level+1}</span></div>
+      <div class="bar xp big"><i id="rewardBar" style="width:${xpPctInLevel()}%"></i></div>
+      <div class="tiny muted" style="margin-top:6px">Battlepass tier 4 → tier 5 unlocked 🎨</div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="badge" style="background:#FEC513">🔥</div>
+      <div class="badge" style="background:#8a4bff">🏅</div>
+      <span class="pill gold" style="align-self:center">New badge: Concept King 👑</span>
+    </div>
+  </div>`;},
+  phone(){return `<div class="pad col center burst" style="justify-content:center">
+    <div class="levelup" style="font-size:16px">🎉 NICE WORK!</div>
+    <div class="xp-num" style="font-size:40px">+500</div><div class="tiny muted">XP earned</div>
+    <div class="reward unlocked" style="width:100px;height:100px;font-size:44px;margin:8px auto">🎨</div>
+    <div class="pill gold">Tier 5 unlocked!</div>
+    <div style="width:100%;margin-top:8px">
+      <div class="bar xp"><i id="rewardBarM" style="width:${xpPctInLevel()}%"></i></div>
+      <div class="tiny muted" style="margin-top:4px">${xpToNext()} XP to LVL ${state.level+1}</div>
+    </div>
+    <button class="btn gold sm" style="margin-top:10px" onclick="go(4)">Back to Battlepass</button>
+  </div>`;},
+  after(){
+    const host=$('desktopScreen'); confetti(host,50);
+    confetti($('phoneScreen'),30);
+    setTimeout(()=>{const b=$('rewardBar'),bm=$('rewardBarM');
+      const nw=Math.min(100,xpPctInLevel()+22);
+      if(b)b.style.width=nw+'%'; if(bm)bm.style.width=nw+'%';},400);
+  }
+};
+
+/* ================= ENGINE ================= */
+function toast(msg){
+  let t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText=`position:fixed;left:50%;bottom:28px;transform:translateX(-50%);
+    background:linear-gradient(180deg,#ffd83f,#DD7504);color:#151319;font-family:'Lilita One';
+    padding:12px 22px;border:4px solid #151319;border-radius:16px;box-shadow:0 6px 0 rgba(0,0,0,.4);
+    z-index:999;font-size:14px;animation:fadeup .25s`;
+  document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';t.style.transition='.4s';},1600);
+  setTimeout(()=>t.remove(),2100);
+}
+function buildStepper(){
+  $('stepper').innerHTML=STAGES.map((s,i)=>`<div class="step" data-i="${i}" onclick="go(${i})">
+    <span class="num">${i+1}</span>${s.name}</div>`).join('');
+}
+function primaryDevice(key){
+  // which device is the "primary" for this stage
+  if(['graph','course','library'].includes(key))return 'desktop';
+  if(['review','assessment','camera'].includes(key))return 'phone';
+  return 'both';
+}
+function render(){
+  const st=STAGES[state.stage], r=R[st.key];
+  $('stageTitle').innerHTML=`<h2>${st.title}</h2><p>${st.desc}</p>`;
+  $('desktopScreen').innerHTML=r.desktop();
+  $('phoneScreen').innerHTML=r.phone();
+  // labels
+  const pd=primaryDevice(st.key);
+  $('deskLabel').className='device-label'+(pd==='desktop'?' primary':'');
+  $('phoneLabel').className='device-label'+(pd==='phone'?' primary':'');
+  $('deskLabel').innerHTML='🖥️ Desktop'+(pd==='desktop'?' · primary':pd==='phone'?' · mirror':'');
+  $('phoneLabel').innerHTML='📱 Mobile'+(pd==='phone'?' · primary':pd==='desktop'?' · view-only':'');
+  // stepper state
+  document.querySelectorAll('.step').forEach(s=>{const i=+s.dataset.i;
+    s.className='step'+(i===state.stage?' active':(i<state.stage?' done':''));});
+  $('prevBtn').disabled=state.stage===0;
+  $('nextBtn').disabled=state.stage===STAGES.length-1;
+  setXP();
+  if(r.after)r.after();
+  document.querySelector('.frames').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function go(i){state.stage=Math.max(0,Math.min(STAGES.length-1,i));render();}
+$('prevBtn').onclick=()=>go(state.stage-1);
+$('nextBtn').onclick=()=>go(state.stage+1);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(state.stage+1);if(e.key==='ArrowLeft')go(state.stage-1);});
+
+buildStepper();
+render();
+</script>
+</body>
+</html>
