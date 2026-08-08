@@ -5,7 +5,7 @@
     {
       "item_id": "gen-ai.backprop-chain-1",
       "node_id": "ai.backprop-chain",
-      "stem_latex": "Two-layer network: output = (w2*(w1*3))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = 9 w_{1}^{2} w_{2}^{2}$.",
+      "stem_latex": "Two-layer network: output = (w2*(w1*3))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = (w2 (w1 3))^{2}$.",
       "answer_latex": "18 w_{1} w_{2}^{2}",
       "answer_kind": "expr",
       "answer_sympy": "18*w1*w2**2",
@@ -27,7 +27,7 @@
     {
       "item_id": "gen-ai.backprop-chain-2",
       "node_id": "ai.backprop-chain",
-      "stem_latex": "Two-layer network: output = (1 - (w2*(w1*3 + w2)))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- w_{2} \\left(3 w_{1} + w_{2}\\right) + 1\\right)^{2}$.",
+      "stem_latex": "Two-layer network: output = (1 - (w2*(w1*3 + w2)))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = (1 - (w2 (w1 3 + w2)))^{2}$.",
       "answer_latex": "- 6 w_{2} \\left(- w_{2} \\left(3 w_{1} + w_{2}\\right) + 1\\right)",
       "answer_kind": "expr",
       "answer_sympy": "-6*w2*(-w2*(3*w1 + w2) + 1)",
@@ -49,7 +49,7 @@
     {
       "item_id": "gen-ai.backprop-chain-3",
       "node_id": "ai.backprop-chain",
-      "stem_latex": "Two-layer network: output = ((w1*2 + w2)**3 - w1)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- w_{1} + \\left(2 w_{1} + w_{2}\\right)^{3}\\right)^{2}$.",
+      "stem_latex": "Two-layer network: output = ((w1*2 + w2)**3 - w1)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = ((w1 2 + w2)^{3} - w1)^{2}$.",
       "answer_latex": "\\left(- w_{1} + \\left(2 w_{1} + w_{2}\\right)^{3}\\right) \\left(12 \\left(2 w_{1} + w_{2}\\right)^{2} - 2\\right)",
       "answer_kind": "expr",
       "answer_sympy": "(-w1 + (2*w1 + w2)**3)*(12*(2*w1 + w2)**2 - 2)",
@@ -71,7 +71,7 @@
     {
       "item_id": "gen-ai.backprop-chain-4",
       "node_id": "ai.backprop-chain",
-      "stem_latex": "Two-layer network: output = sqrt((w2*(w1*3))**2 + 1). Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\sqrt{9 w_{1}^{2} w_{2}^{2} + 1}$.",
+      "stem_latex": "Two-layer network: output = sqrt((w2*(w1*3))**2 + 1). Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\sqrt{(w2 (w1 3))^{2} + 1}$.",
       "answer_latex": "\\frac{9 w_{1} w_{2}^{2}}{\\sqrt{9 w_{1}^{2} w_{2}^{2} + 1}}",
       "answer_kind": "expr",
       "answer_sympy": "9*w1*w2**2/sqrt(9*w1**2*w2**2 + 1)",
@@ -93,7 +93,7 @@
     {
       "item_id": "gen-ai.backprop-chain-5",
       "node_id": "ai.backprop-chain",
-      "stem_latex": "Two-layer network: output = sin(w2*(w1*3))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\sin^{2}{\\left(3 w_{1} w_{2} \\right)}$.",
+      "stem_latex": "Two-layer network: output = sin(w2*(w1*3))**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\sin(w2 (w1 3))^{2}$.",
       "answer_latex": "6 w_{2} \\sin{\\left(3 w_{1} w_{2} \\right)} \\cos{\\left(3 w_{1} w_{2} \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "6*w2*sin(3*w1*w2)*cos(3*w1*w2)",
@@ -115,7 +115,7 @@
     {
       "item_id": "gen-ai.backprop-chain-6",
       "node_id": "ai.backprop-chain",
-      "stem_latex": "Two-layer network: output = log(w2*(w1*3) + 1)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\log{\\left(3 w_{1} w_{2} + 1 \\right)}^{2}$.",
+      "stem_latex": "Two-layer network: output = log(w2*(w1*3) + 1)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\log(w2 (w1 3) + 1)^{2}$.",
       "answer_latex": "\\frac{6 w_{2} \\log{\\left(3 w_{1} w_{2} + 1 \\right)}}{3 w_{1} w_{2} + 1}",
       "answer_kind": "expr",
       "answer_sympy": "6*w2*log(3*w1*w2 + 1)/(3*w1*w2 + 1)",
@@ -137,7 +137,7 @@
     {
       "item_id": "gen-ai.backprop-chain-7",
       "node_id": "ai.backprop-chain",
-      "stem_latex": "Two-layer network: output = (1 - (w2*(w1*3 + w2*2)))**3 * (w1 + w2)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(w_{1} + w_{2}\\right)^{2} \\left(- w_{2} \\left(3 w_{1} + 2 w_{2}\\right) + 1\\right)^{3}$.",
+      "stem_latex": "Two-layer network: output = (1 - (w2*(w1*3 + w2*2)))**3 * (w1 + w2)**2. Find $\\frac{\\partial f}{\\partial w1}$ for $f = (1 - (w2 (w1 3 + w2 2)))^{3} (w1 + w2)^{2}$.",
       "answer_latex": "- 9 w_{2} \\left(w_{1} + w_{2}\\right)^{2} \\left(- w_{2} \\left(3 w_{1} + 2 w_{2}\\right) + 1\\right)^{2} + \\left(2 w_{1} + 2 w_{2}\\right) \\left(- w_{2} \\left(3 w_{1} + 2 w_{2}\\right) + 1\\right)^{3}",
       "answer_kind": "expr",
       "answer_sympy": "-9*w2*(w1 + w2)**2*(-w2*(3*w1 + 2*w2) + 1)**2 + (2*w1 + 2*w2)*(-w2*(3*w1 + 2*w2) + 1)**3",
@@ -159,7 +159,7 @@
     {
       "item_id": "gen-ai.backprop-chain-8",
       "node_id": "ai.backprop-chain",
-      "stem_latex": "Two-layer network: output = ((w1*2 + w2)**2 - (w2*(w1*3 + w2*4)))**3. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- w_{2} \\left(3 w_{1} + 4 w_{2}\\right) + \\left(2 w_{1} + w_{2}\\right)^{2}\\right)^{3}$.",
+      "stem_latex": "Two-layer network: output = ((w1*2 + w2)**2 - (w2*(w1*3 + w2*4)))**3. Find $\\frac{\\partial f}{\\partial w1}$ for $f = ((w1 2 + w2)^{2} - (w2 (w1 3 + w2 4)))^{3}$.",
       "answer_latex": "\\left(24 w_{1} + 3 w_{2}\\right) \\left(- w_{2} \\left(3 w_{1} + 4 w_{2}\\right) + \\left(2 w_{1} + w_{2}\\right)^{2}\\right)^{2}",
       "answer_kind": "expr",
       "answer_sympy": "(24*w1 + 3*w2)*(-w2*(3*w1 + 4*w2) + (2*w1 + w2)**2)**2",
@@ -181,17 +181,17 @@
     {
       "item_id": "gen-ai.gradient-descent-step-1",
       "node_id": "ai.gradient-descent-step",
-      "stem_latex": "Simple quadratic loss. The loss is $L(w) = w^{2}$. Using a learning rate of $\\alpha = 0.1$ and starting from $w = 3$, perform one gradient descent update. What is the new value of $w$?",
-      "answer_latex": "2.4",
+      "stem_latex": "Simple quadratic loss. The loss is $L(w) = w^{2}$. Using a learning rate of $\\alpha = \\frac{1}{10}$ and starting from $w = 3$, perform one gradient descent update. What is the new value of $w$?",
+      "answer_latex": "\\frac{12}{5}",
       "answer_kind": "expr",
-      "answer_sympy": "2.40000000000000",
+      "answer_sympy": "12/5",
       "check": {
         "task": "gd_step",
         "params": {
           "expr": "w**2",
           "var": "w",
           "at": "3",
-          "lr": "0.1",
+          "lr": "1/10",
           "context": "Simple quadratic loss."
         }
       },
@@ -206,17 +206,17 @@
     {
       "item_id": "gen-ai.gradient-descent-step-2",
       "node_id": "ai.gradient-descent-step",
-      "stem_latex": "Quadratic with linear term. The loss is $L(w) = 3 w^{2} - 4 w$. Using a learning rate of $\\alpha = 0.1$ and starting from $w = 2$, perform one gradient descent update. What is the new value of $w$?",
-      "answer_latex": "1.2",
+      "stem_latex": "Quadratic with linear term. The loss is $L(w) = 3 w^{2} - 4 w$. Using a learning rate of $\\alpha = \\frac{1}{10}$ and starting from $w = 2$, perform one gradient descent update. What is the new value of $w$?",
+      "answer_latex": "\\frac{6}{5}",
       "answer_kind": "expr",
-      "answer_sympy": "1.20000000000000",
+      "answer_sympy": "6/5",
       "check": {
         "task": "gd_step",
         "params": {
           "expr": "3*w**2 - 4*w",
           "var": "w",
           "at": "2",
-          "lr": "0.1",
+          "lr": "1/10",
           "context": "Quadratic with linear term."
         }
       },
@@ -231,17 +231,17 @@
     {
       "item_id": "gen-ai.gradient-descent-step-3",
       "node_id": "ai.gradient-descent-step",
-      "stem_latex": "Shifted quadratic. The loss is $L(w) = \\left(w - 5\\right)^{2}$. Using a learning rate of $\\alpha = 0.05$ and starting from $w = 0$, perform one gradient descent update. What is the new value of $w$?",
-      "answer_latex": "0.5",
+      "stem_latex": "Shifted quadratic. The loss is $L(w) = (w-5)^{2}$. Using a learning rate of $\\alpha = \\frac{1}{20}$ and starting from $w = 0$, perform one gradient descent update. What is the new value of $w$?",
+      "answer_latex": "\\frac{1}{2}",
       "answer_kind": "expr",
-      "answer_sympy": "0.500000000000000",
+      "answer_sympy": "1/2",
       "check": {
         "task": "gd_step",
         "params": {
           "expr": "(w-5)**2",
           "var": "w",
           "at": "0",
-          "lr": "0.05",
+          "lr": "1/20",
           "context": "Shifted quadratic."
         }
       },
@@ -256,17 +256,17 @@
     {
       "item_id": "gen-ai.gradient-descent-step-4",
       "node_id": "ai.gradient-descent-step",
-      "stem_latex": "Higher\u2011order convex loss. The loss is $L(w) = w^{4}$. Using a learning rate of $\\alpha = 0.05$ and starting from $w = 1$, perform one gradient descent update. What is the new value of $w$?",
-      "answer_latex": "0.8",
+      "stem_latex": "Higher\u2011order convex loss. The loss is $L(w) = w^{4}$. Using a learning rate of $\\alpha = \\frac{1}{20}$ and starting from $w = 1$, perform one gradient descent update. What is the new value of $w$?",
+      "answer_latex": "\\frac{4}{5}",
       "answer_kind": "expr",
-      "answer_sympy": "0.800000000000000",
+      "answer_sympy": "4/5",
       "check": {
         "task": "gd_step",
         "params": {
           "expr": "w**4",
           "var": "w",
           "at": "1",
-          "lr": "0.05",
+          "lr": "1/20",
           "context": "Higher\u2011order convex loss."
         }
       },
@@ -281,17 +281,17 @@
     {
       "item_id": "gen-ai.gradient-descent-step-5",
       "node_id": "ai.gradient-descent-step",
-      "stem_latex": "Cubic loss with a saddle point. The loss is $L(w) = w^{3} - 3 w$. Using a learning rate of $\\alpha = 0.05$ and starting from $w = 2$, perform one gradient descent update. What is the new value of $w$?",
-      "answer_latex": "1.55",
+      "stem_latex": "Cubic loss with a saddle point. The loss is $L(w) = w^{3} - 3 w$. Using a learning rate of $\\alpha = \\frac{1}{20}$ and starting from $w = 2$, perform one gradient descent update. What is the new value of $w$?",
+      "answer_latex": "\\frac{31}{20}",
       "answer_kind": "expr",
-      "answer_sympy": "1.55000000000000",
+      "answer_sympy": "31/20",
       "check": {
         "task": "gd_step",
         "params": {
           "expr": "w**3 - 3*w",
           "var": "w",
           "at": "2",
-          "lr": "0.05",
+          "lr": "1/20",
           "context": "Cubic loss with a saddle point."
         }
       },
@@ -306,17 +306,17 @@
     {
       "item_id": "gen-ai.gradient-descent-step-6",
       "node_id": "ai.gradient-descent-step",
-      "stem_latex": "Quadratic with constant term. The loss is $L(w) = 2 w^{2} + 3 w + 1$. Using a learning rate of $\\alpha = 0.02$ and starting from $w = -1$, perform one gradient descent update. What is the new value of $w$?",
-      "answer_latex": "-0.98",
+      "stem_latex": "Quadratic with constant term. The loss is $L(w) = 2 w^{2} + 3 w + 1$. Using a learning rate of $\\alpha = \\frac{1}{50}$ and starting from $w = -1$, perform one gradient descent update. What is the new value of $w$?",
+      "answer_latex": "- \\frac{49}{50}",
       "answer_kind": "expr",
-      "answer_sympy": "-0.980000000000000",
+      "answer_sympy": "-49/50",
       "check": {
         "task": "gd_step",
         "params": {
           "expr": "2*w**2 + 3*w + 1",
           "var": "w",
           "at": "-1",
-          "lr": "0.02",
+          "lr": "1/50",
           "context": "Quadratic with constant term."
         }
       },
@@ -331,17 +331,17 @@
     {
       "item_id": "gen-ai.gradient-descent-step-7",
       "node_id": "ai.gradient-descent-step",
-      "stem_latex": "Quadratic plus sinusoidal term. The loss is $L(w) = 0.5 w^{2} + \\sin{\\left(w \\right)}$. Using a learning rate of $\\alpha = 0.01$ and starting from $w = 1$, perform one gradient descent update. What is the new value of $w$?",
-      "answer_latex": "0.99 - 0.01 \\cos{\\left(1 \\right)}",
+      "stem_latex": "Quadratic plus sinusoidal term. The loss is $L(w) = 1/2 w^{2} + \\sin(w)$. Using a learning rate of $\\alpha = \\frac{1}{100}$ and starting from $w = 1$, perform one gradient descent update. What is the new value of $w$?",
+      "answer_latex": "\\frac{99}{100} - \\frac{\\cos{\\left(1 \\right)}}{100}",
       "answer_kind": "expr",
-      "answer_sympy": "0.99 - 0.01*cos(1)",
+      "answer_sympy": "99/100 - cos(1)/100",
       "check": {
         "task": "gd_step",
         "params": {
-          "expr": "0.5*w**2 + sin(w)",
+          "expr": "1/2*w**2 + sin(w)",
           "var": "w",
           "at": "1",
-          "lr": "0.01",
+          "lr": "1/100",
           "context": "Quadratic plus sinusoidal term."
         }
       },
@@ -356,17 +356,17 @@
     {
       "item_id": "gen-ai.gradient-descent-step-8",
       "node_id": "ai.gradient-descent-step",
-      "stem_latex": "Quadratic plus exponential interaction. The loss is $L(w) = w^{2} + 2 w e^{w}$. Using a learning rate of $\\alpha = 0.005$ and starting from $w = 0.5$, perform one gradient descent update. What is the new value of $w$?",
-      "answer_latex": "0.470269180939498",
+      "stem_latex": "Quadratic plus exponential interaction. The loss is $L(w) = w^{2} + 2 w \\exp(w)$. Using a learning rate of $\\alpha = \\frac{1}{200}$ and starting from $w = \\frac{1}{2}$, perform one gradient descent update. What is the new value of $w$?",
+      "answer_latex": "\\frac{99}{200} - \\frac{3 e^{\\frac{1}{2}}}{200}",
       "answer_kind": "expr",
-      "answer_sympy": "0.470269180939498",
+      "answer_sympy": "99/200 - 3*exp(1/2)/200",
       "check": {
         "task": "gd_step",
         "params": {
           "expr": "w**2 + 2*w*exp(w)",
           "var": "w",
-          "at": "0.5",
-          "lr": "0.005",
+          "at": "1/2",
+          "lr": "1/200",
           "context": "Quadratic plus exponential interaction."
         }
       },
@@ -381,7 +381,7 @@
     {
       "item_id": "gen-ai.gradient-of-loss-1",
       "node_id": "ai.gradient-of-loss",
-      "stem_latex": "A single training example where the model predicts 2w + 1 and the target is 3. Find $\\frac{\\partial f}{\\partial w}$ for $f = \\left(2 - 2 w\\right)^{2}$.",
+      "stem_latex": "A single training example where the model predicts 2w + 1 and the target is 3. Find $\\frac{\\partial f}{\\partial w}$ for $f = (3 - (w 2 + 1))^{2}$.",
       "answer_latex": "8 w - 8",
       "answer_kind": "expr",
       "answer_sympy": "8*w - 8",
@@ -404,7 +404,7 @@
     {
       "item_id": "gen-ai.gradient-of-loss-2",
       "node_id": "ai.gradient-of-loss",
-      "stem_latex": "Linear regression with two weights and a bias; compute the gradient w.r.t. the first weight. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- b - 3 w_{1} - 2 w_{2} + 5\\right)^{2}$.",
+      "stem_latex": "Linear regression with two weights and a bias; compute the gradient w.r.t. the first weight. Find $\\frac{\\partial f}{\\partial w1}$ for $f = (5 - (w1 3 + w2 2 + b))^{2}$.",
       "answer_latex": "6 b + 18 w_{1} + 12 w_{2} - 30",
       "answer_kind": "expr",
       "answer_sympy": "6*b + 18*w1 + 12*w2 - 30",
@@ -427,7 +427,7 @@
     {
       "item_id": "gen-ai.gradient-of-loss-3",
       "node_id": "ai.gradient-of-loss",
-      "stem_latex": "Same linear regression; now differentiate with respect to the second weight. Find $\\frac{\\partial f}{\\partial w2}$ for $f = \\left(- b - 3 w_{1} - 2 w_{2} + 5\\right)^{2}$.",
+      "stem_latex": "Same linear regression; now differentiate with respect to the second weight. Find $\\frac{\\partial f}{\\partial w2}$ for $f = (5 - (w1 3 + w2 2 + b))^{2}$.",
       "answer_latex": "4 b + 12 w_{1} + 8 w_{2} - 20",
       "answer_kind": "expr",
       "answer_sympy": "4*b + 12*w1 + 8*w2 - 20",
@@ -450,7 +450,7 @@
     {
       "item_id": "gen-ai.gradient-of-loss-4",
       "node_id": "ai.gradient-of-loss",
-      "stem_latex": "Prediction uses a sinusoidal feature; find the gradient of the loss w.r.t. the weight. Find $\\frac{\\partial f}{\\partial w}$ for $f = \\left(- b - w \\sin{\\left(x \\right)} + 4\\right)^{2}$.",
+      "stem_latex": "Prediction uses a sinusoidal feature; find the gradient of the loss w.r.t. the weight. Find $\\frac{\\partial f}{\\partial w}$ for $f = (4 - (w \\sin(x) + b))^{2}$.",
       "answer_latex": "- 2 \\left(- b - w \\sin{\\left(x \\right)} + 4\\right) \\sin{\\left(x \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "-2*(-b - w*sin(x) + 4)*sin(x)",
@@ -473,7 +473,7 @@
     {
       "item_id": "gen-ai.gradient-of-loss-5",
       "node_id": "ai.gradient-of-loss",
-      "stem_latex": "Loss depends on a product of two parameters; compute the partial derivative w.r.t. w2. Find $\\frac{\\partial f}{\\partial w2}$ for $f = \\left(- w_{1} w_{2} - 3 w_{1} + 7\\right)^{2}$.",
+      "stem_latex": "Loss depends on a product of two parameters; compute the partial derivative w.r.t. w2. Find $\\frac{\\partial f}{\\partial w2}$ for $f = (7 - (w1 w2 + 3 w1))^{2}$.",
       "answer_latex": "- 2 w_{1} \\left(- w_{1} w_{2} - 3 w_{1} + 7\\right)",
       "answer_kind": "expr",
       "answer_sympy": "-2*w1*(-w1*w2 - 3*w1 + 7)",
@@ -496,7 +496,7 @@
     {
       "item_id": "gen-ai.gradient-of-loss-6",
       "node_id": "ai.gradient-of-loss",
-      "stem_latex": "Quadratic feature; differentiate the squared error loss with respect to the weight. Find $\\frac{\\partial f}{\\partial w}$ for $f = \\left(- b - w^{2} x + 2\\right)^{2}$.",
+      "stem_latex": "Quadratic feature; differentiate the squared error loss with respect to the weight. Find $\\frac{\\partial f}{\\partial w}$ for $f = (2 - (w^{2} x + b))^{2}$.",
       "answer_latex": "- 4 w x \\left(- b - w^{2} x + 2\\right)",
       "answer_kind": "expr",
       "answer_sympy": "-4*w*x*(-b - w**2*x + 2)",
@@ -519,7 +519,7 @@
     {
       "item_id": "gen-ai.gradient-of-loss-7",
       "node_id": "ai.gradient-of-loss",
-      "stem_latex": "Logarithmic feature; compute the gradient of the loss w.r.t. the weight. Find $\\frac{\\partial f}{\\partial w}$ for $f = \\left(- b - w \\log{\\left(x \\right)} + 6\\right)^{2}$.",
+      "stem_latex": "Logarithmic feature; compute the gradient of the loss w.r.t. the weight. Find $\\frac{\\partial f}{\\partial w}$ for $f = (6 - (w \\log(x) + b))^{2}$.",
       "answer_latex": "- 2 \\left(- b - w \\log{\\left(x \\right)} + 6\\right) \\log{\\left(x \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "-2*(-b - w*log(x) + 6)*log(x)",
@@ -542,7 +542,7 @@
     {
       "item_id": "gen-ai.gradient-of-loss-8",
       "node_id": "ai.gradient-of-loss",
-      "stem_latex": "Two non\u2011linear features; obtain the partial derivative of the loss with respect to the first weight. Find $\\frac{\\partial f}{\\partial w1}$ for $f = \\left(- b - w_{1} e^{x} - w_{2} \\sin{\\left(x \\right)} + 9\\right)^{2}$.",
+      "stem_latex": "Two non\u2011linear features; obtain the partial derivative of the loss with respect to the first weight. Find $\\frac{\\partial f}{\\partial w1}$ for $f = (9 - (w1 \\exp(x) + w2 \\sin(x) + b))^{2}$.",
       "answer_latex": "- 2 \\left(- b - w_{1} e^{x} - w_{2} \\sin{\\left(x \\right)} + 9\\right) e^{x}",
       "answer_kind": "expr",
       "answer_sympy": "-2*(-b - w1*exp(x) - w2*sin(x) + 9)*exp(x)",
@@ -565,7 +565,7 @@
     {
       "item_id": "gen-ai.loss-function-1",
       "node_id": "ai.loss-function",
-      "stem_latex": "Evaluate $\\left(2 - 5\\right)^{2}$, giving an exact value.",
+      "stem_latex": "Evaluate $(2 - 5)^{2}$, giving an exact value.",
       "answer_latex": "9",
       "answer_kind": "expr",
       "answer_sympy": "9",
@@ -584,7 +584,7 @@
     {
       "item_id": "gen-ai.loss-function-2",
       "node_id": "ai.loss-function",
-      "stem_latex": "Loss L = (a*x - 7)^2 for a model parameter a. Find $\\frac{\\partial f}{\\partial x}$ for $f = \\left(a x - 7\\right)^{2}$.",
+      "stem_latex": "Loss L = (a*x - 7)^2 for a model parameter a. Find $\\frac{\\partial f}{\\partial x}$ for $f = (a x - 7)^{2}$.",
       "answer_latex": "2 a \\left(a x - 7\\right)",
       "answer_kind": "expr",
       "answer_sympy": "2*a*(a*x - 7)",
@@ -603,7 +603,7 @@
     {
       "item_id": "gen-ai.loss-function-3",
       "node_id": "ai.loss-function",
-      "stem_latex": "Evaluate $\\left(a 2 + b - 10\\right)^{2}$, giving an exact value.",
+      "stem_latex": "Evaluate $(a 2 + b - 10)^{2}$, giving an exact value.",
       "answer_latex": "\\left(2 a + b - 10\\right)^{2}",
       "answer_kind": "expr",
       "answer_sympy": "(2*a + b - 10)**2",
@@ -622,7 +622,7 @@
     {
       "item_id": "gen-ai.loss-function-4",
       "node_id": "ai.loss-function",
-      "stem_latex": "Loss L = (a*x + b - 10)^2, find \u2202L/\u2202b. Find $\\frac{\\partial f}{\\partial x}$ for $f = \\left(a x + b - 10\\right)^{2}$.",
+      "stem_latex": "Loss L = (a*x + b - 10)^2, find \u2202L/\u2202b. Find $\\frac{\\partial f}{\\partial x}$ for $f = (a x + b - 10)^{2}$.",
       "answer_latex": "2 a \\left(a x + b - 10\\right)",
       "answer_kind": "expr",
       "answer_sympy": "2*a*(a*x + b - 10)",
@@ -641,15 +641,15 @@
     {
       "item_id": "gen-ai.loss-function-5",
       "node_id": "ai.loss-function",
-      "stem_latex": "Evaluate $0.5 \\left(4 - 6\\right)^{2}$, giving an exact value.",
-      "answer_latex": "2.0",
+      "stem_latex": "Evaluate $1/2 (4 - 6)^{2}$, giving an exact value.",
+      "answer_latex": "2",
       "answer_kind": "expr",
-      "answer_sympy": "2.00000000000000",
+      "answer_sympy": "2",
       "check": {
         "task": "evaluate",
         "params": {
-          "expr": "0.5*(4 - 6)**2",
-          "context": "Weighted squared error loss with weight w = 0.5."
+          "expr": "1/2*(4 - 6)**2",
+          "context": "Weighted squared error loss with weight w = 1/2."
         }
       },
       "difficulty_b": 1,
@@ -660,7 +660,7 @@
     {
       "item_id": "gen-ai.loss-function-6",
       "node_id": "ai.loss-function",
-      "stem_latex": "Weighted loss L = w*(a*y - y_true)^2 with w=2, y_true=5. Find $\\frac{\\partial f}{\\partial x}$ for $f = 2 \\left(a y - 5\\right)^{2}$.",
+      "stem_latex": "Weighted loss L = w*(a*y - y_true)^2 with w=2, y_true=5. Find $\\frac{\\partial f}{\\partial x}$ for $f = 2 (a y - 5)^{2}$.",
       "answer_latex": "0",
       "answer_kind": "expr",
       "answer_sympy": "0",
@@ -679,7 +679,7 @@
     {
       "item_id": "gen-ai.loss-function-7",
       "node_id": "ai.loss-function",
-      "stem_latex": "Evaluate $\\left(\\left(-1\\right) 12 - 1 + 2 \\cdot 1^{2} + 5\\right)^{2}$, giving an exact value.",
+      "stem_latex": "Evaluate $((2 1^{2} + -1 1 + 5) - 12)^{2}$, giving an exact value.",
       "answer_latex": "36",
       "answer_kind": "expr",
       "answer_sympy": "36",
@@ -698,7 +698,7 @@
     {
       "item_id": "gen-alg.exponent-rules-1",
       "node_id": "alg.exponent-rules",
-      "stem_latex": "Simplify $\\frac{x^{5}}{x^{3}}$.",
+      "stem_latex": "Simplify $x^{-3} x^{5}$.",
       "answer_latex": "x^{2}",
       "answer_kind": "expr",
       "answer_sympy": "x**2",
@@ -716,7 +716,7 @@
     {
       "item_id": "gen-alg.exponent-rules-2",
       "node_id": "alg.exponent-rules",
-      "stem_latex": "Simplify $\\frac{x^{\\frac{3}{2}}}{x^{\\frac{1}{2}}}$.",
+      "stem_latex": "Simplify $x^{-1/2} x^{3/2}$.",
       "answer_latex": "x",
       "answer_kind": "expr",
       "answer_sympy": "x",
@@ -734,7 +734,7 @@
     {
       "item_id": "gen-alg.exponent-rules-3",
       "node_id": "alg.exponent-rules",
-      "stem_latex": "Evaluate $27^{\\frac{2}{3}}$, giving an exact value.",
+      "stem_latex": "Evaluate $27^{2/3}$, giving an exact value.",
       "answer_latex": "9",
       "answer_kind": "expr",
       "answer_sympy": "9",
@@ -752,7 +752,7 @@
     {
       "item_id": "gen-alg.exponent-rules-4",
       "node_id": "alg.exponent-rules",
-      "stem_latex": "Simplify $\\frac{1}{\\frac{1}{x^{4}}}$.",
+      "stem_latex": "Simplify $(x^{3/x}^{5})^{-2}$.",
       "answer_latex": "x^{4}",
       "answer_kind": "expr",
       "answer_sympy": "x**4",
@@ -770,7 +770,7 @@
     {
       "item_id": "gen-alg.exponent-rules-5",
       "node_id": "alg.exponent-rules",
-      "stem_latex": "Simplify $\\left(\\frac{1}{x^{2}}\\right)^{3}$.",
+      "stem_latex": "Simplify $((x^{-2})^{3})$.",
       "answer_latex": "\\frac{1}{x^{6}}",
       "answer_kind": "expr",
       "answer_sympy": "x**(-6)",
@@ -788,7 +788,7 @@
     {
       "item_id": "gen-alg.exponent-rules-6",
       "node_id": "alg.exponent-rules",
-      "stem_latex": "Evaluate $8^{- \\frac{2}{3}}$, giving an exact value.",
+      "stem_latex": "Evaluate $8^{-2/3}$, giving an exact value.",
       "answer_latex": "\\frac{1}{4}",
       "answer_kind": "expr",
       "answer_sympy": "1/4",
@@ -806,7 +806,7 @@
     {
       "item_id": "gen-alg.exponent-rules-7",
       "node_id": "alg.exponent-rules",
-      "stem_latex": "Simplify $\\left(\\frac{x^{\\frac{2}{3}}}{x^{\\frac{1}{3}}}\\right)^{2}$.",
+      "stem_latex": "Simplify $((x^{-1/3} x^{2/3})^{2})$.",
       "answer_latex": "x^{\\frac{2}{3}}",
       "answer_kind": "expr",
       "answer_sympy": "x**(2/3)",
@@ -950,7 +950,7 @@
     {
       "item_id": "gen-alg.factoring-8",
       "node_id": "alg.factoring",
-      "stem_latex": "Factor $x^{3} - 3 x^{2} + 2 x - \\left(x^{2} - 2 x\\right)$.",
+      "stem_latex": "Factor $x^{3} - 3 x^{2} + 2 x - (x^{2} - 2 x)$.",
       "answer_latex": "x \\left(x - 2\\right)^{2}",
       "answer_kind": "expr",
       "answer_sympy": "x*(x - 2)**2",
@@ -968,7 +968,7 @@
     {
       "item_id": "gen-alg.fraction-arithmetic-1",
       "node_id": "alg.fraction-arithmetic",
-      "stem_latex": "Simplify $1 \\frac{1}{h + x} - 1 \\frac{1}{x}$.",
+      "stem_latex": "Simplify $1/(x+h) - 1/x$.",
       "answer_latex": "- \\frac{h}{x \\left(h + x\\right)}",
       "answer_kind": "expr",
       "answer_sympy": "-h/(x*(h + x))",
@@ -986,7 +986,7 @@
     {
       "item_id": "gen-alg.fraction-arithmetic-2",
       "node_id": "alg.fraction-arithmetic",
-      "stem_latex": "Simplify $\\frac{3}{x + 1} + \\frac{2}{x}$.",
+      "stem_latex": "Simplify $2/x + 3/(x+1)$.",
       "answer_latex": "\\frac{5 x + 2}{x \\left(x + 1\\right)}",
       "answer_kind": "expr",
       "answer_sympy": "(5*x + 2)/(x*(x + 1))",
@@ -1004,7 +1004,7 @@
     {
       "item_id": "gen-alg.fraction-arithmetic-3",
       "node_id": "alg.fraction-arithmetic",
-      "stem_latex": "Simplify $\\frac{- \\frac{1}{3} + 1 \\frac{1}{x}}{x - 3}$.",
+      "stem_latex": "Simplify $(1/x - 1/3)/(x-3)$.",
       "answer_latex": "- \\frac{1}{3 x}",
       "answer_kind": "expr",
       "answer_sympy": "-1/(3*x)",
@@ -1022,7 +1022,7 @@
     {
       "item_id": "gen-alg.fraction-arithmetic-4",
       "node_id": "alg.fraction-arithmetic",
-      "stem_latex": "Simplify $\\frac{2}{x - 1} + \\frac{3}{x + 2}$.",
+      "stem_latex": "Simplify $2/(x-1) + 3/(x+2)$.",
       "answer_latex": "\\frac{5 x + 1}{\\left(x - 1\\right) \\left(x + 2\\right)}",
       "answer_kind": "expr",
       "answer_sympy": "(5*x + 1)/((x - 1)*(x + 2))",
@@ -1040,7 +1040,7 @@
     {
       "item_id": "gen-alg.fraction-arithmetic-5",
       "node_id": "alg.fraction-arithmetic",
-      "stem_latex": "Simplify $\\frac{x}{x - 2} - 1 \\frac{1}{x - 2}$.",
+      "stem_latex": "Simplify $x/(x-2) - 1/(x-2)$.",
       "answer_latex": "\\frac{x - 1}{x - 2}",
       "answer_kind": "expr",
       "answer_sympy": "(x - 1)/(x - 2)",
@@ -1058,7 +1058,7 @@
     {
       "item_id": "gen-alg.fraction-arithmetic-6",
       "node_id": "alg.fraction-arithmetic",
-      "stem_latex": "Simplify $1 \\frac{1}{x^{2} - 1} + 1 \\frac{1}{x - 1}$.",
+      "stem_latex": "Simplify $1/(x^{2}-1) + 1/(x-1)$.",
       "answer_latex": "\\frac{x + 2}{x^{2} - 1}",
       "answer_kind": "expr",
       "answer_sympy": "(x + 2)/(x**2 - 1)",
@@ -1076,7 +1076,7 @@
     {
       "item_id": "gen-alg.fraction-arithmetic-7",
       "node_id": "alg.fraction-arithmetic",
-      "stem_latex": "Simplify $\\frac{5}{x^{2} - 5 x + 6} - \\frac{2}{x - 3} + \\frac{3}{x + 2}$.",
+      "stem_latex": "Simplify $3/(x+2) - 2/(x-3) + 5/(x^{2}-5 x+6)$.",
       "answer_latex": "\\frac{x^{2} - 10 x + 36}{x^{3} - 3 x^{2} - 4 x + 12}",
       "answer_kind": "expr",
       "answer_sympy": "(x**2 - 10*x + 36)/(x**3 - 3*x**2 - 4*x + 12)",
@@ -1094,7 +1094,7 @@
     {
       "item_id": "gen-alg.fraction-arithmetic-8",
       "node_id": "alg.fraction-arithmetic",
-      "stem_latex": "Simplify $\\left(x^{2} - 1\\right) \\left(- \\frac{1}{x - 1} + 1 \\frac{1}{x + 1}\\right)$.",
+      "stem_latex": "Simplify $(1/(x+1) - 1/(x-1)) (x^{2}-1)$.",
       "answer_latex": "-2",
       "answer_kind": "expr",
       "answer_sympy": "-2",
@@ -1133,7 +1133,7 @@
     {
       "item_id": "gen-alg.function-composition-2",
       "node_id": "alg.function-composition",
-      "stem_latex": "If $f(x) = \\sin{\\left(x \\right)}$ and $g(x) = x^{2}$, find $f(g(x))$.",
+      "stem_latex": "If $f(x) = \\sin(x)$ and $g(x) = x^{2}$, find $f(g(x))$.",
       "answer_latex": "\\sin{\\left(x^{2} \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "sin(x**2)",
@@ -1154,7 +1154,7 @@
     {
       "item_id": "gen-alg.function-composition-3",
       "node_id": "alg.function-composition",
-      "stem_latex": "If $f(x) = e^{x}$ and $g(x) = 2 x + 3$, find $f(g(x))$.",
+      "stem_latex": "If $f(x) = \\exp(x)$ and $g(x) = 2 x + 3$, find $f(g(x))$.",
       "answer_latex": "e^{2 x + 3}",
       "answer_kind": "expr",
       "answer_sympy": "exp(2*x + 3)",
@@ -1196,7 +1196,7 @@
     {
       "item_id": "gen-alg.function-composition-5",
       "node_id": "alg.function-composition",
-      "stem_latex": "If $f(x) = \\log{\\left(x \\right)}$ and $g(x) = 3 x^{3} - 2 x$, find $f(g(x))$.",
+      "stem_latex": "If $f(x) = \\log(x)$ and $g(x) = 3 x^{3} - 2 x$, find $f(g(x))$.",
       "answer_latex": "\\log{\\left(x \\left(3 x^{2} - 2\\right) \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "log(x*(3*x**2 - 2))",
@@ -1238,7 +1238,7 @@
     {
       "item_id": "gen-alg.function-composition-7",
       "node_id": "alg.function-composition",
-      "stem_latex": "If $f(x) = \\cos{\\left(x \\right)}$ and $g(x) = x^{3} - 2 x + 5$, find $f(g(x))$.",
+      "stem_latex": "If $f(x) = \\cos(x)$ and $g(x) = x^{3} - 2 x + 5$, find $f(g(x))$.",
       "answer_latex": "\\cos{\\left(x^{3} - 2 x + 5 \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "cos(x**3 - 2*x + 5)",
@@ -1259,7 +1259,7 @@
     {
       "item_id": "gen-alg.function-composition-8",
       "node_id": "alg.function-composition",
-      "stem_latex": "If $f(x) = \\tan{\\left(x \\right)}$ and $g(x) = \\sqrt{x^{2} + 4}$, find $f(g(x))$.",
+      "stem_latex": "If $f(x) = \\tan(x)$ and $g(x) = \\sqrt{x^{2} + 4}$, find $f(g(x))$.",
       "answer_latex": "\\tan{\\left(\\sqrt{x^{2} + 4} \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "tan(sqrt(x**2 + 4))",
@@ -1280,7 +1280,7 @@
     {
       "item_id": "gen-alg.radicals-1",
       "node_id": "alg.radicals",
-      "stem_latex": "Simplify $\\left(x^{1 \\cdot \\frac{1}{2}}\\right)^{4}$.",
+      "stem_latex": "Simplify $(x^{1/2})^{4}$.",
       "answer_latex": "x^{2}",
       "answer_kind": "expr",
       "answer_sympy": "x**2",
@@ -1300,7 +1300,7 @@
     {
       "item_id": "gen-alg.radicals-2",
       "node_id": "alg.radicals",
-      "stem_latex": "Evaluate $8^{\\frac{2}{3}}$, giving an exact value.",
+      "stem_latex": "Evaluate $8^{2/3}$, giving an exact value.",
       "answer_latex": "4",
       "answer_kind": "expr",
       "answer_sympy": "4",
@@ -1340,7 +1340,7 @@
     {
       "item_id": "gen-alg.radicals-4",
       "node_id": "alg.radicals",
-      "stem_latex": "Simplify $\\left(x^{\\frac{3}{4}}\\right)^{8}$.",
+      "stem_latex": "Simplify $(x^{3/4})^{8}$.",
       "answer_latex": "x^{6}",
       "answer_kind": "expr",
       "answer_sympy": "x**6",
@@ -1360,7 +1360,7 @@
     {
       "item_id": "gen-alg.radicals-5",
       "node_id": "alg.radicals",
-      "stem_latex": "Evaluate $27^{\\frac{2}{3}}$, giving an exact value.",
+      "stem_latex": "Evaluate $27^{2/3}$, giving an exact value.",
       "answer_latex": "9",
       "answer_kind": "expr",
       "answer_sympy": "9",
@@ -1380,7 +1380,7 @@
     {
       "item_id": "gen-alg.radicals-6",
       "node_id": "alg.radicals",
-      "stem_latex": "Simplify $\\left(x^{\\frac{5}{6}}\\right)^{12}$.",
+      "stem_latex": "Simplify $(x^{5/6})^{12}$.",
       "answer_latex": "x^{10}",
       "answer_kind": "expr",
       "answer_sympy": "x**10",
@@ -1400,7 +1400,7 @@
     {
       "item_id": "gen-alg.sign-distribution-1",
       "node_id": "alg.sign-distribution",
-      "stem_latex": "Expand and simplify $5 x - \\left(3 x - 2\\right)$.",
+      "stem_latex": "Expand and simplify $5 x - (3 x - 2)$.",
       "answer_latex": "2 x + 2",
       "answer_kind": "expr",
       "answer_sympy": "2*x + 2",
@@ -1418,7 +1418,7 @@
     {
       "item_id": "gen-alg.sign-distribution-2",
       "node_id": "alg.sign-distribution",
-      "stem_latex": "Expand and simplify $2 x - \\left(x - 4\\right) - 3$.",
+      "stem_latex": "Expand and simplify $2 x - (x - 4) - 3$.",
       "answer_latex": "x + 1",
       "answer_kind": "expr",
       "answer_sympy": "x + 1",
@@ -1436,7 +1436,7 @@
     {
       "item_id": "gen-alg.sign-distribution-3",
       "node_id": "alg.sign-distribution",
-      "stem_latex": "Expand and simplify $- x - 5 - 3$.",
+      "stem_latex": "Expand and simplify $-( (2 x + 3) - (x - 5) )$.",
       "answer_latex": "- x - 8",
       "answer_kind": "expr",
       "answer_sympy": "-x - 8",
@@ -1454,7 +1454,7 @@
     {
       "item_id": "gen-alg.sign-distribution-4",
       "node_id": "alg.sign-distribution",
-      "stem_latex": "Expand and simplify $7 - \\left(4 x - 9\\right)$.",
+      "stem_latex": "Expand and simplify $7 - (4 x - 9)$.",
       "answer_latex": "16 - 4 x",
       "answer_kind": "expr",
       "answer_sympy": "16 - 4*x",
@@ -1472,7 +1472,7 @@
     {
       "item_id": "gen-alg.sign-distribution-5",
       "node_id": "alg.sign-distribution",
-      "stem_latex": "Expand and simplify $- \\frac{x}{2} + \\frac{3}{4}$.",
+      "stem_latex": "Expand and simplify $-( (1/2) x - 3/4 )$.",
       "answer_latex": "\\frac{3}{4} - \\frac{x}{2}",
       "answer_kind": "expr",
       "answer_sympy": "3/4 - x/2",
@@ -1490,7 +1490,7 @@
     {
       "item_id": "gen-alg.sign-distribution-6",
       "node_id": "alg.sign-distribution",
-      "stem_latex": "Expand and simplify $3 x - \\left(2 x - \\left(x + 5\\right)\\right)$.",
+      "stem_latex": "Expand and simplify $3 x - (2 x - (x + 5))$.",
       "answer_latex": "2 x + 5",
       "answer_kind": "expr",
       "answer_sympy": "2*x + 5",
@@ -1527,7 +1527,7 @@
     {
       "item_id": "gen-alg.solving-equations-2",
       "node_id": "alg.solving-equations",
-      "stem_latex": "Solve for $x$: $\\frac{3 x}{4} - 5 = 1$.",
+      "stem_latex": "Solve for $x$: $(3/4) x - 5 = 1$.",
       "answer_latex": "\\left\\{8\\right\\}",
       "answer_kind": "set",
       "answer_sympy": "8",
@@ -1641,7 +1641,7 @@
     {
       "item_id": "gen-alg.solving-equations-8",
       "node_id": "alg.solving-equations",
-      "stem_latex": "Solve for $x$: $x^{2} - \\frac{5 x}{2} + 1 = 0$.",
+      "stem_latex": "Solve for $x$: $x^{2} - (5/2) x + 1 = 0$.",
       "answer_latex": "\\left\\{\\frac{1}{2}, 2\\right\\}",
       "answer_kind": "set",
       "answer_sympy": "1/2, 2",
@@ -1660,7 +1660,7 @@
     {
       "item_id": "gen-der.constant-multiple-sum-1",
       "node_id": "der.constant-multiple-sum",
-      "stem_latex": "Differentiate $f(x) = 4 x^{3} + 3 x^{2}$.",
+      "stem_latex": "Differentiate $f(x) = 3 x^{2} + 4 x^{3}$.",
       "answer_latex": "12 x^{2} + 6 x",
       "answer_kind": "expr",
       "answer_sympy": "12*x**2 + 6*x",
@@ -1896,7 +1896,7 @@
     {
       "item_id": "gen-der.slope-interpretation-5",
       "node_id": "der.slope-interpretation",
-      "stem_latex": "Find the slope of the tangent to $y = \\sin{\\left(x \\right)}$ at $x = 0$.",
+      "stem_latex": "Find the slope of the tangent to $y = \\sin(x)$ at $x = 0$.",
       "answer_latex": "1",
       "answer_kind": "expr",
       "answer_sympy": "1",
@@ -1915,7 +1915,7 @@
     {
       "item_id": "gen-der.slope-interpretation-6",
       "node_id": "der.slope-interpretation",
-      "stem_latex": "Find the slope of the tangent to $y = 2 \\sin{\\left(x \\right)} + \\cos{\\left(x \\right)}$ at $x = \\frac{\\pi}{2}$.",
+      "stem_latex": "Find the slope of the tangent to $y = 2 \\sin(x) + \\cos(x)$ at $x = \\frac{\\pi}{2}$.",
       "answer_latex": "-1",
       "answer_kind": "expr",
       "answer_sympy": "-1",
@@ -1934,7 +1934,7 @@
     {
       "item_id": "gen-der.slope-interpretation-7",
       "node_id": "der.slope-interpretation",
-      "stem_latex": "Find the slope of the tangent to $y = e^{x}$ at $x = 0$.",
+      "stem_latex": "Find the slope of the tangent to $y = \\exp(x)$ at $x = 0$.",
       "answer_latex": "1",
       "answer_kind": "expr",
       "answer_sympy": "1",
@@ -1953,7 +1953,7 @@
     {
       "item_id": "gen-der.slope-interpretation-8",
       "node_id": "der.slope-interpretation",
-      "stem_latex": "Find the slope of the tangent to $y = x^{2} \\sin{\\left(x \\right)} + e^{x}$ at $x = 1$.",
+      "stem_latex": "Find the slope of the tangent to $y = x^{2} \\sin(x) + \\exp(x)$ at $x = 1$.",
       "answer_latex": "\\cos{\\left(1 \\right)} + 2 \\sin{\\left(1 \\right)} + e",
       "answer_kind": "expr",
       "answer_sympy": "cos(1) + 2*sin(1) + E",
@@ -1972,7 +1972,7 @@
     {
       "item_id": "gen-explog.rules-1",
       "node_id": "explog.rules",
-      "stem_latex": "Simplify $\\log{\\left(e^{5} \\right)}$.",
+      "stem_latex": "Simplify $\\log(e^{5})$.",
       "answer_latex": "5",
       "answer_kind": "expr",
       "answer_sympy": "5",
@@ -1992,7 +1992,7 @@
     {
       "item_id": "gen-explog.rules-2",
       "node_id": "explog.rules",
-      "stem_latex": "Simplify $e^{\\log{\\left(12 \\right)}}$.",
+      "stem_latex": "Simplify $\\exp(\\log(12))$.",
       "answer_latex": "12",
       "answer_kind": "expr",
       "answer_sympy": "12",
@@ -2012,7 +2012,7 @@
     {
       "item_id": "gen-explog.rules-3",
       "node_id": "explog.rules",
-      "stem_latex": "Evaluate $e^{\\log{\\left(3 \\right)} + \\log{\\left(5 \\right)}}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\exp(\\log(3) + \\log(5))$, giving an exact value.",
       "answer_latex": "15",
       "answer_kind": "expr",
       "answer_sympy": "15",
@@ -2032,7 +2032,7 @@
     {
       "item_id": "gen-explog.rules-4",
       "node_id": "explog.rules",
-      "stem_latex": "Simplify $\\log{\\left(e^{2} e^{3} \\right)}$.",
+      "stem_latex": "Simplify $\\log(e^{2} e^{3})$.",
       "answer_latex": "5",
       "answer_kind": "expr",
       "answer_sympy": "5",
@@ -2052,7 +2052,7 @@
     {
       "item_id": "gen-explog.rules-5",
       "node_id": "explog.rules",
-      "stem_latex": "Simplify $e^{\\log{\\left(a \\right)} + \\log{\\left(b \\right)}}$.",
+      "stem_latex": "Simplify $\\exp(\\log(a) + \\log(b))$.",
       "answer_latex": "a b",
       "answer_kind": "expr",
       "answer_sympy": "a*b",
@@ -2072,7 +2072,7 @@
     {
       "item_id": "gen-explog.rules-6",
       "node_id": "explog.rules",
-      "stem_latex": "Evaluate $e^{\\log{\\left(2 \\right)} + \\log{\\left(e^{3} \\right)}}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\exp(\\log(e^{3}) + \\log(2))$, giving an exact value.",
       "answer_latex": "2 e^{3}",
       "answer_kind": "expr",
       "answer_sympy": "2*exp(3)",
@@ -2149,7 +2149,7 @@
     {
       "item_id": "gen-mv.functions-several-vars-4",
       "node_id": "mv.functions-several-vars",
-      "stem_latex": "Find $\\frac{\\partial f}{\\partial x}$ for $f = \\sin{\\left(x y \\right)} + \\cos{\\left(x^{2} y \\right)}$.",
+      "stem_latex": "Find $\\frac{\\partial f}{\\partial x}$ for $f = \\sin(x y) + \\cos(x^{2} y)$.",
       "answer_latex": "- 2 x y \\sin{\\left(x^{2} y \\right)} + y \\cos{\\left(x y \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "-2*x*y*sin(x**2*y) + y*cos(x*y)",
@@ -2168,7 +2168,7 @@
     {
       "item_id": "gen-mv.functions-several-vars-5",
       "node_id": "mv.functions-several-vars",
-      "stem_latex": "Find $\\frac{\\partial f}{\\partial x}$ for $f = y^{2} \\log{\\left(x \\right)} + e^{x y}$.",
+      "stem_latex": "Find $\\frac{\\partial f}{\\partial x}$ for $f = \\exp(x y) + \\log(x) y^{2}$.",
       "answer_latex": "y e^{x y} + \\frac{y^{2}}{x}",
       "answer_kind": "expr",
       "answer_sympy": "y*exp(x*y) + y**2/x",
@@ -2206,7 +2206,7 @@
     {
       "item_id": "gen-mv.functions-several-vars-7",
       "node_id": "mv.functions-several-vars",
-      "stem_latex": "Find $\\frac{\\partial f}{\\partial x}$ for $f = e^{y} \\sin{\\left(x y^{2} \\right)} + \\log{\\left(x^{2} + y \\right)}$.",
+      "stem_latex": "Find $\\frac{\\partial f}{\\partial x}$ for $f = \\sin(x y^{2}) \\exp(y) + \\log(x^{2} + y)$.",
       "answer_latex": "\\frac{2 x}{x^{2} + y} + y^{2} e^{y} \\cos{\\left(x y^{2} \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "2*x/(x**2 + y) + y**2*exp(y)*cos(x*y**2)",
@@ -2225,7 +2225,7 @@
     {
       "item_id": "gen-mv.functions-several-vars-8",
       "node_id": "mv.functions-several-vars",
-      "stem_latex": "Find $\\frac{\\partial f}{\\partial x}$ for $f = x^{3} y^{2} + 2 x^{2} y^{3} - 5 x y + \\sin{\\left(x y \\right)}$.",
+      "stem_latex": "Find $\\frac{\\partial f}{\\partial x}$ for $f = x^{3} y^{2} + 2 x^{2} y^{3} - 5 x y + \\sin(x y)$.",
       "answer_latex": "3 x^{2} y^{2} + 4 x y^{3} + y \\cos{\\left(x y \\right)} - 5 y",
       "answer_kind": "expr",
       "answer_sympy": "3*x**2*y**2 + 4*x*y**3 + y*cos(x*y) - 5*y",
@@ -2370,7 +2370,7 @@
     {
       "item_id": "gen-trig.identities-1",
       "node_id": "trig.identities",
-      "stem_latex": "Simplify $\\sin^{2}{\\left(x \\right)} + \\cos^{2}{\\left(x \\right)}$.",
+      "stem_latex": "Simplify $\\sin(x)^{2} + \\cos(x)^{2}$.",
       "answer_latex": "1",
       "answer_kind": "expr",
       "answer_sympy": "1",
@@ -2390,7 +2390,7 @@
     {
       "item_id": "gen-trig.identities-2",
       "node_id": "trig.identities",
-      "stem_latex": "Simplify $2 \\sin{\\left(x \\right)} \\cos{\\left(x \\right)}$.",
+      "stem_latex": "Simplify $2 \\sin(x) \\cos(x)$.",
       "answer_latex": "\\sin{\\left(2 x \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "sin(2*x)",
@@ -2410,7 +2410,7 @@
     {
       "item_id": "gen-trig.identities-3",
       "node_id": "trig.identities",
-      "stem_latex": "Simplify $1 - 2 \\sin^{2}{\\left(x \\right)}$.",
+      "stem_latex": "Simplify $1 - 2 \\sin(x)^{2}$.",
       "answer_latex": "\\cos{\\left(2 x \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "cos(2*x)",
@@ -2430,7 +2430,7 @@
     {
       "item_id": "gen-trig.identities-4",
       "node_id": "trig.identities",
-      "stem_latex": "Simplify $\\left(\\sin^{2}{\\left(x \\right)} + \\cos^{2}{\\left(x \\right)}\\right) \\tan^{2}{\\left(x \\right)}$.",
+      "stem_latex": "Simplify $(\\sin(x)^{2} + \\cos(x)^{2}) \\tan(x)^{2}$.",
       "answer_latex": "\\tan^{2}{\\left(x \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "tan(x)**2",
@@ -2450,7 +2450,7 @@
     {
       "item_id": "gen-trig.identities-5",
       "node_id": "trig.identities",
-      "stem_latex": "Simplify $1 - \\cos{\\left(2 x \\right)}$.",
+      "stem_latex": "Simplify $1 - \\cos(2 x)$.",
       "answer_latex": "2 \\sin^{2}{\\left(x \\right)}",
       "answer_kind": "expr",
       "answer_sympy": "2*sin(x)**2",
@@ -2470,7 +2470,7 @@
     {
       "item_id": "gen-trig.identities-6",
       "node_id": "trig.identities",
-      "stem_latex": "Simplify $\\sin^{4}{\\left(x \\right)} + 2 \\sin^{2}{\\left(x \\right)} \\cos^{2}{\\left(x \\right)} + \\cos^{4}{\\left(x \\right)}$.",
+      "stem_latex": "Simplify $\\sin(x)^{4} + 2 \\sin(x)^{2} \\cos(x)^{2} + \\cos(x)^{4}$.",
       "answer_latex": "1",
       "answer_kind": "expr",
       "answer_sympy": "1",
@@ -2490,7 +2490,7 @@
     {
       "item_id": "gen-trig.unit-circle-1",
       "node_id": "trig.unit-circle",
-      "stem_latex": "Evaluate $\\sin{\\left(\\frac{\\pi}{6} \\right)}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\sin(\\pi/6)$, giving an exact value.",
       "answer_latex": "\\frac{1}{2}",
       "answer_kind": "expr",
       "answer_sympy": "1/2",
@@ -2508,7 +2508,7 @@
     {
       "item_id": "gen-trig.unit-circle-2",
       "node_id": "trig.unit-circle",
-      "stem_latex": "Evaluate $\\cos{\\left(\\frac{\\pi}{4} \\right)}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\cos(\\pi/4)$, giving an exact value.",
       "answer_latex": "\\frac{\\sqrt{2}}{2}",
       "answer_kind": "expr",
       "answer_sympy": "sqrt(2)/2",
@@ -2526,7 +2526,7 @@
     {
       "item_id": "gen-trig.unit-circle-3",
       "node_id": "trig.unit-circle",
-      "stem_latex": "Evaluate $\\sin{\\left(\\frac{\\pi}{3} \\right)}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\sin(\\pi/3)$, giving an exact value.",
       "answer_latex": "\\frac{\\sqrt{3}}{2}",
       "answer_kind": "expr",
       "answer_sympy": "sqrt(3)/2",
@@ -2544,7 +2544,7 @@
     {
       "item_id": "gen-trig.unit-circle-4",
       "node_id": "trig.unit-circle",
-      "stem_latex": "Evaluate $\\cos{\\left(\\frac{\\pi}{2} \\right)}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\cos(\\pi/2)$, giving an exact value.",
       "answer_latex": "0",
       "answer_kind": "expr",
       "answer_sympy": "0",
@@ -2562,7 +2562,7 @@
     {
       "item_id": "gen-trig.unit-circle-5",
       "node_id": "trig.unit-circle",
-      "stem_latex": "Evaluate $\\sin{\\left(\\frac{2 \\pi}{3} \\right)}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\sin(2 \\pi/3)$, giving an exact value.",
       "answer_latex": "\\frac{\\sqrt{3}}{2}",
       "answer_kind": "expr",
       "answer_sympy": "sqrt(3)/2",
@@ -2580,7 +2580,7 @@
     {
       "item_id": "gen-trig.unit-circle-6",
       "node_id": "trig.unit-circle",
-      "stem_latex": "Evaluate $\\cos{\\left(\\frac{3 \\pi}{4} \\right)}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\cos(3 \\pi/4)$, giving an exact value.",
       "answer_latex": "- \\frac{\\sqrt{2}}{2}",
       "answer_kind": "expr",
       "answer_sympy": "-sqrt(2)/2",
@@ -2598,7 +2598,7 @@
     {
       "item_id": "gen-trig.unit-circle-7",
       "node_id": "trig.unit-circle",
-      "stem_latex": "Evaluate $\\sin{\\left(\\frac{5 \\pi}{6} \\right)}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\sin(5 \\pi/6)$, giving an exact value.",
       "answer_latex": "\\frac{1}{2}",
       "answer_kind": "expr",
       "answer_sympy": "1/2",
@@ -2616,7 +2616,7 @@
     {
       "item_id": "gen-trig.unit-circle-8",
       "node_id": "trig.unit-circle",
-      "stem_latex": "Evaluate $\\cos{\\left(\\pi \\right)}$, giving an exact value.",
+      "stem_latex": "Evaluate $\\cos(\\pi)$, giving an exact value.",
       "answer_latex": "-1",
       "answer_kind": "expr",
       "answer_sympy": "-1",
@@ -2627,6 +2627,1190 @@
         }
       },
       "difficulty_b": 2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-alg.vectors-1",
+      "node_id": "alg.vectors",
+      "stem_latex": "Given $\\mathbf{u} = \\left[\\begin{matrix}1 & 2\\end{matrix}\\right]$ and $\\mathbf{v} = \\left[\\begin{matrix}3 & 4\\end{matrix}\\right]$, find $\\mathbf{u} \\cdot \\mathbf{v}$.",
+      "answer_latex": "11",
+      "answer_kind": "expr",
+      "answer_sympy": "11",
+      "check": {
+        "task": "dot_product",
+        "params": {
+          "expr": "1,2",
+          "expr2": "3,4"
+        }
+      },
+      "difficulty_b": -1.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-alg.vectors-2",
+      "node_id": "alg.vectors",
+      "stem_latex": "Compute $-2\\,\\left[\\begin{matrix}1 & -3 & 4\\end{matrix}\\right]$.",
+      "answer_latex": "\\left[\\begin{matrix}-2\\\\6\\\\-8\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "-2, 6, -8",
+      "check": {
+        "task": "scalar_multiple",
+        "params": {
+          "expr": "-2",
+          "expr2": "1,-3,4"
+        }
+      },
+      "difficulty_b": -0.8,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-alg.vectors-3",
+      "node_id": "alg.vectors",
+      "stem_latex": "Find $\\lVert\\mathbf{u}\\rVert$ for $\\mathbf{u} = \\left[\\begin{matrix}3 & 4\\end{matrix}\\right]$.",
+      "answer_latex": "5",
+      "answer_kind": "expr",
+      "answer_sympy": "5",
+      "check": {
+        "task": "vector_magnitude",
+        "params": {
+          "expr": "3,4"
+        }
+      },
+      "difficulty_b": -0.7,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-alg.vectors-4",
+      "node_id": "alg.vectors",
+      "stem_latex": "Given $\\mathbf{u} = \\left[\\begin{matrix}2 & -1 & 5\\end{matrix}\\right]$ and $\\mathbf{v} = \\left[\\begin{matrix}4 & 3 & 2\\end{matrix}\\right]$, find $\\mathbf{u} \\cdot \\mathbf{v}$.",
+      "answer_latex": "15",
+      "answer_kind": "expr",
+      "answer_sympy": "15",
+      "check": {
+        "task": "dot_product",
+        "params": {
+          "expr": "2,-1,5",
+          "expr2": "4,3,2"
+        }
+      },
+      "difficulty_b": -0.6,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-alg.vectors-5",
+      "node_id": "alg.vectors",
+      "stem_latex": "Compute $\\frac{1}{2}\\,\\left[\\begin{matrix}4 & -6\\end{matrix}\\right]$.",
+      "answer_latex": "\\left[\\begin{matrix}2\\\\-3\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "2, -3",
+      "check": {
+        "task": "scalar_multiple",
+        "params": {
+          "expr": "1/2",
+          "expr2": "4,-6"
+        }
+      },
+      "difficulty_b": -0.5,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-alg.vectors-6",
+      "node_id": "alg.vectors",
+      "stem_latex": "Find $\\lVert\\mathbf{u}\\rVert$ for $\\mathbf{u} = \\left[\\begin{matrix}2 & -3 & 6\\end{matrix}\\right]$.",
+      "answer_latex": "7",
+      "answer_kind": "expr",
+      "answer_sympy": "7",
+      "check": {
+        "task": "vector_magnitude",
+        "params": {
+          "expr": "2,-3,6"
+        }
+      },
+      "difficulty_b": -0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-alg.vectors-7",
+      "node_id": "alg.vectors",
+      "stem_latex": "A parameter vector is $\\mathbf{w} = \\left[\\begin{matrix}3 & -2\\end{matrix}\\right]$ and the gradient is $\\nabla L = \\left[\\begin{matrix}6 & -4\\end{matrix}\\right]$. With a learning rate of $\\alpha = \\frac{1}{10}$, compute $\\mathbf{w} - \\alpha\\,\\nabla L$.",
+      "answer_latex": "\\left[\\begin{matrix}\\frac{12}{5}\\\\- \\frac{8}{5}\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "12/5, -8/5",
+      "check": {
+        "task": "vector_update",
+        "params": {
+          "expr": "3,-2",
+          "expr2": "6,-4",
+          "lr": "1/10"
+        }
+      },
+      "difficulty_b": -0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-alg.vectors-8",
+      "node_id": "alg.vectors",
+      "stem_latex": "A parameter vector is $\\mathbf{w} = \\left[\\begin{matrix}1 & 5 & -2\\end{matrix}\\right]$ and the gradient is $\\nabla L = \\left[\\begin{matrix}4 & -2 & 6\\end{matrix}\\right]$. With a learning rate of $\\alpha = \\frac{1}{4}$, compute $\\mathbf{w} - \\alpha\\,\\nabla L$.",
+      "answer_latex": "\\left[\\begin{matrix}0\\\\\\frac{11}{2}\\\\- \\frac{7}{2}\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "0, 11/2, -7/2",
+      "check": {
+        "task": "vector_update",
+        "params": {
+          "expr": "1,5,-2",
+          "expr2": "4,-2,6",
+          "lr": "1/4"
+        }
+      },
+      "difficulty_b": 0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.product-rule-1",
+      "node_id": "der.product-rule",
+      "stem_latex": "Differentiate $f(x) = x^{2} \\sin(x)$.",
+      "answer_latex": "x^{2} \\cos{\\left(x \\right)} + 2 x \\sin{\\left(x \\right)}",
+      "answer_kind": "expr",
+      "answer_sympy": "x**2*cos(x) + 2*x*sin(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "x**2*sin(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.product-rule-2",
+      "node_id": "der.product-rule",
+      "stem_latex": "Differentiate $f(x) = (x+1) \\exp(x)$.",
+      "answer_latex": "\\left(x + 1\\right) e^{x} + e^{x}",
+      "answer_kind": "expr",
+      "answer_sympy": "(x + 1)*exp(x) + exp(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "(x+1)*exp(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.product-rule-3",
+      "node_id": "der.product-rule",
+      "stem_latex": "Differentiate $f(x) = x \\cos(x)$.",
+      "answer_latex": "- x \\sin{\\left(x \\right)} + \\cos{\\left(x \\right)}",
+      "answer_kind": "expr",
+      "answer_sympy": "-x*sin(x) + cos(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "x*cos(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.product-rule-4",
+      "node_id": "der.product-rule",
+      "stem_latex": "Differentiate $f(x) = (2 x-1) (x^{2}+3)$.",
+      "answer_latex": "2 x^{2} + 2 x \\left(2 x - 1\\right) + 6",
+      "answer_kind": "expr",
+      "answer_sympy": "2*x**2 + 2*x*(2*x - 1) + 6",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "(2*x-1)*(x**2+3)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.1,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.product-rule-5",
+      "node_id": "der.product-rule",
+      "stem_latex": "Differentiate $f(x) = x^{3} \\log(x)$.",
+      "answer_latex": "3 x^{2} \\log{\\left(x \\right)} + x^{2}",
+      "answer_kind": "expr",
+      "answer_sympy": "3*x**2*log(x) + x**2",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "x**3*log(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.product-rule-6",
+      "node_id": "der.product-rule",
+      "stem_latex": "Differentiate $f(x) = (x^{2}+1) \\sin(x)$.",
+      "answer_latex": "2 x \\sin{\\left(x \\right)} + \\left(x^{2} + 1\\right) \\cos{\\left(x \\right)}",
+      "answer_kind": "expr",
+      "answer_sympy": "2*x*sin(x) + (x**2 + 1)*cos(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "(x**2+1)*sin(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.trig-derivatives-1",
+      "node_id": "der.trig-derivatives",
+      "stem_latex": "Differentiate $f(x) = \\sin(x)$.",
+      "answer_latex": "\\cos{\\left(x \\right)}",
+      "answer_kind": "expr",
+      "answer_sympy": "cos(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "sin(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -1.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.trig-derivatives-2",
+      "node_id": "der.trig-derivatives",
+      "stem_latex": "Differentiate $f(x) = \\cos(x)$.",
+      "answer_latex": "- \\sin{\\left(x \\right)}",
+      "answer_kind": "expr",
+      "answer_sympy": "-sin(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "cos(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -1.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.trig-derivatives-3",
+      "node_id": "der.trig-derivatives",
+      "stem_latex": "Differentiate $f(x) = \\tan(x)$.",
+      "answer_latex": "\\tan^{2}{\\left(x \\right)} + 1",
+      "answer_kind": "expr",
+      "answer_sympy": "tan(x)**2 + 1",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "tan(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.5,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.trig-derivatives-4",
+      "node_id": "der.trig-derivatives",
+      "stem_latex": "Differentiate $f(x) = 2 \\sin(x)-3 \\cos(x)$.",
+      "answer_latex": "3 \\sin{\\left(x \\right)} + 2 \\cos{\\left(x \\right)}",
+      "answer_kind": "expr",
+      "answer_sympy": "3*sin(x) + 2*cos(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "2*sin(x)-3*cos(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.trig-derivatives-5",
+      "node_id": "der.trig-derivatives",
+      "stem_latex": "Differentiate $f(x) = 5 \\tan(x)+\\sin(x)$.",
+      "answer_latex": "\\cos{\\left(x \\right)} + 5 \\tan^{2}{\\left(x \\right)} + 5",
+      "answer_kind": "expr",
+      "answer_sympy": "cos(x) + 5*tan(x)**2 + 5",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "5*tan(x)+sin(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.trig-derivatives-6",
+      "node_id": "der.trig-derivatives",
+      "stem_latex": "Differentiate $f(x) = \\sec(x)$.",
+      "answer_latex": "\\tan{\\left(x \\right)} \\sec{\\left(x \\right)}",
+      "answer_kind": "expr",
+      "answer_sympy": "tan(x)*sec(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "sec(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.higher-order-1",
+      "node_id": "der.higher-order",
+      "stem_latex": "Find the second derivative of $f(x) = x^{4}$.",
+      "answer_latex": "12 x^{2}",
+      "answer_kind": "expr",
+      "answer_sympy": "12*x**2",
+      "check": {
+        "task": "nth_derivative",
+        "params": {
+          "expr": "x**4",
+          "var": "x",
+          "at": "2"
+        }
+      },
+      "difficulty_b": -0.7,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.higher-order-2",
+      "node_id": "der.higher-order",
+      "stem_latex": "Find the second derivative of $f(x) = 3 x^{3}-2 x$.",
+      "answer_latex": "18 x",
+      "answer_kind": "expr",
+      "answer_sympy": "18*x",
+      "check": {
+        "task": "nth_derivative",
+        "params": {
+          "expr": "3*x**3-2*x",
+          "var": "x",
+          "at": "2"
+        }
+      },
+      "difficulty_b": -0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.higher-order-3",
+      "node_id": "der.higher-order",
+      "stem_latex": "Find the second derivative of $f(x) = \\sin(x)$.",
+      "answer_latex": "- \\sin{\\left(x \\right)}",
+      "answer_kind": "expr",
+      "answer_sympy": "-sin(x)",
+      "check": {
+        "task": "nth_derivative",
+        "params": {
+          "expr": "sin(x)",
+          "var": "x",
+          "at": "2"
+        }
+      },
+      "difficulty_b": -0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.higher-order-4",
+      "node_id": "der.higher-order",
+      "stem_latex": "Find the third derivative of $f(x) = x^{5}-4 x^{2}$.",
+      "answer_latex": "60 x^{2}",
+      "answer_kind": "expr",
+      "answer_sympy": "60*x**2",
+      "check": {
+        "task": "nth_derivative",
+        "params": {
+          "expr": "x**5-4*x**2",
+          "var": "x",
+          "at": "3"
+        }
+      },
+      "difficulty_b": 0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.higher-order-5",
+      "node_id": "der.higher-order",
+      "stem_latex": "Find the second derivative of $f(x) = \\exp(x)+x^{3}$.",
+      "answer_latex": "6 x + e^{x}",
+      "answer_kind": "expr",
+      "answer_sympy": "6*x + exp(x)",
+      "check": {
+        "task": "nth_derivative",
+        "params": {
+          "expr": "exp(x)+x**3",
+          "var": "x",
+          "at": "2"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.higher-order-6",
+      "node_id": "der.higher-order",
+      "stem_latex": "Find the fourth derivative of $f(x) = x^{6}$.",
+      "answer_latex": "360 x^{2}",
+      "answer_kind": "expr",
+      "answer_sympy": "360*x**2",
+      "check": {
+        "task": "nth_derivative",
+        "params": {
+          "expr": "x**6",
+          "var": "x",
+          "at": "4"
+        }
+      },
+      "difficulty_b": 0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.power-rule-1",
+      "node_id": "der.power-rule",
+      "stem_latex": "Differentiate $f(x) = x^{7}$.",
+      "answer_latex": "7 x^{6}",
+      "answer_kind": "expr",
+      "answer_sympy": "7*x**6",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "x**7",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -1.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.power-rule-2",
+      "node_id": "der.power-rule",
+      "stem_latex": "Differentiate $f(x) = 5 x^{3}$.",
+      "answer_latex": "15 x^{2}",
+      "answer_kind": "expr",
+      "answer_sympy": "15*x**2",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "5*x**3",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.8,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.power-rule-3",
+      "node_id": "der.power-rule",
+      "stem_latex": "Differentiate $f(x) = x^{-2}$.",
+      "answer_latex": "- \\frac{2}{x^{3}}",
+      "answer_kind": "expr",
+      "answer_sympy": "-2/x**3",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "x**(-2)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.power-rule-4",
+      "node_id": "der.power-rule",
+      "stem_latex": "Differentiate $f(x) = \\sqrt{x}$.",
+      "answer_latex": "\\frac{1}{2 \\sqrt{x}}",
+      "answer_kind": "expr",
+      "answer_sympy": "1/(2*sqrt(x))",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "sqrt(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.1,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.power-rule-5",
+      "node_id": "der.power-rule",
+      "stem_latex": "Differentiate $f(x) = 4 x^{6}-x^{2}$.",
+      "answer_latex": "24 x^{5} - 2 x",
+      "answer_kind": "expr",
+      "answer_sympy": "24*x**5 - 2*x",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "4*x**6-x**2",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.5,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.power-rule-6",
+      "node_id": "der.power-rule",
+      "stem_latex": "Differentiate $f(x) = x^{2/3}$.",
+      "answer_latex": "\\frac{2}{3 \\sqrt[3]{x}}",
+      "answer_kind": "expr",
+      "answer_sympy": "2/(3*x**(1/3))",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "x**(2/3)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.quotient-rule-1",
+      "node_id": "der.quotient-rule",
+      "stem_latex": "Differentiate $f(x) = (2 x+1)/(x-3)$.",
+      "answer_latex": "\\frac{2}{x - 3} - \\frac{2 x + 1}{\\left(x - 3\\right)^{2}}",
+      "answer_kind": "expr",
+      "answer_sympy": "2/(x - 3) - (2*x + 1)/(x - 3)**2",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "(2*x+1)/(x-3)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.quotient-rule-2",
+      "node_id": "der.quotient-rule",
+      "stem_latex": "Differentiate $f(x) = x^{2}/(x+1)$.",
+      "answer_latex": "- \\frac{x^{2}}{\\left(x + 1\\right)^{2}} + \\frac{2 x}{x + 1}",
+      "answer_kind": "expr",
+      "answer_sympy": "-x**2/(x + 1)**2 + 2*x/(x + 1)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "x**2/(x+1)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.1,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.quotient-rule-3",
+      "node_id": "der.quotient-rule",
+      "stem_latex": "Differentiate $f(x) = (x-4)/(x^{2}+1)$.",
+      "answer_latex": "- \\frac{2 x \\left(x - 4\\right)}{\\left(x^{2} + 1\\right)^{2}} + \\frac{1}{x^{2} + 1}",
+      "answer_kind": "expr",
+      "answer_sympy": "-2*x*(x - 4)/(x**2 + 1)**2 + 1/(x**2 + 1)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "(x-4)/(x**2+1)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.quotient-rule-4",
+      "node_id": "der.quotient-rule",
+      "stem_latex": "Differentiate $f(x) = \\sin(x)/x$.",
+      "answer_latex": "\\frac{\\cos{\\left(x \\right)}}{x} - \\frac{\\sin{\\left(x \\right)}}{x^{2}}",
+      "answer_kind": "expr",
+      "answer_sympy": "cos(x)/x - sin(x)/x**2",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "sin(x)/x",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.quotient-rule-5",
+      "node_id": "der.quotient-rule",
+      "stem_latex": "Differentiate $f(x) = (3 x)/(2 x-5)$.",
+      "answer_latex": "- \\frac{6 x}{\\left(2 x - 5\\right)^{2}} + \\frac{3}{2 x - 5}",
+      "answer_kind": "expr",
+      "answer_sympy": "-6*x/(2*x - 5)**2 + 3/(2*x - 5)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "(3*x)/(2*x-5)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.1,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.quotient-rule-6",
+      "node_id": "der.quotient-rule",
+      "stem_latex": "Differentiate $f(x) = (x^{2}-1)/(x^{2}+1)$.",
+      "answer_latex": "- \\frac{2 x \\left(x^{2} - 1\\right)}{\\left(x^{2} + 1\\right)^{2}} + \\frac{2 x}{x^{2} + 1}",
+      "answer_kind": "expr",
+      "answer_sympy": "-2*x*(x**2 - 1)/(x**2 + 1)**2 + 2*x/(x**2 + 1)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "(x**2-1)/(x**2+1)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.5,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.exp-log-derivatives-1",
+      "node_id": "der.exp-log-derivatives",
+      "stem_latex": "Differentiate $f(x) = \\exp(x)$.",
+      "answer_latex": "e^{x}",
+      "answer_kind": "expr",
+      "answer_sympy": "exp(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "exp(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -1.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.exp-log-derivatives-2",
+      "node_id": "der.exp-log-derivatives",
+      "stem_latex": "Differentiate $f(x) = \\log(x)$.",
+      "answer_latex": "\\frac{1}{x}",
+      "answer_kind": "expr",
+      "answer_sympy": "1/x",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "log(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.8,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.exp-log-derivatives-3",
+      "node_id": "der.exp-log-derivatives",
+      "stem_latex": "Differentiate $f(x) = 3 \\exp(x)-\\log(x)$.",
+      "answer_latex": "3 e^{x} - \\frac{1}{x}",
+      "answer_kind": "expr",
+      "answer_sympy": "3*exp(x) - 1/x",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "3*exp(x)-log(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.exp-log-derivatives-4",
+      "node_id": "der.exp-log-derivatives",
+      "stem_latex": "Differentiate $f(x) = x \\exp(x)$.",
+      "answer_latex": "x e^{x} + e^{x}",
+      "answer_kind": "expr",
+      "answer_sympy": "x*exp(x) + exp(x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "x*exp(x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.1,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.exp-log-derivatives-5",
+      "node_id": "der.exp-log-derivatives",
+      "stem_latex": "Differentiate $f(x) = \\log(x^{2})$.",
+      "answer_latex": "\\frac{2}{x}",
+      "answer_kind": "expr",
+      "answer_sympy": "2/x",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "log(x**2)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-der.exp-log-derivatives-6",
+      "node_id": "der.exp-log-derivatives",
+      "stem_latex": "Differentiate $f(x) = \\exp(2 x)$.",
+      "answer_latex": "2 e^{2 x}",
+      "answer_kind": "expr",
+      "answer_sympy": "2*exp(2*x)",
+      "check": {
+        "task": "differentiate",
+        "params": {
+          "expr": "exp(2*x)",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-mv.gradient-1",
+      "node_id": "mv.gradient",
+      "stem_latex": "Find the gradient $\\nabla f$ of $f(x,y) = x^{2}+y^{2}$.",
+      "answer_latex": "\\left[\\begin{matrix}2 x\\\\2 y\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "2*x, 2*y",
+      "check": {
+        "task": "gradient",
+        "params": {
+          "expr": "x**2+y**2"
+        }
+      },
+      "difficulty_b": -0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-mv.gradient-2",
+      "node_id": "mv.gradient",
+      "stem_latex": "Find the gradient $\\nabla f$ of $f(x,y) = x^{2} y^{3}$.",
+      "answer_latex": "\\left[\\begin{matrix}2 x y^{3}\\\\3 x^{2} y^{2}\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "2*x*y**3, 3*x**2*y**2",
+      "check": {
+        "task": "gradient",
+        "params": {
+          "expr": "x**2*y**3"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-mv.gradient-3",
+      "node_id": "mv.gradient",
+      "stem_latex": "Find the gradient $\\nabla f$ of $f(x,y) = 3 x y+y^{2}$.",
+      "answer_latex": "\\left[\\begin{matrix}3 y\\\\3 x + 2 y\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "3*y, 3*x + 2*y",
+      "check": {
+        "task": "gradient",
+        "params": {
+          "expr": "3*x*y+y**2"
+        }
+      },
+      "difficulty_b": -0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-mv.gradient-4",
+      "node_id": "mv.gradient",
+      "stem_latex": "Find the gradient $\\nabla f$ of $f(x,y) = x \\exp(y)$.",
+      "answer_latex": "\\left[\\begin{matrix}e^{y}\\\\x e^{y}\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "exp(y), x*exp(y)",
+      "check": {
+        "task": "gradient",
+        "params": {
+          "expr": "x*exp(y)"
+        }
+      },
+      "difficulty_b": 0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-mv.gradient-5",
+      "node_id": "mv.gradient",
+      "stem_latex": "Find the gradient $\\nabla f$ of $f(x,y) = x^{2}-2 x y+y^{2}$.",
+      "answer_latex": "\\left[\\begin{matrix}2 x - 2 y\\\\- 2 x + 2 y\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "2*x - 2*y, -2*x + 2*y",
+      "check": {
+        "task": "gradient",
+        "params": {
+          "expr": "x**2-2*x*y+y**2"
+        }
+      },
+      "difficulty_b": 0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-mv.gradient-6",
+      "node_id": "mv.gradient",
+      "stem_latex": "Find the gradient $\\nabla f$ of $f(x,y) = \\sin(x) y$.",
+      "answer_latex": "\\left[\\begin{matrix}y \\cos{\\left(x \\right)}\\\\\\sin{\\left(x \\right)}\\end{matrix}\\right]",
+      "answer_kind": "vector",
+      "answer_sympy": "y*cos(x), sin(x)",
+      "check": {
+        "task": "gradient",
+        "params": {
+          "expr": "sin(x)*y"
+        }
+      },
+      "difficulty_b": 0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-lim.continuity-1",
+      "node_id": "lim.continuity",
+      "stem_latex": "Evaluate $\\lim_{x \\to 3} (x^{2}-9)/(x-3)$.",
+      "answer_latex": "6",
+      "answer_kind": "expr",
+      "answer_sympy": "6",
+      "check": {
+        "task": "limit",
+        "params": {
+          "expr": "(x**2-9)/(x-3)",
+          "var": "x",
+          "at": "3"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-lim.continuity-2",
+      "node_id": "lim.continuity",
+      "stem_latex": "Evaluate $\\lim_{x \\to 1} (x^{2}-1)/(x-1)$.",
+      "answer_latex": "2",
+      "answer_kind": "expr",
+      "answer_sympy": "2",
+      "check": {
+        "task": "limit",
+        "params": {
+          "expr": "(x**2-1)/(x-1)",
+          "var": "x",
+          "at": "1"
+        }
+      },
+      "difficulty_b": -0.2,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-lim.continuity-3",
+      "node_id": "lim.continuity",
+      "stem_latex": "Evaluate $\\lim_{x \\to 2} (x^{3}-8)/(x-2)$.",
+      "answer_latex": "12",
+      "answer_kind": "expr",
+      "answer_sympy": "12",
+      "check": {
+        "task": "limit",
+        "params": {
+          "expr": "(x**3-8)/(x-2)",
+          "var": "x",
+          "at": "2"
+        }
+      },
+      "difficulty_b": 0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-lim.continuity-4",
+      "node_id": "lim.continuity",
+      "stem_latex": "Evaluate $\\lim_{x \\to 2} (2 x^{2}-8)/(x-2)$.",
+      "answer_latex": "8",
+      "answer_kind": "expr",
+      "answer_sympy": "8",
+      "check": {
+        "task": "limit",
+        "params": {
+          "expr": "(2*x**2-8)/(x-2)",
+          "var": "x",
+          "at": "2"
+        }
+      },
+      "difficulty_b": 0.1,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-lim.continuity-5",
+      "node_id": "lim.continuity",
+      "stem_latex": "Evaluate $\\lim_{x \\to 0} \\sin(x)/x$.",
+      "answer_latex": "1",
+      "answer_kind": "expr",
+      "answer_sympy": "1",
+      "check": {
+        "task": "limit",
+        "params": {
+          "expr": "sin(x)/x",
+          "var": "x",
+          "at": "0"
+        }
+      },
+      "difficulty_b": 0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-lim.continuity-6",
+      "node_id": "lim.continuity",
+      "stem_latex": "Evaluate $\\lim_{x \\to 4} (x^{2}-4 x)/(x-4)$.",
+      "answer_latex": "4",
+      "answer_kind": "expr",
+      "answer_sympy": "4",
+      "check": {
+        "task": "limit",
+        "params": {
+          "expr": "(x**2-4*x)/(x-4)",
+          "var": "x",
+          "at": "4"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-opt.critical-points-1",
+      "node_id": "opt.critical-points",
+      "stem_latex": "Find the x-values of the critical points of $f(x) = x^{2}-4 x+1$.",
+      "answer_latex": "\\left\\{2\\right\\}",
+      "answer_kind": "set",
+      "answer_sympy": "2",
+      "check": {
+        "task": "critical_points",
+        "params": {
+          "expr": "x**2-4*x+1",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.5,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-opt.critical-points-2",
+      "node_id": "opt.critical-points",
+      "stem_latex": "Find the x-values of the critical points of $f(x) = x^{3}-3 x$.",
+      "answer_latex": "\\left\\{-1, 1\\right\\}",
+      "answer_kind": "set",
+      "answer_sympy": "-1, 1",
+      "check": {
+        "task": "critical_points",
+        "params": {
+          "expr": "x**3-3*x",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.0,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-opt.critical-points-3",
+      "node_id": "opt.critical-points",
+      "stem_latex": "Find the x-values of the critical points of $f(x) = x^{3}-6 x^{2}+9 x$.",
+      "answer_latex": "\\left\\{1, 3\\right\\}",
+      "answer_kind": "set",
+      "answer_sympy": "1, 3",
+      "check": {
+        "task": "critical_points",
+        "params": {
+          "expr": "x**3-6*x**2+9*x",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.3,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-opt.critical-points-4",
+      "node_id": "opt.critical-points",
+      "stem_latex": "Find the x-values of the critical points of $f(x) = x^{4}-8 x^{2}$.",
+      "answer_latex": "\\left\\{-2, 0, 2\\right\\}",
+      "answer_kind": "set",
+      "answer_sympy": "-2, 0, 2",
+      "check": {
+        "task": "critical_points",
+        "params": {
+          "expr": "x**4-8*x**2",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-opt.critical-points-5",
+      "node_id": "opt.critical-points",
+      "stem_latex": "Find the x-values of the critical points of $f(x) = 2 x^{2}+8 x-3$.",
+      "answer_latex": "\\left\\{-2\\right\\}",
+      "answer_kind": "set",
+      "answer_sympy": "-2",
+      "check": {
+        "task": "critical_points",
+        "params": {
+          "expr": "2*x**2+8*x-3",
+          "var": "x"
+        }
+      },
+      "difficulty_b": -0.4,
+      "encompasses": [],
+      "answer_is_checkable": true,
+      "source": "generated"
+    },
+    {
+      "item_id": "gen-opt.critical-points-6",
+      "node_id": "opt.critical-points",
+      "stem_latex": "Find the x-values of the critical points of $f(x) = x^{3}-12 x$.",
+      "answer_latex": "\\left\\{-2, 2\\right\\}",
+      "answer_kind": "set",
+      "answer_sympy": "-2, 2",
+      "check": {
+        "task": "critical_points",
+        "params": {
+          "expr": "x**3-12*x",
+          "var": "x"
+        }
+      },
+      "difficulty_b": 0.1,
       "encompasses": [],
       "answer_is_checkable": true,
       "source": "generated"

@@ -1,0 +1,268 @@
+{
+  "sign-distribution": {
+    "name": "Dropping negatives across brackets",
+    "short": "signs",
+    "node_id": "alg.sign-distribution",
+    "name_hi": "कोष्ठक पर ऋण चिह्न छूट जाना",
+    "short_hi": "चिह्न"
+  },
+  "fraction-subtraction": {
+    "name": "Subtracting fractions without a common denominator",
+    "short": "fractions",
+    "node_id": "alg.fraction-arithmetic",
+    "name_hi": "समान हर के बिना भिन्न घटाना",
+    "short_hi": "भिन्न"
+  },
+  "fraction-arithmetic": {
+    "name": "Combining fractions without a common denominator",
+    "short": "fractions",
+    "node_id": "alg.fraction-arithmetic",
+    "name_hi": "समान हर के बिना भिन्न जोड़ना",
+    "short_hi": "भिन्न"
+  },
+  "exponent-arithmetic": {
+    "name": "Slips when adding or subtracting exponents",
+    "short": "exponents",
+    "node_id": "alg.exponent-rules",
+    "name_hi": "घातांक जोड़ने या घटाने में चूक",
+    "short_hi": "घातांक"
+  },
+  "factoring-sign-pair": {
+    "name": "Choosing factor pairs with the wrong signs",
+    "short": "factoring",
+    "node_id": "alg.factoring",
+    "name_hi": "गुणनखंड जोड़ी के चिह्न ग़लत चुनना",
+    "short_hi": "गुणनखंड"
+  },
+  "lost-second-root": {
+    "name": "Keeping only one root of a quadratic",
+    "short": "roots",
+    "node_id": "alg.solving-equations",
+    "name_hi": "द्विघात का केवल एक मूल रखना",
+    "short_hi": "मूल"
+  },
+  "composition-order": {
+    "name": "Composing the two functions in the wrong order",
+    "short": "composition",
+    "node_id": "alg.function-composition",
+    "name_hi": "दोनों फलनों को उल्टे क्रम में जोड़ना",
+    "short_hi": "संयोजन"
+  },
+  "componentwise-scalar": {
+    "name": "Scaling only the first component of a vector",
+    "short": "vectors",
+    "node_id": "alg.vectors",
+    "name_hi": "सदिश के केवल पहले घटक को गुणा करना",
+    "short_hi": "सदिश"
+  },
+  "radical-of-sum": {
+    "name": "Splitting a square root across a sum",
+    "short": "radicals",
+    "node_id": "alg.radicals",
+    "name_hi": "योग पर वर्गमूल बाँट देना",
+    "short_hi": "करणी"
+  },
+  "unit-circle-values": {
+    "name": "Mixing up the exact values on the unit circle",
+    "short": "unit circle",
+    "node_id": "trig.unit-circle",
+    "name_hi": "इकाई वृत्त के सटीक मान गड़बड़ाना",
+    "short_hi": "इकाई वृत्त"
+  },
+  "double-angle-misuse": {
+    "name": "Applying a double angle identity to the wrong argument",
+    "short": "identities",
+    "node_id": "trig.identities",
+    "name_hi": "द्विकोण सर्वसमिका ग़लत तर्क पर लगाना",
+    "short_hi": "सर्वसमिका"
+  },
+  "log-of-sum": {
+    "name": "Splitting a logarithm across a sum",
+    "short": "logs",
+    "node_id": "explog.rules",
+    "name_hi": "योग पर लघुगणक बाँट देना",
+    "short_hi": "लघुगणक"
+  },
+  "limit-is-value-at-point": {
+    "name": "Treating a limit as the value at the point",
+    "short": "limits",
+    "node_id": "lim.concept",
+    "name_hi": "सीमा को बिंदु का मान मान लेना",
+    "short_hi": "सीमा"
+  },
+  "substitution-into-undefined": {
+    "name": "Substituting where the function is undefined",
+    "short": "substitution",
+    "node_id": "lim.direct-substitution",
+    "name_hi": "अपरिभाषित बिंदु पर प्रतिस्थापन",
+    "short_hi": "प्रतिस्थापन"
+  },
+  "indeterminate-treated-as-dne": {
+    "name": "Reading 0/0 as no limit at all",
+    "short": "0 over 0",
+    "node_id": "lim.indeterminate-factoring",
+    "name_hi": "0/0 को सीमा का अभाव समझना",
+    "short_hi": "0 बटा 0"
+  },
+  "continuity-ignores-limit": {
+    "name": "Checking only that the function is defined there",
+    "short": "continuity",
+    "node_id": "lim.continuity",
+    "name_hi": "केवल परिभाषित होना जाँचना",
+    "short_hi": "सांतत्य"
+  },
+  "difference-quotient-setup": {
+    "name": "Setting up the difference quotient wrongly",
+    "short": "definition",
+    "node_id": "der.definition",
+    "name_hi": "अंतर भागफल ग़लत बनाना",
+    "short_hi": "परिभाषा"
+  },
+  "value-not-slope": {
+    "name": "Reporting the function value instead of the slope",
+    "short": "slope",
+    "node_id": "der.slope-interpretation",
+    "name_hi": "ढाल के बजाय फलन का मान देना",
+    "short_hi": "ढाल"
+  },
+  "exponent-not-decremented": {
+    "name": "Bringing the power down without lowering it",
+    "short": "power rule",
+    "node_id": "der.power-rule",
+    "name_hi": "घात नीचे लाकर घटाना भूलना",
+    "short_hi": "घात नियम"
+  },
+  "constant-differentiated": {
+    "name": "Differentiating a constant to something other than zero",
+    "short": "constants",
+    "node_id": "der.constant-multiple-sum",
+    "name_hi": "अचर का अवकलज शून्य न लेना",
+    "short_hi": "अचर"
+  },
+  "cosine-sign": {
+    "name": "Losing the minus sign on the derivative of cosine",
+    "short": "trig signs",
+    "node_id": "der.trig-derivatives",
+    "name_hi": "cos के अवकलज का ऋण चिह्न छूटना",
+    "short_hi": "त्रिकोण चिह्न"
+  },
+  "log-derivative-form": {
+    "name": "Misremembering the derivative of the natural log",
+    "short": "exp and log",
+    "node_id": "der.exp-log-derivatives",
+    "name_hi": "प्राकृतिक लघुगणक का अवकलज भूलना",
+    "short_hi": "घातांक और लघुगणक"
+  },
+  "product-of-derivatives": {
+    "name": "Multiplying the two derivatives instead of using the product rule",
+    "short": "product rule",
+    "node_id": "der.product-rule",
+    "name_hi": "गुणनफल नियम के बजाय अवकलजों को गुणा करना",
+    "short_hi": "गुणनफल नियम"
+  },
+  "quotient-numerator-order": {
+    "name": "Reversing the two terms in the quotient rule numerator",
+    "short": "quotient order",
+    "node_id": "der.quotient-rule",
+    "name_hi": "भागफल नियम के अंश के पद उलटना",
+    "short_hi": "भागफल क्रम"
+  },
+  "missing-inner-derivative": {
+    "name": "Forgetting the inner derivative",
+    "short": "chain rule",
+    "node_id": "der.chain-rule",
+    "name_hi": "भीतरी फलन का अवकलज भूलना",
+    "short_hi": "श्रृंखला नियम"
+  },
+  "implicit-missing-dydx": {
+    "name": "Differentiating y without attaching dy/dx",
+    "short": "implicit",
+    "node_id": "der.implicit",
+    "name_hi": "y का अवकलन करते समय dy/dx न लगाना",
+    "short_hi": "अंतर्निहित"
+  },
+  "stopped-at-first-derivative": {
+    "name": "Stopping after the first derivative",
+    "short": "higher order",
+    "node_id": "der.higher-order",
+    "name_hi": "पहले अवकलज पर ही रुक जाना",
+    "short_hi": "उच्च कोटि"
+  },
+  "both-variables-varied": {
+    "name": "Letting both variables change at once",
+    "short": "two variables",
+    "node_id": "mv.functions-several-vars",
+    "name_hi": "दोनों चरों को एक साथ बदलने देना",
+    "short_hi": "दो चर"
+  },
+  "partial-other-variable-not-held-constant": {
+    "name": "Differentiating the other variable instead of holding it constant",
+    "short": "partials",
+    "node_id": "mv.partial-derivative",
+    "name_hi": "दूसरे चर को अचर न मानना",
+    "short_hi": "आंशिक"
+  },
+  "missing-path-term": {
+    "name": "Leaving out one path through the multivariable chain",
+    "short": "chain paths",
+    "node_id": "mv.chain-rule-multivar",
+    "name_hi": "बहुचर श्रृंखला का एक पथ छोड़ देना",
+    "short_hi": "श्रृंखला पथ"
+  },
+  "gradient-as-scalar": {
+    "name": "Writing the gradient as a single number",
+    "short": "gradient",
+    "node_id": "mv.gradient",
+    "name_hi": "प्रवणता को एक ही संख्या लिखना",
+    "short_hi": "प्रवणता"
+  },
+  "direction-not-normalised": {
+    "name": "Using a direction vector that is not a unit vector",
+    "short": "direction",
+    "node_id": "mv.directional-derivative",
+    "name_hi": "दिशा सदिश को इकाई न बनाना",
+    "short_hi": "दिशा"
+  },
+  "critical-point-from-second-derivative": {
+    "name": "Solving the second derivative instead of the first",
+    "short": "critical points",
+    "node_id": "opt.critical-points",
+    "name_hi": "पहले के बजाय दूसरे अवकलज को हल करना",
+    "short_hi": "क्रांतिक बिंदु"
+  },
+  "flat-means-minimum": {
+    "name": "Assuming every flat point is a minimum",
+    "short": "extrema",
+    "node_id": "opt.local-extrema",
+    "name_hi": "हर समतल बिंदु को निम्निष्ठ मानना",
+    "short_hi": "चरम मान"
+  },
+  "loss-without-squaring": {
+    "name": "Leaving the error unsquared in the loss",
+    "short": "loss",
+    "node_id": "ai.loss-function",
+    "name_hi": "हानि में त्रुटि का वर्ग न करना",
+    "short_hi": "हानि"
+  },
+  "outer-derivative-only": {
+    "name": "Differentiating the squared error without the inner derivative",
+    "short": "loss gradient",
+    "node_id": "ai.gradient-of-loss",
+    "name_hi": "वर्ग त्रुटि में भीतरी अवकलज छोड़ना",
+    "short_hi": "हानि प्रवणता"
+  },
+  "gradient-ascent-instead-of-descent": {
+    "name": "Stepping along the gradient instead of against it",
+    "short": "descent sign",
+    "node_id": "ai.gradient-descent-step",
+    "name_hi": "प्रवणता के विरुद्ध नहीं, साथ में कदम रखना",
+    "short_hi": "अवरोहण चिह्न"
+  },
+  "layer-skipped": {
+    "name": "Skipping a layer when chaining the derivatives",
+    "short": "backprop",
+    "node_id": "ai.backprop-chain",
+    "name_hi": "अवकलज जोड़ते समय एक परत छोड़ना",
+    "short_hi": "बैकप्रॉप"
+  }
+}

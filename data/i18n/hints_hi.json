@@ -1,0 +1,19 @@
+{
+  "lang": "hi-IN",
+  "note": "Hand-translated hint prose, keyed by the English source string so one entry covers every node that shares a templated rung. Rungs marked is_math are LaTeX and are never translated. A rung with no entry falls back to English, which is correct: readable English beats a guessed translation.",
+  "entries": {
+    "A fraction of two functions. Which rule is that?": "दो फलनों का भागफल। कौन-सा नियम लगेगा?",
+    "Name the rule that matches the structure before you write anything down.": "कुछ लिखने से पहले संरचना से मेल खाने वाला नियम बताइए।",
+    "Apply the matching rule, differentiate each piece, then simplify. Then try a twin problem with new numbers.": "मेल खाने वाला नियम लगाइए, हर भाग का अवकलन कीजिए, फिर सरल कीजिए। फिर नए अंकों वाला जुड़वाँ प्रश्न आज़माइए।",
+    "There is a minus sign sitting in front of a bracket. How far does it reach?": "कोष्ठक के आगे एक ऋण चिह्न है। वह कहाँ तक लागू होता है?",
+    "Take what is outside the bracket into each term inside, one term at a time.": "कोष्ठक के बाहर जो है उसे भीतर के हर पद पर, एक-एक करके लगाइए।",
+    "Distribute across every term, then collect like terms. Then try a twin problem with new numbers.": "हर पद पर वितरित कीजिए, फिर समान पद जोड़िए। फिर नए अंकों वाला जुड़वाँ प्रश्न आज़माइए।",
+    "Two fractions cannot be combined until they describe parts of the same whole.": "जब तक दोनों भिन्न एक ही इकाई के भाग न दर्शाएँ, उन्हें जोड़ा नहीं जा सकता।",
+    "Get both parts into the same form first, then combine what matches.": "पहले दोनों भागों को एक ही रूप में लाइए, फिर जो मेल खाता है उसे जोड़िए।",
+    "Rewrite over a common denominator or base, combine, then cancel. Then try a twin problem with new numbers.": "समान हर या आधार पर लिखिए, जोड़िए, फिर काटिए। फिर नए अंकों वाला जुड़वाँ प्रश्न आज़माइए।",
+    "Treat every variable except the named one as a constant.": "बताए गए चर को छोड़कर हर चर को अचर मानिए।",
+    "Hold the other variables fixed, differentiate in the named one, then simplify. Then try a twin problem with new numbers.": "बाक़ी चर स्थिर रखिए, बताए गए चर में अवकलन कीजिए, फिर सरल कीजिए। फिर नए अंकों वाला जुड़वाँ प्रश्न आज़माइए।",
+    "Rewrite it in a form whose exact value you already know.": "इसे ऐसे रूप में लिखिए जिसका सटीक मान आप पहले से जानते हैं।",
+    "Reduce to a standard exact value and leave it exact. Then try a twin problem with new numbers.": "मानक सटीक मान तक लाइए और उसे सटीक ही रहने दीजिए। फिर नए अंकों वाला जुड़वाँ प्रश्न आज़माइए।"
+  }
+}

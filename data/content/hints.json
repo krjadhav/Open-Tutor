@@ -1,0 +1,742 @@
+{
+  "alg.sign-distribution": {
+    "rungs": [
+      {
+        "text": "There is a minus sign sitting in front of a bracket. How far does it reach?",
+        "is_math": false
+      },
+      {
+        "text": "$-(a - b) = -a + b$. The minus multiplies every term inside.",
+        "is_math": true
+      },
+      {
+        "text": "Take what is outside the bracket into each term inside, one term at a time.",
+        "is_math": false
+      },
+      {
+        "text": "Distribute across every term, then collect like terms. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "alg.fraction-arithmetic": {
+    "rungs": [
+      {
+        "text": "Two fractions cannot be combined until they describe parts of the same whole.",
+        "is_math": false
+      },
+      {
+        "text": "$\\frac{a}{b} + \\frac{c}{d} = \\frac{ad + bc}{bd}$",
+        "is_math": true
+      },
+      {
+        "text": "Get both parts into the same form first, then combine what matches.",
+        "is_math": false
+      },
+      {
+        "text": "Rewrite over a common denominator or base, combine, then cancel. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "alg.exponent-rules": {
+    "rungs": [
+      {
+        "text": "Same base on both parts. Which law of exponents fits this shape?",
+        "is_math": false
+      },
+      {
+        "text": "$x^{m}x^{n} = x^{m+n}$, $\\dfrac{x^{m}}{x^{n}} = x^{m-n}$, $(x^{m})^{n} = x^{mn}$",
+        "is_math": true
+      },
+      {
+        "text": "Get both parts into the same form first, then combine what matches.",
+        "is_math": false
+      },
+      {
+        "text": "Rewrite over a common denominator or base, combine, then cancel. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "alg.factoring": {
+    "rungs": [
+      {
+        "text": "You are looking for two brackets whose product rebuilds this expression.",
+        "is_math": false
+      },
+      {
+        "text": "$x^{2} + (p+q)x + pq = (x+p)(x+q)$, and $a^{2} - b^{2} = (a-b)(a+b)$",
+        "is_math": true
+      },
+      {
+        "text": "Find the pair of numbers whose product and whose sum both match.",
+        "is_math": false
+      },
+      {
+        "text": "Use that pair to split the middle term, then group into brackets. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "alg.solving-equations": {
+    "rungs": [
+      {
+        "text": "Gather everything on one side first. What kind of equation is left?",
+        "is_math": false
+      },
+      {
+        "text": "$ax + b = 0 \\Rightarrow x = -\\frac{b}{a}$; $ax^{2} + bx + c = 0 \\Rightarrow x = \\frac{-b \\pm \\sqrt{b^{2} - 4ac}}{2a}$",
+        "is_math": true
+      },
+      {
+        "text": "Move every term to one side so the other side is zero.",
+        "is_math": false
+      },
+      {
+        "text": "With zero on one side, factor or use the formula, then read off the roots. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "alg.function-composition": {
+    "rungs": [
+      {
+        "text": "One function is sitting inside another. Which one is outer, which is inner?",
+        "is_math": false
+      },
+      {
+        "text": "$f(g(x))$: apply $g$ to $x$ first, then apply $f$ to that result.",
+        "is_math": true
+      },
+      {
+        "text": "Put the whole inner function wherever the outer function shows its variable.",
+        "is_math": false
+      },
+      {
+        "text": "Substitute the inner function into the outer one, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "alg.vectors": {
+    "rungs": [
+      {
+        "text": "Vectors combine component by component. Which operation is being asked for here?",
+        "is_math": false
+      },
+      {
+        "text": "$k\\mathbf{u} = (ku_{1}, ku_{2})$ and $\\mathbf{u} \\cdot \\mathbf{v} = u_{1}v_{1} + u_{2}v_{2}$",
+        "is_math": true
+      },
+      {
+        "text": "Multiply matching components together, then add the products.",
+        "is_math": false
+      },
+      {
+        "text": "Pair the components, multiply each pair, and sum the results. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "alg.radicals": {
+    "rungs": [
+      {
+        "text": "A root is a fractional power in disguise. Rewriting it that way usually helps.",
+        "is_math": false
+      },
+      {
+        "text": "$\\sqrt[n]{x^{m}} = x^{m/n}$, so $\\sqrt{x} = x^{1/2}$",
+        "is_math": true
+      },
+      {
+        "text": "Get both parts into the same form first, then combine what matches.",
+        "is_math": false
+      },
+      {
+        "text": "Rewrite over a common denominator or base, combine, then cancel. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "trig.unit-circle": {
+    "rungs": [
+      {
+        "text": "This is one of the standard angles. Picture where it lands on the circle.",
+        "is_math": false
+      },
+      {
+        "text": "On the unit circle, $\\cos\\theta$ is the $x$ coordinate and $\\sin\\theta$ the $y$.",
+        "is_math": true
+      },
+      {
+        "text": "Rewrite it in a form whose exact value you already know.",
+        "is_math": false
+      },
+      {
+        "text": "Reduce to a standard exact value and leave it exact. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "trig.identities": {
+    "rungs": [
+      {
+        "text": "Something here collapses. Which identity matches the pattern in front of you?",
+        "is_math": false
+      },
+      {
+        "text": "$\\sin^{2}\\theta + \\cos^{2}\\theta = 1$ and $\\sin 2\\theta = 2\\sin\\theta\\cos\\theta$",
+        "is_math": true
+      },
+      {
+        "text": "Get both parts into the same form first, then combine what matches.",
+        "is_math": false
+      },
+      {
+        "text": "Rewrite over a common denominator or base, combine, then cancel. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "explog.rules": {
+    "rungs": [
+      {
+        "text": "Logs turn products into sums and exponents into multipliers.",
+        "is_math": false
+      },
+      {
+        "text": "$\\ln(ab) = \\ln a + \\ln b$, $\\ln(a^{n}) = n\\ln a$, $e^{\\ln a} = a$",
+        "is_math": true
+      },
+      {
+        "text": "Get both parts into the same form first, then combine what matches.",
+        "is_math": false
+      },
+      {
+        "text": "Rewrite over a common denominator or base, combine, then cancel. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "lim.concept": {
+    "rungs": [
+      {
+        "text": "Ask what the function heads towards near the point, not what it equals there.",
+        "is_math": false
+      },
+      {
+        "text": "$\\lim_{x \\to a} f(x) = L$ means $f(x)$ gets arbitrarily close to $L$ as $x \\to a$.",
+        "is_math": true
+      },
+      {
+        "text": "Try values just below and just above the point and watch where they head.",
+        "is_math": false
+      },
+      {
+        "text": "Both sides must approach the same number, and that number is the limit.",
+        "is_math": false
+      }
+    ]
+  },
+  "lim.direct-substitution": {
+    "rungs": [
+      {
+        "text": "If nothing breaks when the value goes in, that value is the limit.",
+        "is_math": false
+      },
+      {
+        "text": "If $f$ is continuous at $a$, then $\\lim_{x \\to a} f(x) = f(a)$.",
+        "is_math": true
+      },
+      {
+        "text": "Put the value straight in and see whether anything breaks.",
+        "is_math": false
+      },
+      {
+        "text": "If the function is continuous there, the substituted value is the limit.",
+        "is_math": false
+      }
+    ]
+  },
+  "lim.indeterminate-factoring": {
+    "rungs": [
+      {
+        "text": "Substituting gave you nothing usable. That is a signal, not an answer.",
+        "is_math": false
+      },
+      {
+        "text": "$\\lim_{x \\to a} \\frac{(x-a)g(x)}{(x-a)h(x)} = \\lim_{x \\to a} \\frac{g(x)}{h(x)}$",
+        "is_math": true
+      },
+      {
+        "text": "Factor the top and the bottom and look for a shared factor.",
+        "is_math": false
+      },
+      {
+        "text": "Cancel the common factor, then substitute into what is left.",
+        "is_math": false
+      }
+    ]
+  },
+  "lim.continuity": {
+    "rungs": [
+      {
+        "text": "Three separate things have to agree before a graph has no break there.",
+        "is_math": false
+      },
+      {
+        "text": "$f$ is continuous at $a$ when $f(a)$ exists and $\\lim_{x \\to a} f(x) = f(a)$.",
+        "is_math": true
+      },
+      {
+        "text": "Substitute the value. If it breaks, rewrite the expression before substituting.",
+        "is_math": false
+      },
+      {
+        "text": "Clear the indeterminate form by factoring and cancelling, then substitute. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.definition": {
+    "rungs": [
+      {
+        "text": "The derivative is a limit of slopes of secant lines that keep shrinking.",
+        "is_math": false
+      },
+      {
+        "text": "$f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$",
+        "is_math": true
+      },
+      {
+        "text": "Write out the difference quotient before you simplify anything.",
+        "is_math": false
+      },
+      {
+        "text": "Expand the difference quotient, cancel the h, then let h go to zero.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.slope-interpretation": {
+    "rungs": [
+      {
+        "text": "The derivative at a point is the slope of the tangent line there.",
+        "is_math": false
+      },
+      {
+        "text": "The tangent to $y = f(x)$ at $x = a$ has slope $f'(a)$.",
+        "is_math": true
+      },
+      {
+        "text": "Differentiate first. Substitute the given value only afterwards.",
+        "is_math": false
+      },
+      {
+        "text": "Differentiate, substitute the point, then simplify to a number. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.power-rule": {
+    "rungs": [
+      {
+        "text": "A single power of the variable. Two things happen to that exponent.",
+        "is_math": false
+      },
+      {
+        "text": "$\\frac{d}{dx}x^{n} = nx^{n-1}$",
+        "is_math": true
+      },
+      {
+        "text": "Name the rule that matches the structure before you write anything down.",
+        "is_math": false
+      },
+      {
+        "text": "Apply the matching rule, differentiate each piece, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.constant-multiple-sum": {
+    "rungs": [
+      {
+        "text": "Differentiate term by term. Constant multipliers simply ride along.",
+        "is_math": false
+      },
+      {
+        "text": "$(af + bg)' = af' + bg'$",
+        "is_math": true
+      },
+      {
+        "text": "Name the rule that matches the structure before you write anything down.",
+        "is_math": false
+      },
+      {
+        "text": "Apply the matching rule, differentiate each piece, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.trig-derivatives": {
+    "rungs": [
+      {
+        "text": "Sine and cosine trade places when differentiated, and one of them picks up a minus.",
+        "is_math": false
+      },
+      {
+        "text": "$(\\sin x)' = \\cos x$, $(\\cos x)' = -\\sin x$, $(\\tan x)' = \\sec^{2}x$",
+        "is_math": true
+      },
+      {
+        "text": "Name the rule that matches the structure before you write anything down.",
+        "is_math": false
+      },
+      {
+        "text": "Apply the matching rule, differentiate each piece, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.exp-log-derivatives": {
+    "rungs": [
+      {
+        "text": "One of these is its own derivative. The other becomes a reciprocal.",
+        "is_math": false
+      },
+      {
+        "text": "$(e^{x})' = e^{x}$ and $(\\ln x)' = \\frac{1}{x}$",
+        "is_math": true
+      },
+      {
+        "text": "Name the rule that matches the structure before you write anything down.",
+        "is_math": false
+      },
+      {
+        "text": "Apply the matching rule, differentiate each piece, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.product-rule": {
+    "rungs": [
+      {
+        "text": "Two functions multiplied together. Their derivatives do not simply multiply.",
+        "is_math": false
+      },
+      {
+        "text": "$(uv)' = u'v + uv'$",
+        "is_math": true
+      },
+      {
+        "text": "Name the rule that matches the structure before you write anything down.",
+        "is_math": false
+      },
+      {
+        "text": "Apply the matching rule, differentiate each piece, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.quotient-rule": {
+    "rungs": [
+      {
+        "text": "A fraction of two functions. Which rule is that?",
+        "is_math": false
+      },
+      {
+        "text": "$\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^{2}}$",
+        "is_math": true
+      },
+      {
+        "text": "Name the rule that matches the structure before you write anything down.",
+        "is_math": false
+      },
+      {
+        "text": "Apply the matching rule, differentiate each piece, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.chain-rule": {
+    "rungs": [
+      {
+        "text": "Something is nested inside something else. Name the outer and the inner.",
+        "is_math": false
+      },
+      {
+        "text": "$\\frac{d}{dx}f(g(x)) = f'(g(x)) \\cdot g'(x)$",
+        "is_math": true
+      },
+      {
+        "text": "Differentiate the outer function, leaving the inner one untouched inside it.",
+        "is_math": false
+      },
+      {
+        "text": "Outer derivative at the inner function, multiplied by the inner derivative.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.implicit": {
+    "rungs": [
+      {
+        "text": "Here $y$ depends on $x$, so differentiating $y$ cannot leave nothing behind.",
+        "is_math": false
+      },
+      {
+        "text": "$\\frac{d}{dx}\\left[y^{n}\\right] = ny^{n-1}\\frac{dy}{dx}$",
+        "is_math": true
+      },
+      {
+        "text": "Differentiate both sides in x, attaching dy/dx every time you pass a y.",
+        "is_math": false
+      },
+      {
+        "text": "Differentiate both sides, gather the dy/dx terms, then solve for dy/dx.",
+        "is_math": false
+      }
+    ]
+  },
+  "der.higher-order": {
+    "rungs": [
+      {
+        "text": "Differentiate, then differentiate the result. No new rule is needed.",
+        "is_math": false
+      },
+      {
+        "text": "$f''(x) = \\frac{d}{dx}\\left[f'(x)\\right]$",
+        "is_math": true
+      },
+      {
+        "text": "Differentiate once and simplify before differentiating again.",
+        "is_math": false
+      },
+      {
+        "text": "Repeat the differentiation as many times as asked, simplifying between steps. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "mv.functions-several-vars": {
+    "rungs": [
+      {
+        "text": "The output depends on more than one input. Vary them one at a time.",
+        "is_math": false
+      },
+      {
+        "text": "$f(x, y)$ assigns a single number to each pair $(x, y)$.",
+        "is_math": true
+      },
+      {
+        "text": "Treat every variable except the named one as a constant.",
+        "is_math": false
+      },
+      {
+        "text": "Hold the other variables fixed, differentiate in the named one, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "mv.partial-derivative": {
+    "rungs": [
+      {
+        "text": "Differentiate with respect to one variable while every other one stays frozen.",
+        "is_math": false
+      },
+      {
+        "text": "For $\\frac{\\partial f}{\\partial x}$, treat $y$ as a constant, then differentiate in $x$.",
+        "is_math": true
+      },
+      {
+        "text": "Cover the other variable with your hand and treat it as a number.",
+        "is_math": false
+      },
+      {
+        "text": "Hold the other variables constant and differentiate in the named one.",
+        "is_math": false
+      }
+    ]
+  },
+  "mv.chain-rule-multivar": {
+    "rungs": [
+      {
+        "text": "Every route from the variable to the output contributes its own term.",
+        "is_math": false
+      },
+      {
+        "text": "$\\frac{df}{dt} = \\frac{\\partial f}{\\partial x}\\frac{dx}{dt} + \\frac{\\partial f}{\\partial y}\\frac{dy}{dt}$",
+        "is_math": true
+      },
+      {
+        "text": "Sketch the tree of dependencies and count the routes to the variable.",
+        "is_math": false
+      },
+      {
+        "text": "Multiply along each route, then add the routes together.",
+        "is_math": false
+      }
+    ]
+  },
+  "mv.gradient": {
+    "rungs": [
+      {
+        "text": "Collect the partial derivatives into one vector. It points somewhere useful.",
+        "is_math": false
+      },
+      {
+        "text": "$\\nabla f = \\left(\\frac{\\partial f}{\\partial x}, \\frac{\\partial f}{\\partial y}\\right)$",
+        "is_math": true
+      },
+      {
+        "text": "Take one partial derivative per variable and keep them in order.",
+        "is_math": false
+      },
+      {
+        "text": "Compute each partial derivative, then stack them into a vector. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "mv.directional-derivative": {
+    "rungs": [
+      {
+        "text": "Rate of change along a direction you choose. Steepest ascent is one special case.",
+        "is_math": false
+      },
+      {
+        "text": "$D_{\\mathbf{u}}f = \\nabla f \\cdot \\mathbf{u}$, where $\\lVert\\mathbf{u}\\rVert = 1$",
+        "is_math": true
+      },
+      {
+        "text": "Turn the direction into a unit vector before anything else.",
+        "is_math": false
+      },
+      {
+        "text": "Dot the gradient with the unit direction vector.",
+        "is_math": false
+      }
+    ]
+  },
+  "opt.critical-points": {
+    "rungs": [
+      {
+        "text": "Look for where the tangent goes flat, or where there is no tangent.",
+        "is_math": false
+      },
+      {
+        "text": "Critical points are where $f'(x) = 0$ or $f'(x)$ is undefined.",
+        "is_math": true
+      },
+      {
+        "text": "Differentiate, then solve for where that derivative is zero.",
+        "is_math": false
+      },
+      {
+        "text": "Set the derivative to zero and solve; those roots are the critical points. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "opt.local-extrema": {
+    "rungs": [
+      {
+        "text": "A flat tangent is not enough on its own. Which way does the curve bend?",
+        "is_math": false
+      },
+      {
+        "text": "If $f'(c) = 0$ and $f''(c) > 0$, then $c$ is a local minimum.",
+        "is_math": true
+      },
+      {
+        "text": "Find where the slope is zero, then ask which way the curve bends.",
+        "is_math": false
+      },
+      {
+        "text": "Solve for the flat points and keep the one where the curve turns upward. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "ai.loss-function": {
+    "rungs": [
+      {
+        "text": "The loss measures how wrong a prediction is, as a function of the weights.",
+        "is_math": false
+      },
+      {
+        "text": "$L(w) = \\left(\\hat{y}(w) - y\\right)^{2}$, where $y$ is the true value.",
+        "is_math": true
+      },
+      {
+        "text": "Rewrite it in a form whose exact value you already know.",
+        "is_math": false
+      },
+      {
+        "text": "Reduce to a standard exact value and leave it exact. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "ai.gradient-of-loss": {
+    "rungs": [
+      {
+        "text": "Ask how the loss changes when one weight moves. That is a partial derivative.",
+        "is_math": false
+      },
+      {
+        "text": "$\\frac{\\partial L}{\\partial w} = 2\\left(\\hat{y} - y\\right)\\frac{\\partial \\hat{y}}{\\partial w}$",
+        "is_math": true
+      },
+      {
+        "text": "Treat every variable except the named one as a constant.",
+        "is_math": false
+      },
+      {
+        "text": "Hold the other variables fixed, differentiate in the named one, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "ai.gradient-descent-step": {
+    "rungs": [
+      {
+        "text": "The gradient points uphill, and you are trying to get downhill.",
+        "is_math": false
+      },
+      {
+        "text": "$w_{\\text{new}} = w - \\alpha \\frac{\\partial L}{\\partial w}$",
+        "is_math": true
+      },
+      {
+        "text": "Differentiate the loss, then evaluate that gradient at the current value.",
+        "is_math": false
+      },
+      {
+        "text": "New value is old value minus the learning rate times the gradient. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  },
+  "ai.backprop-chain": {
+    "rungs": [
+      {
+        "text": "A network is functions inside functions. The chain rule applies once per layer.",
+        "is_math": false
+      },
+      {
+        "text": "$\\frac{\\partial L}{\\partial w_{1}} = \\frac{\\partial L}{\\partial a}\\frac{\\partial a}{\\partial w_{1}}$",
+        "is_math": true
+      },
+      {
+        "text": "Treat every variable except the named one as a constant.",
+        "is_math": false
+      },
+      {
+        "text": "Hold the other variables fixed, differentiate in the named one, then simplify. Then try a twin problem with new numbers.",
+        "is_math": false
+      }
+    ]
+  }
+}

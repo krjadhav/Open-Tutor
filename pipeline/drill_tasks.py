@@ -11,6 +11,8 @@ spec. Two consequences worth the extra code:
 Anything sympy cannot evaluate, or that turns out to be a trivial no-op drill, is rejected.
 """
 
+import re
+
 import sympy as sp
 from sympy.parsing.sympy_parser import (parse_expr, standard_transformations,
                                         implicit_multiplication)
@@ -58,69 +60,123 @@ def _same(a, b):
         return False
 
 
+
+# ---------------------------------------------------------------- display
+#
+# The question shown to a student is rendered from the SPEC'S SOURCE TEXT, never from a parsed
+# sympy expression. sympy normalises: it flattens nested Add, distributes a unary minus and
+# reorders terms, all before anything reaches the page. That silently rewrote the question.
+# Measured examples that shipped:
+#     -( (2*x + 3) - (x - 5) )  displayed as  "-x - 5 - 3"     the bracket, and the skill, gone
+#     -( (1/2)*x - 3/4 )        displayed as  "-x/2 + 3/4"     which is the ANSWER, shown as the question
+# Both were on alg.sign-distribution, the node the demo's headline diagnosis lands on.
+#
+# sympy is still the sole authority on the ANSWER. It is simply not allowed near the QUESTION.
+# This transformation is purely syntactic: it never reassociates, reorders or cancels anything.
+
+_FUNCS_TEX = ("arcsin", "arccos", "arctan", "sinh", "cosh", "tanh",
+              "sin", "cos", "tan", "sec", "csc", "cot", "log", "exp", "sqrt")
+
+
+def source_to_latex(src):
+    """Prettify a sympy-syntax source string for display, preserving structure exactly."""
+    s = str(src).strip()
+    s = re.sub(r"\s+", " ", s)
+
+    # exponents: ** -> ^, braced so multi-character exponents group correctly
+    def _pow(m):
+        return "^{" + m.group(1).strip() + "}"
+    s = re.sub(r"\*\*\s*\(([^()]*)\)", _pow, s)          # x**(-3)
+    s = re.sub(r"\*\*\s*(-?\w+(?:/\w+)?)", _pow, s)        # x**7, x**2/3
+
+    # sqrt(...) with balanced inner parens
+    while True:
+        m = re.search(r"\bsqrt\(", s)
+        if not m:
+            break
+        i, depth = m.end(), 1
+        while i < len(s) and depth:
+            depth += (s[i] == "(") - (s[i] == ")")
+            i += 1
+        s = s[:m.start()] + "\\sqrt{" + s[m.end():i - 1] + "}" + s[i:]
+
+    for f in _FUNCS_TEX:
+        if f != "sqrt":
+            s = re.sub(rf"\b{f}\b", "\\\\" + f, s)
+    s = re.sub(r"\bpi\b", r"\\pi", s)
+    s = re.sub(r"\bE\b", "e", s)
+
+    # implicit multiplication: drop * where juxtaposition reads correctly
+    s = re.sub(r"(?<=[\w)\}])\s*\*\s*(?=[\w(\\])", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
 # Each task: (render(params) -> stem, solve(params) -> answer expr, guard(params, answer) -> bool)
 # The guard rejects drills that are technically valid but pedagogically useless.
 
 def t_differentiate(p):
     e, v = P(p["expr"]), S(p.get("var", "x"))
-    return f"Differentiate $f({v}) = {L(PU(p['expr']))}$.", sp.diff(e, v)
+    return f"Differentiate $f({v}) = {source_to_latex(p['expr'])}$.", sp.diff(e, v)
 
 
 def t_derivative_at(p):
     e, v, a = P(p["expr"]), S(p.get("var", "x")), P(p["at"])
-    return (f"Find the slope of the tangent to $y = {L(e)}$ at ${v} = {L(a)}$.",
+    return (f"Find the slope of the tangent to $y = {source_to_latex(p['expr'])}$ at ${v} = {L(a)}$.",
             sp.simplify(sp.diff(e, v).subs(v, a)))
 
 
 def t_partial(p):
     e, v = P(p["expr"]), S(p.get("var", "x"))
     ctx = p.get("context")
-    stem = f"Find $\\frac{{\\partial f}}{{\\partial {v}}}$ for $f = {L(e)}$."
+    stem = f"Find $\\frac{{\\partial f}}{{\\partial {v}}}$ for $f = {source_to_latex(p['expr'])}$."
     return ((f"{ctx} {stem}" if ctx else stem), sp.diff(e, v))
 
 
 def t_gradient(p):
     e = P(p["expr"])
     x, y = S("x"), S("y")
-    return (f"Find the gradient $\\nabla f$ of $f(x,y) = {L(e)}$.",
+    return (f"Find the gradient $\\nabla f$ of $f(x,y) = {source_to_latex(p['expr'])}$.",
             sp.Matrix([sp.diff(e, x), sp.diff(e, y)]))
 
 
 def t_expand(p):
     e = P(p["expr"])
-    return f"Expand and simplify ${L(PU(p['expr']))}$.", sp.expand(e)
+    return f"Expand and simplify ${source_to_latex(p['expr'])}$.", sp.expand(e)
 
 
 def t_factor(p):
     e = P(p["expr"])
-    return f"Factor ${L(PU(p['expr']))}$.", sp.factor(e)
+    return f"Factor ${source_to_latex(p['expr'])}$.", sp.factor(e)
 
 
 def t_simplify(p):
     e = P(p["expr"])
-    return f"Simplify ${L(PU(p['expr']))}$.", sp.simplify(sp.together(e))
+    return f"Simplify ${source_to_latex(p['expr'])}$.", sp.simplify(sp.together(e))
 
 
 def t_solve(p):
     lhs, rhs, v = P(p["expr"]), P(p.get("expr2", "0")), S(p.get("var", "x"))
     sols = sp.solve(sp.Eq(lhs, rhs), v)
-    return f"Solve for ${v}$: ${L(lhs)} = {L(rhs)}$.", sp.FiniteSet(*sols)
+    return (f"Solve for ${v}$: ${source_to_latex(p['expr'])} = "
+            f"{source_to_latex(p.get('expr2','0'))}$.", sp.FiniteSet(*sols))
 
 
 def t_evaluate(p):
     e = P(p["expr"])
-    return f"Evaluate ${L(PU(p['expr']))}$, giving an exact value.", sp.simplify(e)
+    return f"Evaluate ${source_to_latex(p['expr'])}$, giving an exact value.", sp.simplify(e)
 
 
 def t_compose(p):
     f, g, v = P(p["expr"]), P(p["expr2"]), S(p.get("var", "x"))
-    return (f"If $f({v}) = {L(f)}$ and $g({v}) = {L(g)}$, find $f(g({v}))$.",
+    return (f"If $f({v}) = {source_to_latex(p['expr'])}$ and $g({v}) = {source_to_latex(p['expr2'])}$, "
+            f"find $f(g({v}))$.",
             sp.simplify(f.subs(v, g)))
 
 
 def t_limit(p):
     e, v, a = P(p["expr"]), S(p.get("var", "x")), P(p["at"])
-    return f"Evaluate $\\lim_{{{v} \\to {L(a)}}} {L(PU(p['expr']))}$.", sp.limit(e, v, a)
+    return f"Evaluate $\\lim_{{{v} \\to {L(a)}}} {source_to_latex(p['expr'])}$.", sp.limit(e, v, a)
 
 
 def t_gd_step(p):
@@ -129,7 +185,7 @@ def t_gd_step(p):
     w0, lr = P(p["at"]), P(p["lr"])
     grad = sp.diff(loss, w).subs(w, w0)
     ctx = p.get("context", "")
-    stem = (f"The loss is $L({w}) = {L(loss)}$. Using a learning rate of $\\alpha = {L(lr)}$ and "
+    stem = (f"The loss is $L({w}) = {source_to_latex(p['expr'])}$. Using a learning rate of $\\alpha = {L(lr)}$ and "
             f"starting from ${w} = {L(w0)}$, perform one gradient descent update. "
             f"What is the new value of ${w}$?")
     return ((f"{ctx} {stem}" if ctx else stem), sp.simplify(w0 - lr * grad))
@@ -146,6 +202,73 @@ def t_local_min_x(p):
             sp.simplify(mins[0]))
 
 
+
+# ---------------------------------------------------------------- vectors
+#
+# alg.vectors was added by the graph audit (D3): the course target is w := w - alpha * grad(L),
+# a scalar-times-vector subtraction, and nothing in the graph covered vector mechanics. Because
+# alg.vectors directly gates mv.gradient, mv.directional-derivative and the target itself, a node
+# with no items leaves the goal unreachable by practice: it can never be attempted, so it never
+# leaves the frontier, so its dependents stay locked forever.
+#
+# These tasks are deliberately shaped like the operations the target actually performs.
+
+def _vec(s):
+    return sp.Matrix([P(t) for t in str(s).split(",")])
+
+
+def _row(v):
+    return sp.latex(v.T)
+
+
+def t_dot_product(p):
+    u, v = _vec(p["expr"]), _vec(p["expr2"])
+    if len(u) != len(v):
+        raise ValueError("dot product needs vectors of equal length")
+    return (f"Given $\\mathbf{{u}} = {_row(u)}$ and $\\mathbf{{v}} = {_row(v)}$, "
+            f"find $\\mathbf{{u}} \\cdot \\mathbf{{v}}$.", sp.simplify(u.dot(v)))
+
+
+def t_scalar_multiple(p):
+    k, u = P(p["expr"]), _vec(p["expr2"])
+    return (f"Compute ${sp.latex(k)}\\,{_row(u)}$.", sp.simplify(k * u))
+
+
+def t_vector_magnitude(p):
+    u = _vec(p["expr"])
+    return (f"Find $\\lVert\\mathbf{{u}}\\rVert$ for $\\mathbf{{u}} = {_row(u)}$.",
+            sp.simplify(sp.sqrt(sum(x ** 2 for x in u))))
+
+
+def t_vector_update(p):
+    """Exactly the gradient descent update, done on numbers before it is done on a loss."""
+    w, grad, a = _vec(p["expr"]), _vec(p["expr2"]), P(p["lr"])
+    return (f"A parameter vector is $\\mathbf{{w}} = {_row(w)}$ and the gradient is "
+            f"$\\nabla L = {_row(grad)}$. With a learning rate of $\\alpha = {sp.latex(a)}$, "
+            f"compute $\\mathbf{{w}} - \\alpha\\,\\nabla L$.", sp.simplify(w - a * grad))
+
+
+
+def t_nth_derivative(p):
+    """Second and higher derivatives. der.higher-order had no gradeable items, and because it
+    gates opt.local-extrema which gates the target, that single gap made the course goal
+    unreachable by practice."""
+    e, v = P(p["expr"]), S(p.get("var", "x"))
+    n = int(P(p.get("at", "2")))
+    ordinal = {2: "second", 3: "third", 4: "fourth"}.get(n, f"{n}th")
+    return (f"Find the {ordinal} derivative of $f({v}) = {source_to_latex(p['expr'])}$.", sp.diff(e, v, n))
+
+
+
+def t_critical_points(p):
+    e, v = P(p["expr"]), S(p.get("var", "x"))
+    sols = [c for c in sp.solve(sp.Eq(sp.diff(e, v), 0), v) if c.is_real]
+    if not sols:
+        raise ValueError("no real critical points")
+    return (f"Find the {v}-values of the critical points of $f({v}) = {source_to_latex(p['expr'])}$.",
+            sp.FiniteSet(*sols))
+
+
 TASKS = {
     "differentiate": t_differentiate,
     "derivative_at": t_derivative_at,
@@ -160,17 +283,29 @@ TASKS = {
     "limit": t_limit,
     "gd_step": t_gd_step,
     "local_min_x": t_local_min_x,
+    "dot_product": t_dot_product,
+    "scalar_multiple": t_scalar_multiple,
+    "vector_magnitude": t_vector_magnitude,
+    "vector_update": t_vector_update,
+    "nth_derivative": t_nth_derivative,
+    "critical_points": t_critical_points,
 }
 
 
 def _nontrivial(task, params, answer):
     """Reject drills where there is nothing to do."""
     try:
-        if task in ("expand", "factor", "simplify", "evaluate"):
-            # compare the DISPLAYED question against the answer: if they render the same there
-            # is nothing for the student to do
-            if sp.latex(PU(params["expr"])) == sp.latex(answer):
-                return False, "answer identical to the question as displayed, no work to do"
+        src = str(params.get("expr", ""))
+        if task == "expand" and "(" not in src:
+            # nothing bracketed to distribute, so there is no expanding to do whatever the
+            # rendered strings happen to look like
+            return False, "expand drill with no bracket to expand"
+        if task == "factor" and "(" not in sp.latex(answer):
+            return False, "factor drill whose answer does not factor"
+        if task in ("simplify", "evaluate") and source_to_latex(src) == sp.latex(answer):
+            return False, "answer identical to the question as displayed, no work to do"
+        if isinstance(answer, sp.MatrixBase):
+            return (True, None) if any(x != 0 for x in answer) else (False, "zero vector")
         if task == "differentiate" and answer.is_number:
             return False, "derivative is a constant, too trivial"
         if answer is None:
